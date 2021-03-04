@@ -1,0 +1,3 @@
+[submodule "vendor/unitsdb"]
+	path = vendor/unitsdb
+	url = git@github.com:unitsml/unitsdb.git
