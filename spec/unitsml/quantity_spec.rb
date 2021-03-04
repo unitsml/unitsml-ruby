@@ -1,17 +1,16 @@
 require "spec_helper"
 
-RSpec.describe Unitsml::Unit do
-  describe ".find_unit" do
-    subject(:find_unit) { described_class.find_unit(ascii: unit_symbol) }
+RSpec.describe Unitsml::Quantity do
+  describe ".find_quantity" do
+    subject(:find_quantity) { described_class.find_quantity(ascii: unit_symbol) }
 
     context 'when existing symbol' do
-      let(:unit_symbol) { "mL" }
+      let(:unit_symbol) { "NISTq48" }
 
       it 'returns instance of Unitsml::Unit' do
-        expect(find_unit).to(be_instance_of(Unitsml::Unit))
-        expect(find_unit.short).to(eq("milliliter"))
-        expect(find_unit.symbols.first).to(be_instance_of(Unitsml::UnitSymbol))
-        expect(find_unit.to_latex).to(eq("\\ensuremath{\\mathrm{mL}}\\ensuremath{\\mathrm{ml}}"))
+        expect(find_quantity).to(be_instance_of(described_class))
+        expect(find_quantity.id).to(eq(unit_symbol))
+        expect(find_quantity.units.first).to(be_instance_of(Unitsml::Unit))
       end
     end
 
@@ -19,7 +18,7 @@ RSpec.describe Unitsml::Unit do
       let(:unit_symbol) { :random_name }
 
       it 'returns nil' do
-        expect(find_unit).to(be_nil)
+        expect(find_quantity).to(be_nil)
       end
     end
   end
