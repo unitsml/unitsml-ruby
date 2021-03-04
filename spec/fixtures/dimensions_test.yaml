@@ -1,0 +1,15 @@
+---
+NISTd1:
+  length:
+    powerNumerator: 1
+    symbol: L
+
+NISTd2:
+  mass:
+    powerNumerator: 1
+    symbol: M
+
+NISTd3:
+  time:
+    powerNumerator: 1
+    symbol: T
