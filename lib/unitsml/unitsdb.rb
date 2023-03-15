@@ -15,11 +15,11 @@ module Unitsml
       end
 
       def prefixes
-        @@prefixes ||= prefixes_hash
+        @@prefixes_array ||= prefixes_hash.keys.sort_by(&:length).reverse
       end
 
-      def dimensions
-        @@dimensions ||= dimensions_hash
+      def parsable_dimensions
+        @@parsable_dimensions ||= dimensions_ids(dimensions_hash)
       end
 
       def quantities
@@ -30,20 +30,22 @@ module Unitsml
         @@units_hash ||= units_ids(load_yaml("units"))
       end
 
-      def double_letter_units
-        @@double_letter_units ||= units_hash.reject { |k, _| k.length == 1 }
+      def filtered_units
+        @@filtered_units_array ||= units_hash.keys.reject do |unit|
+          ((/\*|\^|\/|^1$/).match(unit) || units_hash.dig(unit, :fields, "prefixed"))
+        end
       end
 
       def prefixes_hash
-        @@prefixes_hash ||= prefixs_ids(load_yaml("prefixes"))
+        @@prefixes_hashes ||= prefixs_ids(load_yaml("prefixes"))
       end
 
       def dimensions_hash
-        @@dimensions_hash ||= dimensions_ids(load_yaml("dimensions"))
+        @@dimensions_hashs ||= insert_vectors(load_yaml("dimensions"))
       end
 
       def quantities_hash
-        @@quantities_hash ||= load_yaml("quantities")
+        @@quantities_hashs ||= load_yaml("quantities")
       end
 
       def units_ids(unit_hash, symbols = {})
@@ -66,11 +68,34 @@ module Unitsml
       def dimensions_ids(dimension_hash, hash = {})
         dimension_hash.each do |key, value|
           value.each do |_, v|
-            id = v["dim_symbols"]&.map { |symbol| symbol["id"] } unless v == true
-            hash[id] = { id: key, fields: value }
+            hash[find_id(v)] = { id: key, fields: value }
           end
         end
         hash
+      end
+
+      def find_id(value)
+        return if value == true
+        return unless value.is_a?(Hash)
+
+        value&.dig("dim_symbols")&.map { |symbol| symbol&.dig("id") }&.first
+      end
+
+      def vector(dimhash)
+        %w(Length Mass Time ElectricCurrent ThermodynamicTemperature
+            AmountOfSubstance LuminousIntensity PlaneAngle)
+          .map { |h| dimhash.dig(underscore(h), "powerNumerator") }.join(":")
+      end
+
+      def underscore(str)
+        str.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
+      end
+
+      def insert_vectors(dims)
+        dims.each do |key, value|
+          value[:vector] = vector(value)
+          value[:id] = key
+        end
       end
     end
   end
