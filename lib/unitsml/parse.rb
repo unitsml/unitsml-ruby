@@ -6,22 +6,38 @@ module Unitsml
   class Parse < Parslet::Parser
     include Unitsml::Unitsdb
 
-    rule(:power)  { str("^") >> intermediate_exp(number) }
-    rule(:units)  { @@units ||= arr_to_expression(Unitsdb.units.keys, "units") }
-    rule(:number) { (str("-").maybe >> match(/[0-9]/).repeat(1)).as(:integer) }
+    rule(:power)    { str("^") >> intermediate_exp(number) }
+    rule(:hyphen)   { str("-") }
+    rule(:number)   { (hyphen.maybe >> match(/[0-9]/).repeat(1)).as(:integer) }
+    rule(:extender) { (str("//") | str("/") | str("*")).as(:extender) }
+    rule(:sequence) { single_letter_prefixes >> units | double_letter_prefixes >> units | units }
+    rule(:unit_and_power) { units >> power.maybe }
 
-    rule(:extender)   { (str("*") | str("/")).as(:extender) }
-    rule(:prefixes)   { @@prefixes ||= arr_to_expression(Unitsdb.prefixes.keys, "prefixes") }
-    rule(:dimensions) { @@dimensions ||= arr_to_expression(Unitsdb.dimensions.keys, "dimensions") }
+    rule(:units) do
+      @@filtered_units ||= arr_to_expression(Unitsdb.filtered_units, "units")
+    end
 
-    rule(:unit_and_power)      { units >> power.maybe }
-    rule(:prefix_and_unit)     { prefixes >> unit_and_power }
-    rule(:double_letter_units) { @@double_letters ||= arr_to_expression(Unitsdb.double_letter_units.keys, "units") }
+    rule(:single_letter_prefixes) do
+      @@prefixes1 ||= arr_to_expression(Unitsdb.prefixes.select { |p| p.size == 1 }, "prefixes")
+    end
+
+    rule(:double_letter_prefixes) do
+      @@prefixes2 ||= arr_to_expression(Unitsdb.prefixes.select { |p| p.size == 2 }, "prefixes")
+    end
+
+    rule(:dimensions) do
+      @@dimensions ||= arr_to_expression(Unitsdb.parsable_dimensions.keys, "dimensions")
+    end
 
     rule(:prefixes_units) do
-      (sqrt(double_letter_units | prefix_and_unit | unit_and_power) >> extend_exp(prefixes_units)) |
-        (double_letter_units >> extend_exp(prefixes_units)) |
-        ((prefix_and_unit | unit_and_power) >> extend_exp(prefixes_units))
+      (sqrt(sequence) >> extend_exp(prefixes_units)) |
+        (str("1").as(:units) >> extend_exp(prefixes_units)) |
+        (unit_and_power >> extender >> intermediate_exp(prefixes_units).as(:sequence)) |
+        unit_and_power |
+        (single_letter_prefixes >> unit_and_power >> extender >> intermediate_exp(prefixes_units).as(:sequence)) |
+        (single_letter_prefixes >> unit_and_power) |
+        (double_letter_prefixes >> unit_and_power >> extender >> intermediate_exp(prefixes_units).as(:sequence)) |
+        (double_letter_prefixes >> unit_and_power)
     end
 
     rule(:dimension_rules) do
@@ -32,7 +48,8 @@ module Unitsml
     rule(:expression) do
       intermediate_exp(prefixes_units) |
         intermediate_exp(dimension_rules) |
-        prefixes >> str("-")
+        single_letter_prefixes >> hyphen |
+        double_letter_prefixes >> hyphen
     end
 
     root :expression

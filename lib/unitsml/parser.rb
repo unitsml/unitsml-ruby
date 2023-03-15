@@ -7,17 +7,42 @@ module Unitsml
     def initialize(text)
       @regexp = %r{(quantity|name|symbol|multiplier):\s*}
       @text = text&.match(/unitsml\((.*)\)/) ? Regexp.last_match[1] : text
+      @orig_text = @text
       post_extras
     end
 
     def parse
       nodes = Parse.new.parse(text)
-      Formula.new(
+      formula = Formula.new(
         [
           Transform.new.apply(nodes),
         ],
-        @extras_hash,
+        explicit_value: @extras_hash,
+        root: true,
+        orig_text: @orig_text,
+        norm_text: text,
       )
+      update_units_exponents(formula.value, false)
+      formula
+    end
+
+    def update_units_exponents(array, inverse)
+      array.each do |object|
+        if object.is_a?(Sqrt)
+          object = object.value
+          object.power_numerator = "0.5"
+        end
+
+        case object
+        when Unit
+          next unless inverse
+
+          exponent = inverse ? "-#{object&.power_numerator || '1'}" : object.power_numerator
+          object.power_numerator = exponent&.sub(/^--+/, "")
+        when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
+        when Formula then update_units_exponents(object.value, inverse)
+        end
+      end
     end
 
     def post_extras
