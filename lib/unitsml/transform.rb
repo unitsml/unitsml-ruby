@@ -6,7 +6,6 @@ module Unitsml
     rule(sqrt: simple(:sqrt))       { Sqrt.new(sqrt) }
     rule(units: simple(:unit))      { Unit.new(unit.to_s) }
     rule(prefixes: simple(:prefix)) { Prefix.new(prefix.to_s) }
-
     rule(dimensions: simple(:dimension)) { Dimension.new(dimension.to_s) }
 
     rule(units: simple(:unit),

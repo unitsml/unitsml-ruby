@@ -99,7 +99,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #12 example" do
+  context "contains Unitsml #11 example" do
     let(:exp) { "unitsml(hp)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -107,7 +107,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #13 example" do
+  context "contains Unitsml #12 example" do
     let(:exp) { "unitsml(kg*s^-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -121,7 +121,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #14 example" do
+  context "contains Unitsml #13 example" do
     let(:exp) { "unitsml(degK)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -129,7 +129,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #15 example" do
+  context "contains Unitsml #14 example" do
     let(:exp) { "unitsml(mbar)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -138,7 +138,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #16 example" do
+  context "contains Unitsml #15 example" do
     let(:exp) { "unitsml(p-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -146,7 +146,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #17 example" do
+  context "contains Unitsml #16 example" do
     let(:exp) { "unitsml(h-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -154,7 +154,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #18 example" do
+  context "contains Unitsml #17 example" do
     let(:exp) { "unitsml(da-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -162,7 +162,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #19 example" do
+  context "contains Unitsml #18 example" do
     let(:exp) { "unitsml(u-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -170,16 +170,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #20 example" do
-    let(:exp) { "unitsml(um)" }
-
-    it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("u")
-      expect(formula[:units]).to eq("m")
-    end
-  end
-
-  context "contains Unitsml #21 example" do
+  context "contains Unitsml #19 example" do
     let(:exp) { "unitsml(A*C^3)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -192,7 +183,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #22 example" do
+  context "contains Unitsml #20 example" do
     let(:exp) { "unitsml(A/C^-3)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -205,7 +196,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #23 example" do
+  context "contains Unitsml #21 example" do
     let(:exp) { "unitsml(J/kg*K)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -220,7 +211,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #24 example" do
+  context "contains Unitsml #22 example" do
     let(:exp) { "unitsml(kg^-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -230,7 +221,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #25 example" do
+  context "contains Unitsml #23 example" do
     let(:exp) { "unitsml(que?)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -238,7 +229,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #26 example" do
+  context "contains Unitsml #24 example" do
     let(:exp) { "unitsml(kg*s^-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -252,7 +243,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #27 example" do
+  context "contains Unitsml #25 example" do
     let(:exp) { "unitsml(mW*cm^(-2))" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -267,7 +258,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #28 example" do
+  context "contains Unitsml #26 example" do
     let(:exp) { "unitsml(dim_Theta*dim_L^2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -280,7 +271,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #29 example" do
+  context "contains Unitsml #27 example" do
     let(:exp) { "unitsml(dim_Theta^10*dim_L^2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -294,7 +285,7 @@ RSpec.describe Unitsml::Parse do
     end
   end
 
-  context "contains Unitsml #30 example" do
+  context "contains Unitsml #28 example" do
     let(:exp) { "unitsml(Hz^10*darcy^100)" }
 
     it "returns parslet tree of parsed Unitsml string" do

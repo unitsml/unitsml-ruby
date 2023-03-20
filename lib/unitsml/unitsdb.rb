@@ -10,29 +10,49 @@ module Unitsml
         @@hash[file_name.to_sym] ||= YAML.load_file(file_path)
       end
 
+      def load_dimensions
+        @@dim_file = load_yaml("dimensions")
+      end
+
+      def load_units
+        @@units_file = load_yaml("units")
+      end
+
       def units
-        @@units ||= units_hash
+        @@units ||= {}
+        return @@units unless @@units.empty?
+
+        load_units.each do |key, value|
+          value["unit_symbols"]&.each do |symbol|
+            @@units[symbol["id"]] = { id: key, fields: value } unless symbol["id"]&.empty?
+          end
+        end
+        @@units
       end
 
       def prefixes
-        @@prefixes_array ||= prefixes_hash.keys.sort_by(&:length).reverse
+        @@prefixes_array ||= prefixes_hash.keys.sort_by(&:length)
       end
 
       def parsable_dimensions
-        @@parsable_dimensions ||= dimensions_ids(dimensions_hash)
+        @@parsable_dimensions ||= {}
+        return @@parsable_dimensions unless @@parsable_dimensions.empty?
+
+        dimensions_hash.each do |key, value|
+          value.each do |_, v|
+            @@parsable_dimensions[find_id(v)] = { id: key, fields: value }
+          end
+        end
+        @@parsable_dimensions
       end
 
       def quantities
-        @@quantities ||= quantities_hash
-      end
-
-      def units_hash
-        @@units_hash ||= units_ids(load_yaml("units"))
+        @@quantities ||= load_yaml("quantities")
       end
 
       def filtered_units
-        @@filtered_units_array ||= units_hash.keys.reject do |unit|
-          ((/\*|\^|\/|^1$/).match(unit) || units_hash.dig(unit, :fields, "prefixed"))
+        @@filtered_units_array ||= units.keys.reject do |unit|
+          ((/\*|\^|\/|^1$/).match?(unit) || units.dig(unit, :fields, "prefixed"))
         end
       end
 
@@ -41,35 +61,13 @@ module Unitsml
       end
 
       def dimensions_hash
-        @@dimensions_hashs ||= insert_vectors(load_yaml("dimensions"))
-      end
-
-      def quantities_hash
-        @@quantities_hashs ||= load_yaml("quantities")
-      end
-
-      def units_ids(unit_hash, symbols = {})
-        unit_hash.each do |key, value|
-          value["unit_symbols"]&.each do |symbol|
-            symbols[symbol["id"]] = { id: key, fields: value } unless symbol["id"]&.empty?
-          end
-        end
-        symbols
+        @@dimensions_hashs ||= insert_vectors(load_dimensions)
       end
 
       def prefixs_ids(prefixe_hash, hash = {})
         prefixe_hash&.each do |key, value|
           symbol = value&.dig("symbol", "ascii")
           hash[symbol] = { id: key, fields: value } unless symbol&.empty?
-        end
-        hash
-      end
-
-      def dimensions_ids(dimension_hash, hash = {})
-        dimension_hash.each do |key, value|
-          value.each do |_, v|
-            hash[find_id(v)] = { id: key, fields: value }
-          end
         end
         hash
       end
@@ -82,9 +80,7 @@ module Unitsml
       end
 
       def vector(dim_hash)
-        %w(Length Mass Time ElectricCurrent ThermodynamicTemperature
-            AmountOfSubstance LuminousIntensity PlaneAngle)
-          .map { |h| dim_hash.dig(underscore(h), "powerNumerator") }.join(":")
+        Utility::DIMS_VECTOR.map { |h| dim_hash.dig(underscore(h), "powerNumerator") }.join(":")
       end
 
       def underscore(str)

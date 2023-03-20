@@ -15,3 +15,5 @@ module Unitsml
     Unitsml::Parser.new(string).parse
   end
 end
+
+Ox.default_options = { encoding: "UTF-8" }
