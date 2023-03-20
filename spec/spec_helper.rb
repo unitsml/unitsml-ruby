@@ -1,5 +1,8 @@
 require "bundler/setup"
 require "unitsml"
+require "rspec/matchers"
+require "equivalent-xml/rspec_matchers"
+require "plurimath"
 require "byebug"
 
 RSpec.configure do |config|
@@ -13,3 +16,5 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
+
+Ox.default_options = { encoding: "UTF-8" }
