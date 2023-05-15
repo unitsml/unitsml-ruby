@@ -81,10 +81,10 @@ module Unitsml
         value&.dig("dim_symbols")&.map { |symbol| symbol&.dig("id") }&.first
       end
 
-      def vector(dimhash)
+      def vector(dim_hash)
         %w(Length Mass Time ElectricCurrent ThermodynamicTemperature
             AmountOfSubstance LuminousIntensity PlaneAngle)
-          .map { |h| dimhash.dig(underscore(h), "powerNumerator") }.join(":")
+          .map { |h| dim_hash.dig(underscore(h), "powerNumerator") }.join(":")
       end
 
       def underscore(str)
