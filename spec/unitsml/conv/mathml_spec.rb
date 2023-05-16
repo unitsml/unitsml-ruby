@@ -10,11 +10,11 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mi mathvariant='normal'>mm</mi>
+          <mi mathvariant="normal">mm</mi>
           <mo>&#x22c5;</mo>
           <msup>
             <mrow>
-              <mi mathvariant='normal'>s</mi>
+              <mi mathvariant="normal">s</mi>
             </mrow>
             <mrow>
               <mo>&#x2212;</mo>

@@ -31,24 +31,33 @@ module Unitsml
     def numerator_value(mathml = true)
       integer = power_numerator.to_s
       if integer.match?(/-/)
-        replacer = mathml ? '<mo>&#x2212;</mo><mn>\2</mn>' : '&#x2212;\2'
-        integer.sub(/(-)(.+)/, replacer)
+        if mathml
+          integer = integer.sub(/(-)(.+)/, '<mn>\2</mn>')
+          integer = Ox.parse(integer)
+          mo_tag = (Utility.ox_element("mo") << "&#x2212;")
+          [mo_tag, integer]
+        else
+          integer.sub(/(-)(.+)/, '&#x2212;\2')
+        end
       else
-        mathml ? "<mn>#{integer}</mn>" : integer
+        mathml ? [Ox.parse("<mn>#{integer}</mn>")] : integer
       end
     end
 
     def to_mathml
       value = unit_symbols&.dig("mathml")
+      value = Ox.parse(value)
+      value.nodes.insert(0, prefix.to_mathml) if prefix
       if power_numerator
-        value = "<msup><mrow>#{value}</mrow><mrow>#{numerator_value}</mrow></msup>"
+        msup = Utility.ox_element("msup")
+        msup << (Utility.ox_element("mrow") << value)
+        msup << Utility.update_nodes(
+          Utility.ox_element("mrow"),
+          numerator_value,
+        )
+        value = msup
       end
-      value = insert_prefix(value) if prefix
       value
-    end
-
-    def insert_prefix(value)
-      value.sub(/<mi mathvariant='normal'>/,"<mi mathvariant='normal'>#{prefix.to_mathml}")
     end
 
     def to_latex

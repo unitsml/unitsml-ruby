@@ -27,13 +27,16 @@ module Unitsml
 
     def to_mathml
       if root
-        <<~MATHML
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            #{value.map(&:to_mathml).join}
-          </math>
-        MATHML
+        attributes = { xmlns: "http://www.w3.org/1998/Math/MathML", display: "block" }
+        math = Utility.ox_element("math", attributes: attributes)
+        Ox.dump(
+          Utility.update_nodes(
+            math,
+            value.map(&:to_mathml).flatten,
+          ),
+        ).gsub(/&amp;(.*?)(?=<\/)/, '&\1')
       else
-        value.map(&:to_mathml).join
+        value.map(&:to_mathml)
       end
     end
 

@@ -27,7 +27,6 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib", "unitsdb/**/*.yaml"]
 
-  spec.add_dependency "ox"
   spec.add_dependency "parslet"
   spec.add_dependency "plurimath"
   spec.add_dependency "htmlentities"

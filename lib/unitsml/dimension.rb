@@ -25,8 +25,16 @@ module Unitsml
 
     def to_mathml
       value = dim_symbols["mathml"]
+      value = Ox.parse(value)
       if power_numerator
-        value = "<msup><mrow>#{value}</mrow><mrow><mn>#{power_numerator}</mn></mrow></msup>"
+        msup = Utility.ox_element("msup")
+        msup << (Utility.ox_element("mrow") << value)
+        msup << (
+          Utility.ox_element("mrow") << (
+            Utility.ox_element("mn") << power_numerator
+          )
+        )
+        value = msup
       end
       value
     end
