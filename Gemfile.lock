@@ -3,7 +3,6 @@ PATH
   specs:
     unitsml (0.1.0)
       htmlentities
-      ox
       parslet
       plurimath
 

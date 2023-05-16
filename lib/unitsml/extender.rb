@@ -14,7 +14,7 @@ module Unitsml
     end
 
     def to_mathml
-      "<mo>&#x22c5;</mo>"
+      Utility.ox_element("mo") << "&#x22c5;"
     end
 
     def to_latex
