@@ -97,11 +97,14 @@ module Unitsml
       units_arr = []
 
       formula.each do |term|
-        if term.is_a?(Unit)
+        case term
+        when Unit
           units_arr << term.dup
-        elsif term.is_a?(Formula)
+        when Formula
           units_arr.concat(extract_units(term.value.dup))
-        elsif term.is_a?(Sqrt) && term.value.is_a?(Unit)
+        when Sqrt
+          next unless term.value.is_a?(Unit)
+
           units_arr << term.value
         end
       end
@@ -114,14 +117,13 @@ module Unitsml
       norm_text = Utility.postprocess_normtext(all_units)
       dims = Utility.units2dimensions(extract_units(value))
       dimension, dimension_component = unique_dimensions(dims, norm_text)
-
-      <<~UNITSML
-        #{Utility.unit(all_units, self, dims, norm_text, explicit_value&.dig(:name))}
-        #{Utility.prefixes(all_units)}
-        #{dimension}
-        #{dimension_component}
-        #{Utility.quantity(norm_text, explicit_value&.dig(:quantity))}
-      UNITSML
+      [
+        Utility.unit(all_units, self, dims, norm_text, explicit_value&.dig(:name)),
+        Utility.prefixes(all_units),
+        dimension,
+        dimension_component,
+        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+      ].join
     end
 
     def unique_dimensions(dims, norm_text)
@@ -152,11 +154,11 @@ module Unitsml
     def prefixes
       norm_text = @norm_text&.split("-")&.first
       prefix_object = Unit.new("", prefix: Prefix.new(norm_text))
-      <<~XML
-        #{Utility.prefixes([prefix_object])}
-        #{Utility.dimension(norm_text)}
-        #{Utility.quantity(norm_text, explicit_value&.dig(:quantity))}
-      XML
+      [
+        Utility.prefixes([prefix_object]),
+        Utility.dimension(norm_text),
+        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+      ].join
     end
   end
 end
