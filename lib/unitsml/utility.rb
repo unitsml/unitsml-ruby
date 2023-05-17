@@ -32,15 +32,15 @@ module Unitsml
       "dim_phi" => U2D["deg"],
     }.freeze
     DIMS_VECTOR = %w[
-      Length
-      Mass
-      Time
-      ElectricCurrent
       ThermodynamicTemperature
       AmountOfSubstance
       LuminousIntensity
+      ElectricCurrent
       PlaneAngle
-    ]
+      Length
+      Mass
+      Time
+    ].freeze
 
     class << self
       include Unitsml::Unitsdb

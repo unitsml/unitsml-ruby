@@ -30,18 +30,16 @@ module Unitsml
 
     def numerator_value(mathml = true)
       integer = power_numerator.to_s
-      if integer.match?(/-/)
-        if mathml
-          integer = integer.sub(/(-)(.+)/, '<mn>\2</mn>')
-          integer = Ox.parse(integer)
-          mo_tag = (Utility.ox_element("mo") << "&#x2212;")
-          [mo_tag, integer]
-        else
-          integer.sub(/(-)(.+)/, '&#x2212;\2')
-        end
-      else
-        mathml ? [Ox.parse("<mn>#{integer}</mn>")] : integer
+      unless integer.match?(/-/)
+        return mathml ? [Ox.parse("<mn>#{integer}</mn>")] : integer
       end
+
+      return integer.sub(/(-)(.+)/, '&#x2212;\2') unless mathml
+
+      integer = integer.sub(/(-)(.+)/, '<mn>\2</mn>')
+      integer = Ox.parse(integer)
+      mo_tag = (Utility.ox_element("mo") << "&#x2212;")
+      [mo_tag, integer]
     end
 
     def to_mathml
