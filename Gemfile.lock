@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    unitsml (0.1.0)
+    unitsml (0.2.0)
       htmlentities
       parslet
       plurimath
@@ -22,12 +22,12 @@ GEM
     nokogiri (1.14.0)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
-    ox (2.14.14)
+    ox (2.14.17)
     parallel (1.20.1)
     parser (3.0.0.0)
       ast (~> 2.4.1)
     parslet (2.0.0)
-    plurimath (0.3.2)
+    plurimath (0.3.6)
       ox
       parslet
     powerpack (0.1.3)

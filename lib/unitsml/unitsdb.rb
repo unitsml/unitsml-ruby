@@ -6,7 +6,7 @@ module Unitsml
     class << self
       def load_yaml(file_name)
         @@hash ||= {}
-        file_path = File.path("unitsdb/#{file_name}.yaml")
+        file_path = File.path(valid_path(file_name))
         @@hash[file_name.to_sym] ||= YAML.load_file(file_path)
       end
 
@@ -92,6 +92,11 @@ module Unitsml
           value[:vector] = vector(value)
           value[:id] = key
         end
+      end
+
+      def valid_path(file_name)
+        path = "unitsdb/#{file_name}.yaml"
+        File.file?(path) ? path : "../#{path}"
       end
     end
   end

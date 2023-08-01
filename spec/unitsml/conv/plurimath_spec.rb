@@ -65,7 +65,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::FontStyle::Normal.new(
-          Plurimath::Math::Function::G.new,
+          Plurimath::Math::Symbol.new("g"),
           "normal",
         )
       ])
