@@ -12,12 +12,10 @@ RSpec.describe Unitsml::Parser do
         ),
         Plurimath::Math::Symbol.new("&#x22c5;"),
         Plurimath::Math::Function::Power.new(
-          Plurimath::Math::Formula.new([
-            Plurimath::Math::Function::FontStyle::Normal.new(
-              Plurimath::Math::Symbol.new("s"),
-              "normal"
-            )
-          ]),
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbol.new("s"),
+            "normal"
+          ),
           Plurimath::Math::Formula.new([
             Plurimath::Math::Symbol.new("&#x2212;"),
             Plurimath::Math::Number.new("2")
