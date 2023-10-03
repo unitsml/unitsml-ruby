@@ -1,6 +1,6 @@
 [submodule "unitsdb"]
   path = unitsdb
-  url = git@github.com:unitsml/unitsdb.git
+  url = https://github.com/unitsml/unitsdb.git
 [submodule "vendor/unitsdb"]
   path = vendor/unitsdb
-  url = git@github.com:unitsml/unitsdb.git
+  url = https://github.com/unitsml/unitsdb.git

@@ -6,16 +6,15 @@ module Unitsml
     class << self
       def load_yaml(file_name)
         @@hash ||= {}
-        file_path = File.path(valid_path(file_name))
-        @@hash[file_name.to_sym] ||= YAML.load_file(file_path)
+        @@hash[file_name] ||= YAML.load_file(valid_path(file_name))
       end
 
       def load_dimensions
-        @@dim_file = load_yaml("dimensions")
+        @@dim_file = load_yaml(:dimensions)
       end
 
       def load_units
-        @@units_file = load_yaml("units")
+        @@units_file = load_yaml(:units)
       end
 
       def units
@@ -47,7 +46,7 @@ module Unitsml
       end
 
       def quantities
-        @@quantities ||= load_yaml("quantities")
+        @@quantities ||= load_yaml(:quantities)
       end
 
       def filtered_units
@@ -57,7 +56,7 @@ module Unitsml
       end
 
       def prefixes_hash
-        @@prefixes_hashes ||= prefixs_ids(load_yaml("prefixes"))
+        @@prefixes_hashes ||= prefixs_ids(load_yaml(:prefixes))
       end
 
       def dimensions_hash
@@ -95,8 +94,9 @@ module Unitsml
       end
 
       def valid_path(file_name)
-        path = "unitsdb/#{file_name}.yaml"
-        File.file?(path) ? path : "../#{path}"
+        File.expand_path(
+          File.join(__dir__, "..", "..","unitsdb", "#{file_name}.yaml")
+        )
       end
     end
   end
