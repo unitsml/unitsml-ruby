@@ -8,7 +8,11 @@ on:
           Next release version. Possible values: x.y.z, major, minor, patch or pre|rc|etc
         required: true
         default: 'skip'
-      post_install: 'git submodule update --remote --recursive'
+      post_install:
+        description: 'comamnd to execute after bundle install'
+        required: false
+        type: string
+        default: 'git submodule update --remote --recursive'
   repository_dispatch:
     types: [ do-release ]
 
