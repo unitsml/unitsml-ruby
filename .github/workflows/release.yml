@@ -16,5 +16,6 @@ jobs:
     uses: metanorma/ci/.github/workflows/rubygems-release.yml@main
     with:
       next_version: ${{ github.event.inputs.next_version }}
+      submodules: true
     secrets:
       rubygems-api-key: ${{ secrets.UNITSML_CI_RUBYGEMS_API_KEY }}
