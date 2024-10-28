@@ -35,7 +35,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mi mathvariant='normal'>&micro;m</mi>
+          <mi mathvariant='normal'>&#xb5;m</mi>
         </math>
       MATHML
     end
@@ -277,7 +277,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          &micro;
+          &#xb5;
         </math>
       MATHML
     end
