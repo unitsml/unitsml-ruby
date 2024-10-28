@@ -306,6 +306,19 @@ module Unitsml
         nodes&.each { |node| element << node unless node.nil? }
         element
       end
+
+      def string_to_html_entity(string)
+        entities = HTMLEntities.new
+        entities.encode(
+          string.frozen? ? string : string.force_encoding('UTF-8'),
+          :hexadecimal,
+        )
+      end
+
+      def html_entity_to_unicode(string)
+        entities = HTMLEntities.new
+        entities.decode(string)
+      end
     end
   end
 end

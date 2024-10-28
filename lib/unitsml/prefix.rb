@@ -30,7 +30,11 @@ module Unitsml
     end
 
     def to_mathml
-      prefixes_symbols["html"]
+      Utility.string_to_html_entity(
+        Utility.html_entity_to_unicode(
+          prefixes_symbols["html"]
+        ),
+      )
     end
 
     def to_latex
