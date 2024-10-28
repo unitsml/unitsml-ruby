@@ -7,17 +7,17 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::FontStyle::Normal.new(
-          Plurimath::Math::Symbol.new("mm"),
+          Plurimath::Math::Symbols::Symbol.new("mm"),
           "normal"
         ),
-        Plurimath::Math::Symbol.new("&#x22c5;"),
+        Plurimath::Math::Symbols::Cdot.new,
         Plurimath::Math::Function::Power.new(
           Plurimath::Math::Function::FontStyle::Normal.new(
-            Plurimath::Math::Symbol.new("s"),
+            Plurimath::Math::Symbols::Symbol.new("s"),
             "normal"
           ),
           Plurimath::Math::Formula.new([
-            Plurimath::Math::Symbol.new("&#x2212;"),
+            Plurimath::Math::Symbols::Minus.new,
             Plurimath::Math::Number.new("2")
           ])
         )
@@ -34,7 +34,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::FontStyle::SansSerif.new(
-          Plurimath::Math::Symbol.new("L"),
+          Plurimath::Math::Symbols::Symbol.new("L"),
           "sans-serif",
         )
       ])
@@ -49,7 +49,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(k-)" }
     let(:expected_value) do
       Plurimath::Math::Formula.new([
-        Plurimath::Math::Symbol.new("k"),
+        Plurimath::Math::Symbols::Symbol.new("k"),
       ])
     end
 
@@ -63,7 +63,23 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::FontStyle::Normal.new(
-          Plurimath::Math::Symbol.new("g"),
+          Plurimath::Math::Symbols::Symbol.new("g"),
+          "normal",
+        )
+      ])
+    end
+
+    it "compares expected value with to_plurimath method output" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "Unitsml example contains 'um' crashing while LutaML-Model integration in Plurimath" do
+    let(:exp) { "unitsml(um)" }
+    let(:expected_value) do
+      Plurimath::Math::Formula.new([
+        Plurimath::Math::Function::FontStyle::Normal.new(
+          Plurimath::Math::Symbols::Symbol.new("&#xb5;m"),
           "normal",
         )
       ])
