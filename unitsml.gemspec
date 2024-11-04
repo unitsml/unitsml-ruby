@@ -27,8 +27,8 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib", "unitsdb/**/*.yaml"]
 
-  spec.add_dependency "plurimath"
   spec.add_dependency "htmlentities"
+  spec.add_dependency "plurimath", "~> 0.8.4"
   spec.add_development_dependency "byebug"
   spec.add_development_dependency "equivalent-xml"
   spec.add_development_dependency "pry", "~> 0.12.2"
