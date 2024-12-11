@@ -336,7 +336,7 @@ RSpec.describe Unitsml::Parser do
 
     it "returns parslet tree of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
-          Unitsml::Prefix.new("p")
+          Unitsml::Prefix.new("p", true)
         ],
         norm_text: "p-",
         orig_text: "p-",
@@ -351,7 +351,7 @@ RSpec.describe Unitsml::Parser do
 
     it "returns parslet tree of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
-          Unitsml::Prefix.new("h")
+          Unitsml::Prefix.new("h", true)
         ],
         norm_text: "h-",
         orig_text: "h-",
@@ -366,7 +366,7 @@ RSpec.describe Unitsml::Parser do
 
     it "returns parslet tree of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
-          Unitsml::Prefix.new("da")
+          Unitsml::Prefix.new("da", true)
         ],
         norm_text: "da-",
         orig_text: "da-",
@@ -381,7 +381,7 @@ RSpec.describe Unitsml::Parser do
 
     it "returns parslet tree of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
-          Unitsml::Prefix.new("u")
+          Unitsml::Prefix.new("u", true)
         ],
         norm_text: "u-",
         orig_text: "u-",
