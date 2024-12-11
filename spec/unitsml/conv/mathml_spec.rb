@@ -232,7 +232,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          p
+          <mi>p</mi>
         </math>
       MATHML
     end
@@ -247,7 +247,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          h
+          <mi>h</mi>
         </math>
       MATHML
     end
@@ -262,7 +262,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          da
+          <mi>da</mi>
         </math>
       MATHML
     end
@@ -277,7 +277,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          &#xb5;
+          <mi>&#xb5;</mi>
         </math>
       MATHML
     end

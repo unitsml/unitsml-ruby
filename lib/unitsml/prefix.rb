@@ -2,15 +2,17 @@
 
 module Unitsml
   class Prefix
-    attr_accessor :prefix_name
+    attr_accessor :prefix_name, :only_instance
 
-    def initialize(prefix_name)
+    def initialize(prefix_name, only_instance = false)
       @prefix_name = prefix_name
+      @only_instance = only_instance
     end
 
     def ==(object)
       self.class == object.class &&
-        prefix_name == object&.prefix_name
+        prefix_name == object&.prefix_name &&
+        only_instance == object&.only_instance
     end
 
     def id
@@ -30,11 +32,14 @@ module Unitsml
     end
 
     def to_mathml
-      Utility.string_to_html_entity(
+      symbol = Utility.string_to_html_entity(
         Utility.html_entity_to_unicode(
           prefixes_symbols["html"]
         ),
       )
+      return symbol unless only_instance
+
+      Utility.ox_element("mi") << symbol
     end
 
     def to_latex

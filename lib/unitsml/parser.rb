@@ -23,6 +23,7 @@ module Unitsml
         norm_text: text,
       )
       update_units_exponents(formula.value, false)
+      formula.value.first.only_instance = true if text.end_with?("-")
       formula
     end
 
