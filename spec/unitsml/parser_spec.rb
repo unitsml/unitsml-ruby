@@ -542,4 +542,23 @@ RSpec.describe Unitsml::Parser do
       expect(formula).to eq(expected_value)
     end
   end
+
+  context "contains Unitsml #32 example from metanorma/bipm-si-brochure#245" do
+    let(:exp) { "unitsml(W*m^(−2))" }
+
+    it "returns Unitsml::Formula of parsed Unitsml string" do
+      expected_value = Unitsml::Formula.new([
+          Unitsml::Formula.new([
+            Unitsml::Unit.new("W"),
+            Unitsml::Extender.new("*"),
+            Unitsml::Unit.new("m", "-2"),
+          ])
+        ],
+        norm_text: "W*m^(-2)",
+        orig_text: "W*m^(-2)",
+        root: true,
+      )
+      expect(formula).to eq(expected_value)
+    end
+  end
 end
