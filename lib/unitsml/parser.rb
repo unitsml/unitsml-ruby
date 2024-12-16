@@ -8,6 +8,7 @@ module Unitsml
       @regexp = %r{(quantity|name|symbol|multiplier):\s*}
       @text = text&.match(/unitsml\((.*)\)/) ? Regexp.last_match[1] : text
       @orig_text = @text
+      @text = @text.gsub("−", "-")
       post_extras
     end
 
