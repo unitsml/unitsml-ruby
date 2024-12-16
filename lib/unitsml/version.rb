@@ -1,3 +1,3 @@
 module Unitsml
-  VERSION = "0.2.9"
+  VERSION = "0.8.18"
 end
