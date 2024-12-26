@@ -23,7 +23,7 @@ module Unitsml
       dim_hash&.values&.last&.values&.first["dim_symbols"].first
     end
 
-    def to_mathml
+    def to_mathml(_)
       value = dim_symbols["mathml"]
       value = Ox.parse(value)
       if power_numerator
@@ -39,7 +39,7 @@ module Unitsml
       value
     end
 
-    def to_latex
+    def to_latex(_)
       value = dim_symbols["latex"]
       if power_numerator
         value = "#{value}^#{power_numerator}"
@@ -47,19 +47,19 @@ module Unitsml
       value
     end
 
-    def to_asciimath
+    def to_asciimath(_)
       value = dim_symbols["ascii"]
       value = "#{value}^#{power_numerator}" if power_numerator
       value
     end
 
-    def to_html
+    def to_html(_)
       value = dim_symbols["html"]
       value = "#{value}<sup>#{power_numerator}</sup>" if power_numerator
       value
     end
 
-    def to_unicode
+    def to_unicode(_)
       value = dim_symbols["unicode"]
       value = "#{value}^#{power_numerator}" if power_numerator
       value
@@ -69,7 +69,7 @@ module Unitsml
       "#{dimension_name.split('_').last}#{power_numerator}"
     end
 
-    def to_xml
+    def to_xml(_)
       fields = dim_hash[:fields]
       symbol = fields.values.first["symbol"]
       power_numerator_value = power_numerator || 1

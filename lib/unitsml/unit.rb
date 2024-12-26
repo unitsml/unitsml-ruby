@@ -42,10 +42,10 @@ module Unitsml
       [mo_tag, integer]
     end
 
-    def to_mathml
+    def to_mathml(options)
       value = unit_symbols&.dig("mathml")
       value = Ox.parse(value)
-      value.nodes.insert(0, prefix.to_mathml) if prefix
+      value.nodes.insert(0, prefix.to_mathml(options)) if prefix
       if power_numerator
         msup = Utility.ox_element("msup")
         msup << (Utility.ox_element("mrow") << value)
@@ -58,33 +58,33 @@ module Unitsml
       value
     end
 
-    def to_latex
+    def to_latex(options)
       value = unit_symbols&.dig("latex")
       value = "#{value}^#{power_numerator}" if power_numerator
-      value = "#{prefix.to_latex}#{value}" if prefix
+      value = "#{prefix.to_latex(options)}#{value}" if prefix
       value
     end
 
-    def to_asciimath
+    def to_asciimath(options)
       value = unit_symbols&.dig("ascii")
       value = "#{value}^#{power_numerator}" if power_numerator
-      value = "#{prefix.to_asciimath}#{value}" if prefix
+      value = "#{prefix.to_asciimath(options)}#{value}" if prefix
       value
     end
 
-    def to_html
+    def to_html(options)
       value = unit_symbols&.dig("html")
       if power_numerator
         value = "#{value}<sup>#{numerator_value(false)}</sup>"
       end
-      value = "#{prefix.to_html}#{value}" if prefix
+      value = "#{prefix.to_html(options)}#{value}" if prefix
       value
     end
 
-    def to_unicode
+    def to_unicode(options)
       value = unit_symbols&.dig("unicode")
       value = "#{value}^#{power_numerator}" if power_numerator
-      value = "#{prefix.to_unicode}#{value}" if prefix
+      value = "#{prefix.to_unicode(options)}#{value}" if prefix
       value
     end
 

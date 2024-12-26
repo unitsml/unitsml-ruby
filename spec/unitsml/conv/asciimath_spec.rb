@@ -9,7 +9,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "mm*s^-2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -18,7 +18,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "um" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -27,7 +27,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "degK" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -36,7 +36,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "'" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "rad" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -54,7 +54,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "Hz" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -63,7 +63,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "kg" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -72,7 +72,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "m" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -81,7 +81,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "Hz^0.5" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -90,7 +90,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "g" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -99,7 +99,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "hp" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -108,7 +108,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "kg*s^-2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -117,7 +117,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "mbar" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -126,7 +126,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "p" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -135,7 +135,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "h" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -144,7 +144,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "da" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -153,7 +153,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "u" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -162,7 +162,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "A*C^3" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -171,7 +171,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "A/C^3" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -180,7 +180,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "J/kg^-1*K^-1" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -189,7 +189,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "kg^-2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -198,7 +198,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "kg*s^-2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -207,7 +207,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "mW*cm^-2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -216,7 +216,7 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "Theta*L^2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
@@ -225,16 +225,16 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "Theta^10*L^2" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 
   context "contains Unitsml #26 example" do
-    let(:exp) { "unitsml(Hz^10*darcy^100)" }
+    let(:exp) { "unitsml(Hz^10*darcy^100, multiplier: xx)" }
 
-    let(:expected_value) { "Hz^10*d^100" }
+    let(:expected_value) { "Hz^10xxd^100" }
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula).to eq(expected_value)
     end
   end
 end

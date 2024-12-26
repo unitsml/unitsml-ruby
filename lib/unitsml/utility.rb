@@ -227,17 +227,17 @@ module Unitsml
         end
       end
 
-      def prefixes(units)
+      def prefixes(units, options)
         uniq_prefixes = units.map { |unit| unit.prefix }.compact.uniq {|d| d.prefix_name }
         uniq_prefixes.map do |p|
           prefix_attr = { xmlns: UNITSML_NS, prefixBase: p&.base, prefixPower: p&.power, "xml:id": p&.id }
           prefix_node = ox_element("Prefix", attributes: prefix_attr)
           contents = []
           contents << (ox_element("PrefixName", attributes: { "xml:lang": "en" }) << p&.name)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "ASCII" }) << p&.to_asciimath)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "unicode" }) << p&.to_unicode)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "LaTex" }) << p&.to_latex)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "HTML" }) << p&.to_html)
+          contents << (ox_element("PrefixSymbol", attributes: { type: "ASCII" }) << p&.to_asciimath(options))
+          contents << (ox_element("PrefixSymbol", attributes: { type: "unicode" }) << p&.to_unicode(options))
+          contents << (ox_element("PrefixSymbol", attributes: { type: "LaTex" }) << p&.to_latex(options))
+          contents << (ox_element("PrefixSymbol", attributes: { type: "HTML" }) << p&.to_html(options))
           Ox.dump(update_nodes(prefix_node, contents)).gsub("&amp;", "&")
         end.join("\n")
       end

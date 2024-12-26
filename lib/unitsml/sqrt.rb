@@ -13,24 +13,24 @@ module Unitsml
         value == object&.value
     end
 
-    def to_asciimath
-      value&.to_asciimath
+    def to_asciimath(options)
+      value&.to_asciimath(options)
     end
 
-    def to_latex
-      value&.to_latex
+    def to_latex(options)
+      value&.to_latex(options)
     end
 
-    def to_mathml
-      value&.to_mathml
+    def to_mathml(options)
+      value&.to_mathml(options)
     end
 
-    def to_html
-      value&.to_html
+    def to_html(options)
+      value&.to_html(options)
     end
 
-    def to_unicode
-      value.to_unicode
+    def to_unicode(options)
+      value&.to_unicode(options)
     end
   end
 end
