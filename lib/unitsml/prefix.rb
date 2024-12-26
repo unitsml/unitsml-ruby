@@ -31,7 +31,7 @@ module Unitsml
       prefix_instance.symbol
     end
 
-    def to_mathml
+    def to_mathml(_)
       symbol = Utility.string_to_html_entity(
         Utility.html_entity_to_unicode(
           prefixes_symbols.html
@@ -42,19 +42,19 @@ module Unitsml
       { method_name: :mi, value: ::Mml::Mi.new(value: symbol)}
     end
 
-    def to_latex
+    def to_latex(_)
       prefixes_symbols.latex
     end
 
-    def to_asciimath
+    def to_asciimath(_)
       prefixes_symbols.ascii
     end
 
-    def to_html
+    def to_html(_)
       prefixes_symbols.html
     end
 
-    def to_unicode
+    def to_unicode(_)
       prefixes_symbols.unicode
     end
 

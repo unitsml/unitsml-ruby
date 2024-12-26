@@ -142,12 +142,12 @@ module Unitsml
         "unknown"
       end
 
-      def unit(units, formula, dims, norm_text, name)
+      def unit(units, formula, dims, norm_text, name, options)
         attributes = {
           id: unit_id(norm_text),
           system: unitsystem(units),
           name: unitname(units, norm_text, name),
-          symbol: unitsymbols(formula),
+          symbol: unitsymbols(formula, options),
           root_units: rootunits(units),
         }
         attributes[:dimension_url] = "##{dim_id(dims)}" if dims
@@ -173,9 +173,9 @@ module Unitsml
         unit.power_numerator && unit.power_numerator != "1" ? "^#{unit.power_numerator}" : ""
       end
 
-      def unitsymbols(formula)
+      def unitsymbols(formula, options)
         %w[HTML MathMl].map do |lang|
-          Model::Units::Symbol.new(type: lang, content: formula.public_send(:"to_#{lang.downcase}"))
+          Model::Units::Symbol.new(type: lang, content: formula.public_send(:"to_#{lang.downcase}", options))
         end
       end
 
@@ -232,7 +232,7 @@ module Unitsml
         end
       end
 
-      def prefixes(units)
+      def prefixes(units, options)
         uniq_prefixes = units.map { |unit| unit.prefix }.compact.uniq {|d| d.prefix_name }
         uniq_prefixes.map do |prefix|
           prefix_attrs = { prefix_base: prefix&.base, prefix_power: prefix&.power, id: prefix&.id }
@@ -241,7 +241,7 @@ module Unitsml
           prefix_attrs[:symbol] = type_and_methods.map do |type, method_name|
             Model::Prefixes::Symbol.new(
               type: type,
-              content: prefix&.public_send(method_name),
+              content: prefix&.public_send(method_name, options),
             )
           end
           Model::Prefix.new(prefix_attrs).to_xml.gsub("&amp;", "&")
