@@ -15,59 +15,59 @@ module Unitsml
         only_instance == object&.only_instance
     end
 
+    def prefix_instance
+      @prefix ||= Unitsdb.prefixes.find_by_symbol_name(prefix_name)
+    end
+
     def id
-      Unitsdb.prefixes_hash.dig(prefix_name, :id)
+      @prefix.id
     end
 
     def name
-      fields.dig("name")
-    end
-
-    def fields
-      Unitsdb.prefixes_hash.dig(prefix_name, :fields)
+      prefix_instance.name
     end
 
     def prefixes_symbols
-      fields&.dig("symbol")
+      prefix_instance.symbol
     end
 
     def to_mathml
       symbol = Utility.string_to_html_entity(
         Utility.html_entity_to_unicode(
-          prefixes_symbols["html"]
+          prefixes_symbols.html
         ),
       )
       return symbol unless only_instance
 
-      Utility.ox_element("mi") << symbol
+      { method_name: :mi, value: ::Mml::Mi.new(value: symbol)}
     end
 
     def to_latex
-      prefixes_symbols["latex"]
+      prefixes_symbols.latex
     end
 
     def to_asciimath
-      prefixes_symbols["ascii"]
+      prefixes_symbols.ascii
     end
 
     def to_html
-      prefixes_symbols["html"]
+      prefixes_symbols.html
     end
 
     def to_unicode
-      prefixes_symbols["unicode"]
+      prefixes_symbols.unicode
     end
 
     def symbolid
-      prefixes_symbols["ascii"] if prefixes_symbols
+      prefixes_symbols.ascii if prefixes_symbols
     end
 
     def base
-      fields&.dig("base")
+      prefix_instance.base
     end
 
     def power
-      fields&.dig("power")
+      prefix_instance.power
     end
   end
 end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "utility"
+require "mml"
+require "unitsml/utility"
 module Unitsml
   class Formula
     attr_accessor :value, :explicit_value, :root
@@ -26,14 +27,21 @@ module Unitsml
 
     def to_mathml
       if root
-        attributes = { xmlns: "http://www.w3.org/1998/Math/MathML", display: "block" }
-        math = Utility.ox_element("math", attributes: attributes)
-        Ox.dump(
-          Utility.update_nodes(
-            math,
-            value.map(&:to_mathml).flatten,
-          ),
-        ).gsub(/&amp;(.*?)(?=<\/)/, '&\1')
+        nullify_mml_models
+        math = ::Mml::MathWithNamespace.new
+        math.ordered = true
+        math.element_order ||= []
+        value.each do |instance|
+          processed_instance = instance.to_mathml
+          case processed_instance
+          when Array
+            processed_instance.each { |hash| add_math_element(math, hash) }
+          when Hash
+            add_math_element(math, processed_instance)
+          end
+        end
+        reset_mml_models
+        math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
       else
         value.map(&:to_mathml)
       end
@@ -56,8 +64,7 @@ module Unitsml
     end
 
     def to_xml
-      dimensions_array = extract_dimensions(value)
-      if (dimensions_array).any?
+      if (dimensions_array = extract_dimensions(value)).any?
         dimensions(sort_dims(dimensions_array))
       elsif @orig_text.match(/-$/)
         prefixes
@@ -76,9 +83,7 @@ module Unitsml
     private
 
     def extract_dimensions(formula)
-      dimensions = []
-
-      formula.each do |term|
+      formula.each_with_object([]) do |term, dimensions|
         if term.is_a?(Dimension)
           dimensions << term
         elsif term.is_a?(Sqrt) && term.value.is_a?(Dimension)
@@ -89,14 +94,10 @@ module Unitsml
           dimensions.concat(extract_dimensions(term.value))
         end
       end
-
-      dimensions
     end
 
     def extract_units(formula)
-      units_arr = []
-
-      formula.each do |term|
+      formula.each_with_object([]) do |term, units_arr|
         case term
         when Unit
           units_arr << term.dup
@@ -108,8 +109,6 @@ module Unitsml
           units_arr << term.value
         end
       end
-
-      units_arr
     end
 
     def units
@@ -135,13 +134,9 @@ module Unitsml
 
     def dimensions(dims)
       dim_id = dims.map(&:generate_id).join
-      attributes = { xmlns: Utility::UNITSML_NS, "xml:id": "D_#{dim_id}" }
-      Ox.dump(
-        Utility.update_nodes(
-          Utility.ox_element("Dimension", attributes: attributes),
-          dims.map(&:to_xml),
-        ),
-      )
+      attributes = { id: "D_#{dim_id}" }
+      dims.each { |dim| attributes.merge!(dim.xml_instances_hash) }
+      Model::Dimension.new(attributes).to_xml
     end
 
     def sort_dims(values)
@@ -167,6 +162,36 @@ module Unitsml
       require "plurimath"
     rescue LoadError => e
       raise Errors::PlurimathLoadError
+    end
+
+    def add_math_element(math_instance, child_hash)
+      method_name = child_hash[:method_name]
+      method_value = math_instance.public_send(:"#{method_name}_value")
+      method_value += Array(child_hash[:value])
+      math_instance.public_send(:"#{method_name}_value=", method_value)
+      math_instance.element_order << method_name.to_s
+    end
+
+    def nullify_mml_models
+      ::Mml.config.keys.each do |klass|
+        klass_const = if klass == :math
+                        ::Mml::MathWithNamespace
+                      else
+                        ::Mml.const_get(klass.to_s.capitalize)
+                      end
+        klass_const.model(klass_const)
+      end
+    end
+
+    def reset_mml_models
+      ::Mml.config.each do |klass, model|
+        klass_const = if klass == :math
+                        ::Mml::MathWithNamespace
+                      else
+                        ::Mml.const_get(klass.to_s.capitalize)
+                      end
+        klass_const.model(model)
+      end
     end
   end
 end
