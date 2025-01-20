@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 require "parslet"
-require_relative "unitsdb"
+require "unitsml/unitsdb"
 module Unitsml
   class Parse < Parslet::Parser
-    include Unitsml::Unitsdb
-
     rule(:power)    { str("^") >> intermediate_exp(number) }
     rule(:hyphen)   { str("-") }
     rule(:number)   { (hyphen.maybe >> match(/[0-9]/).repeat(1)).as(:integer) }
@@ -14,19 +12,19 @@ module Unitsml
     rule(:unit_and_power) { units >> power.maybe }
 
     rule(:units) do
-      @@filtered_units ||= arr_to_expression(Unitsdb.filtered_units, "units")
+      @@filtered_units ||= arr_to_expression(Unitsdb.units.filtered, "units")
     end
 
     rule(:single_letter_prefixes) do
-      @@prefixes1 ||= arr_to_expression(Unitsdb.prefixes.select { |p| p.size == 1 }, "prefixes")
+      @@prefixes1 ||= arr_to_expression(Unitsdb.prefixes_by_size(1), "prefixes")
     end
 
     rule(:double_letter_prefixes) do
-      @@prefixes2 ||= arr_to_expression(Unitsdb.prefixes.select { |p| p.size == 2 }, "prefixes")
+      @@prefixes2 ||= arr_to_expression(Unitsdb.prefixes_by_size(2), "prefixes")
     end
 
     rule(:dimensions) do
-      @@dimensions ||= arr_to_expression(Unitsdb.parsable_dimensions.keys, "dimensions")
+      @@dimensions ||= arr_to_expression(Unitsdb.dimensions.parsables.keys, "dimensions")
     end
 
     rule(:prefixes_units) do

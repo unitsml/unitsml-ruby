@@ -19,61 +19,61 @@ module Unitsml
         power_numerator == object&.power_numerator
     end
 
-    def fields_hash
-      Unitsdb.units.dig(unit_name, :fields)
+    def unit_instance
+      Unitsdb.units.find_by_name(unit_name)
     end
 
     def unit_symbols
-      symbols = fields_hash.dig("unit_symbols")
-      symbols.find{|symbol| symbol["id"] == unit_name }
+      unit_instance.unit_symbols.find { |symbol| symbol.id == unit_name }
     end
 
     def numerator_value(mathml = true)
       integer = power_numerator.to_s
       unless integer.match?(/-/)
-        return mathml ? [Ox.parse("<mn>#{integer}</mn>")] : integer
+        return mathml ? { mn_value: [::Mml::Mn.from_xml("<mn>#{integer}</mn>")] } : integer
       end
 
       return integer.sub(/(-)(.+)/, '&#x2212;\2') unless mathml
 
       integer = integer.sub(/(-)(.+)/, '<mn>\2</mn>')
-      integer = Ox.parse(integer)
-      mo_tag = (Utility.ox_element("mo") << "&#x2212;")
-      [mo_tag, integer]
+      integer = ::Mml::Mn.from_xml(integer)
+      mo_tag = ::Mml::Mo.new(value: "&#x2212;")
+      { mo_value: [mo_tag], mn_value: [integer] }
     end
 
     def to_mathml
-      value = unit_symbols&.dig("mathml")
-      value = Ox.parse(value)
-      value.nodes.insert(0, prefix.to_mathml) if prefix
+      value = unit_symbols&.mathml
+      tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
+      value = ::Mml.const_get(tag_name.capitalize).from_xml(value)
+      value.value = "#{prefix.to_mathml}#{value.value}" if prefix
       if power_numerator
-        msup = Utility.ox_element("msup")
-        msup << (Utility.ox_element("mrow") << value)
-        msup << Utility.update_nodes(
-          Utility.ox_element("mrow"),
-          numerator_value,
+        value = ::Mml::Msup.new(
+          mrow_value: [
+            ::Mml::Mrow.new("#{tag_name}_value": Array(value)),
+            ::Mml::Mrow.new(numerator_value),
+          ]
         )
-        value = msup
+        tag_name = :msup
       end
-      value
+      { method_name: tag_name.to_sym, value: value }
     end
 
     def to_latex
-      value = unit_symbols&.dig("latex")
+      value = unit_symbols&.latex
       value = "#{value}^#{power_numerator}" if power_numerator
       value = "#{prefix.to_latex}#{value}" if prefix
       value
     end
 
     def to_asciimath
-      value = unit_symbols&.dig("ascii")
+      value = unit_symbols&.ascii
       value = "#{value}^#{power_numerator}" if power_numerator
       value = "#{prefix.to_asciimath}#{value}" if prefix
       value
     end
 
     def to_html
-      value = unit_symbols&.dig("html")
+      value = unit_symbols&.html
       if power_numerator
         value = "#{value}<sup>#{numerator_value(false)}</sup>"
       end
@@ -82,14 +82,14 @@ module Unitsml
     end
 
     def to_unicode
-      value = unit_symbols&.dig("unicode")
+      value = unit_symbols&.unicode
       value = "#{value}^#{power_numerator}" if power_numerator
       value = "#{prefix.to_unicode}#{value}" if prefix
       value
     end
 
     def enumerated_name
-      fields_hash.dig("unit_name")&.first
+      unit_instance&.unit_name&.first
     end
 
     def prefix_name
@@ -97,15 +97,15 @@ module Unitsml
     end
 
     def system_type
-      fields_hash.dig("unit_system", "type")
+      unit_instance.unit_system.type
     end
 
     def system_name
-      fields_hash.dig("unit_system", "name")
+      unit_instance.unit_system.name
     end
 
     def si_derived_bases
-      fields_hash.dig("si_derived_bases")
+      unit_instance.si_derived_bases
     end
   end
 end
