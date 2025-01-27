@@ -28,7 +28,7 @@ module Unitsml
     def to_mathml
       if root
         nullify_mml_models
-        math = ::Mml::MathWithNamespace.new
+        math = ::Mml::MathWithNamespace.new(display: "block")
         math.ordered = true
         math.element_order ||= []
         value.each do |instance|
