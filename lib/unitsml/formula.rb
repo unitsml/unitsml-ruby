@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "plurimath"
 require_relative "utility"
 module Unitsml
   class Formula
@@ -68,6 +67,7 @@ module Unitsml
     end
 
     def to_plurimath
+      ensure_plurimath_defined!
       return Plurimath::Math.parse(to_asciimath, :asciimath) if @orig_text.match?(/-$/)
 
       Plurimath::Math.parse(to_mathml, :mathml)
@@ -159,6 +159,24 @@ module Unitsml
         Utility.dimension(norm_text),
         Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
       ].join
+    end
+
+    def ensure_plurimath_defined!
+      return if Object.const_defined?(:Plurimath)
+
+      require "plurimath"
+    rescue LoadError => e
+      message = <<~MESSAGE
+        [unitsml] Error: Failed to require 'plurimath'.
+        [unitsml] Please add 'plurimath' in your gemfile and run 'bundle install'
+        [unitsml] OR
+        [unitsml] run following command to install the gem:
+        [unitsml] gem install plurimath
+        [unitsml] If this is a bug, please report the formula at our issue tracker at:
+        [unitsml] https://github.com/unitsml/unitsml-ruby/issues
+      MESSAGE
+
+      raise PlurimathLoadError.new(message)
     end
   end
 end
