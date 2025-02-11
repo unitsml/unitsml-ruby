@@ -1,3 +1,4 @@
+require "unitsml/error"
 require "unitsml/sqrt"
 require "unitsml/unit"
 require "unitsml/parse"
@@ -11,8 +12,6 @@ require "unitsml/dimension"
 require "unitsml/transform"
 
 module Unitsml
-  class PlurimathLoadError < LoadError; end
-
   def self.parse(string)
     Unitsml::Parser.new(string).parse
   end

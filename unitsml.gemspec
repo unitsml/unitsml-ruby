@@ -30,12 +30,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency "htmlentities"
   spec.add_dependency "ox"
   spec.add_dependency "parslet"
-  spec.add_development_dependency "byebug"
-  spec.add_development_dependency "plurimath"
-  spec.add_development_dependency "equivalent-xml"
-  spec.add_development_dependency "pry", "~> 0.12.2"
-  spec.add_development_dependency "rake", "~> 12.0"
-  spec.add_development_dependency "rspec", "~> 3.6"
-  spec.add_development_dependency "rubocop", "= 0.54.0"
-  spec.add_development_dependency "simplecov", "~> 0.15"
 end

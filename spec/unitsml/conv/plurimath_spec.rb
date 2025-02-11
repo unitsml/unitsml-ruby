@@ -10,7 +10,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "raises an error when trying to use Plurimath" do
-      expect { formula }.to raise_error(Unitsml::PlurimathLoadError)
+      expect { formula }.to raise_error(Unitsml::Errors::PlurimathLoadError, /\[unitsml\] Error: Failed to require 'plurimath'./)
     end
   end
 
