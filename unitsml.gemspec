@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib", "unitsdb/**/*.yaml"]
 
   spec.add_dependency "htmlentities"
-  spec.add_dependency "ox"
+  spec.add_dependency "mml"
   spec.add_dependency "parslet"
+  spec.add_dependency "unitsdb"
 end

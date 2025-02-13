@@ -15,53 +15,46 @@ module Unitsml
         power_numerator == object&.power_numerator
     end
 
-    def dim_hash
-      Unitsdb.parsable_dimensions[dimension_name]
+    def dim_instance
+      @dim ||= Unitsdb.dimensions.find_parsables_by_id(dimension_name)
     end
 
     def dim_symbols
-      dim_hash&.values&.last&.values&.first["dim_symbols"].first
+      dim_instance.send(@dim.processed_keys.last).dim_symbols.first
     end
 
     def to_mathml
-      value = dim_symbols["mathml"]
-      value = Ox.parse(value)
+      # MathML key's value in unitsdb/dimensions.yaml file includes mi tags only.
+      value = ::Mml::Mi.from_xml(dim_symbols.mathml)
+      method_name = power_numerator ? :msup : :mi
       if power_numerator
-        msup = Utility.ox_element("msup")
-        msup << (Utility.ox_element("mrow") << value)
-        msup << (
-          Utility.ox_element("mrow") << (
-            Utility.ox_element("mn") << power_numerator
-          )
+        value = ::Mml::Msup.new(
+          mrow_value: [
+            ::Mml::Mrow.new(mi_value: [value]),
+            ::Mml::Mrow.new(
+              mn_value: [::Mml::Mn.new(value: power_numerator)],
+            ),
+          ]
         )
-        value = msup
       end
-      value
+      { method_name: method_name, value: value }
     end
 
     def to_latex
-      value = dim_symbols["latex"]
-      if power_numerator
-        value = "#{value}^#{power_numerator}"
-      end
-      value
+      power_numerator_generic_code(:latex)
     end
 
     def to_asciimath
-      value = dim_symbols["ascii"]
-      value = "#{value}^#{power_numerator}" if power_numerator
-      value
-    end
-
-    def to_html
-      value = dim_symbols["html"]
-      value = "#{value}<sup>#{power_numerator}</sup>" if power_numerator
-      value
+      power_numerator_generic_code(:ascii)
     end
 
     def to_unicode
-      value = dim_symbols["unicode"]
-      value = "#{value}^#{power_numerator}" if power_numerator
+      power_numerator_generic_code(:unicode)
+    end
+
+    def to_html
+      value = dim_symbols.html
+      value = "#{value}<sup>#{power_numerator}</sup>" if power_numerator
       value
     end
 
@@ -70,16 +63,32 @@ module Unitsml
     end
 
     def to_xml
-      fields = dim_hash[:fields]
-      symbol = fields.values.first["symbol"]
-      power_numerator_value = power_numerator || 1
-      attributes = { symbol: symbol, powerNumerator: power_numerator_value }
-      element_name = modelize(fields.keys.first.capitalize)
-      Utility.ox_element(element_name, attributes: attributes)
+      attributes = {
+        symbol: dim_instance.processed_symbol,
+        power_numerator: power_numerator || 1,
+      }
+      Model::DimensionQuantities.const_get(modelize(element_name)).new(attributes)
+    end
+
+    def xml_instances_hash
+      { element_name => to_xml }
     end
 
     def modelize(value)
       value&.split("_")&.map(&:capitalize)&.join
+    end
+
+    private
+
+    def power_numerator_generic_code(method_name)
+      value = dim_symbols.public_send(method_name)
+      return value unless power_numerator
+
+      "#{value}^#{power_numerator}"
+    end
+
+    def element_name
+      dim_instance.processed_keys.first
     end
   end
 end

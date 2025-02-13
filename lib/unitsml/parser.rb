@@ -14,10 +14,10 @@ module Unitsml
 
     def parse
       nodes = Parse.new.parse(text)
+      transformed = Transform.new.apply(nodes)
+      formula_value = transformed.is_a?(Formula) ? transformed.value : Array(transformed)
       formula = Formula.new(
-        [
-          Transform.new.apply(nodes),
-        ],
+        formula_value,
         explicit_value: @extras_hash,
         root: true,
         orig_text: @orig_text,

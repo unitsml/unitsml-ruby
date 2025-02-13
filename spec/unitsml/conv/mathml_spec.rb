@@ -2,6 +2,8 @@ require "spec_helper"
 
 RSpec.describe Unitsml::Parser do
 
+  before(:all) { Lutaml::Model::Config.xml_adapter_type = :ox }
+
   subject(:formula) { described_class.new(exp).parse.to_mathml }
 
   context "contains Unitsml #1 example" do

@@ -6,6 +6,7 @@ gemspec
 gem "byebug"
 gem "equivalent-xml"
 gem "oga"
+gem "ox"
 gem "plurimath"
 gem "pry"
 gem "rake"
