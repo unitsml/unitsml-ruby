@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "mml"
+require "htmlentities"
 require "unitsml/utility"
 module Unitsml
   class Formula
@@ -27,7 +28,7 @@ module Unitsml
 
     def to_mathml
       if root
-        nullify_mml_models
+        nullify_mml_models if plurimath_available?
         math = ::Mml::MathWithNamespace.new(display: "block")
         math.ordered = true
         math.element_order ||= []
@@ -40,7 +41,7 @@ module Unitsml
             add_math_element(math, processed_instance)
           end
         end
-        reset_mml_models
+        reset_mml_models if plurimath_available?
         math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
       else
         value.map(&:to_mathml)
@@ -157,7 +158,7 @@ module Unitsml
     end
 
     def ensure_plurimath_defined!
-      return if Object.const_defined?(:Plurimath)
+      return if plurimath_available?
 
       require "plurimath"
     rescue LoadError => e
@@ -169,29 +170,19 @@ module Unitsml
       method_value = math_instance.public_send(:"#{method_name}_value")
       method_value += Array(child_hash[:value])
       math_instance.public_send(:"#{method_name}_value=", method_value)
-      math_instance.element_order << method_name.to_s
+      math_instance.element_order << Lutaml::Model::XmlAdapter::Element.new("Element", method_name.to_s)
+    end
+
+    def plurimath_available?
+      Object.const_defined?(:Plurimath)
     end
 
     def nullify_mml_models
-      ::Mml.config.keys.each do |klass|
-        klass_const = if klass == :math
-                        ::Mml::MathWithNamespace
-                      else
-                        ::Mml.const_get(klass.to_s.capitalize)
-                      end
-        klass_const.model(klass_const)
-      end
+      Plurimath::Mathml::Parser::CONFIGURATION.each_key { |klass| klass.model(klass) }
     end
 
     def reset_mml_models
-      ::Mml.config.each do |klass, model|
-        klass_const = if klass == :math
-                        ::Mml::MathWithNamespace
-                      else
-                        ::Mml.const_get(klass.to_s.capitalize)
-                      end
-        klass_const.model(model)
-      end
+      ::Mml::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
     end
   end
 end
