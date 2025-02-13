@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 require "ox"
+require "htmlentities"
 module Unitsml
   module Utility
+    Ox.default_options = { encoding: "UTF-8" }
 
     UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0".freeze
     # Unit to dimension

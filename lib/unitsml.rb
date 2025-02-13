@@ -1,3 +1,4 @@
+require "unitsml/error"
 require "unitsml/sqrt"
 require "unitsml/unit"
 require "unitsml/parse"

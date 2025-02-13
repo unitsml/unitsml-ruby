@@ -2,7 +2,6 @@ require "bundler/setup"
 require "unitsml"
 require "rspec/matchers"
 require "equivalent-xml/rspec_matchers"
-require "plurimath"
 require "byebug"
 
 RSpec.configure do |config|

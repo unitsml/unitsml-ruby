@@ -2,6 +2,18 @@ RSpec.describe Unitsml::Parser do
 
   subject(:formula) { described_class.new(exp).parse.to_plurimath }
 
+  context "when plurimath is not required/installed" do
+    let(:exp) { "unitsml(mm*s^-2)" }
+
+    before do
+      allow_any_instance_of(Unitsml::Formula).to receive(:require).with("plurimath").and_raise(LoadError)
+    end
+
+    it "raises an error when trying to use Plurimath" do
+      expect { formula }.to raise_error(Unitsml::Errors::PlurimathLoadError, /\[unitsml\] Error: Failed to require 'plurimath'./)
+    end
+  end
+
   context "Unitsml example contains prefix and units" do
     let(:exp) { "unitsml(mm*s^-2)" }
     let(:expected_value) do
