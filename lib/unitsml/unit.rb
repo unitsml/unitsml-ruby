@@ -41,11 +41,11 @@ module Unitsml
       { mo_value: [mo_tag], mn_value: [integer] }
     end
 
-    def to_mathml
+    def to_mathml(options)
       value = unit_symbols&.mathml
       tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
       value = ::Mml.const_get(tag_name.capitalize).from_xml(value)
-      value.value = "#{prefix.to_mathml}#{value.value}" if prefix
+      value.value = "#{prefix.to_mathml(options)}#{value.value}" if prefix
       if power_numerator
         value = ::Mml::Msup.new(
           mrow_value: [
@@ -58,33 +58,33 @@ module Unitsml
       { method_name: tag_name.to_sym, value: value }
     end
 
-    def to_latex
+    def to_latex(options)
       value = unit_symbols&.latex
       value = "#{value}^#{power_numerator}" if power_numerator
-      value = "#{prefix.to_latex}#{value}" if prefix
+      value = "#{prefix.to_latex(options)}#{value}" if prefix
       value
     end
 
-    def to_asciimath
+    def to_asciimath(options)
       value = unit_symbols&.ascii
       value = "#{value}^#{power_numerator}" if power_numerator
-      value = "#{prefix.to_asciimath}#{value}" if prefix
+      value = "#{prefix.to_asciimath(options)}#{value}" if prefix
       value
     end
 
-    def to_html
+    def to_html(options)
       value = unit_symbols&.html
       if power_numerator
         value = "#{value}<sup>#{numerator_value(false)}</sup>"
       end
-      value = "#{prefix.to_html}#{value}" if prefix
+      value = "#{prefix.to_html(options)}#{value}" if prefix
       value
     end
 
-    def to_unicode
+    def to_unicode(options)
       value = unit_symbols&.unicode
       value = "#{value}^#{power_numerator}" if power_numerator
-      value = "#{prefix.to_unicode}#{value}" if prefix
+      value = "#{prefix.to_unicode(options)}#{value}" if prefix
       value
     end
 

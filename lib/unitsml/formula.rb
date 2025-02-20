@@ -26,14 +26,15 @@ module Unitsml
         root == object.root
     end
 
-    def to_mathml
+    def to_mathml(options = {})
       if root
+        update_options(options)
         nullify_mml_models if plurimath_available?
         math = ::Mml::MathWithNamespace.new(display: "block")
         math.ordered = true
         math.element_order ||= []
         value.each do |instance|
-          processed_instance = instance.to_mathml
+          processed_instance = instance.to_mathml(options)
           case processed_instance
           when Array
             processed_instance.each { |hash| add_math_element(math, hash) }
@@ -44,41 +45,43 @@ module Unitsml
         reset_mml_models if plurimath_available?
         math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
       else
-        value.map(&:to_mathml)
+        value.map { |obj| obj.to_mathml(options) }
       end
     end
 
-    def to_latex
-      value.map(&:to_latex).join
+    def to_latex(options = {})
+      value.map { |obj| obj.to_latex(update_options(options)) }.join
     end
 
-    def to_asciimath
-      value.map(&:to_asciimath).join
+    def to_asciimath(options = {})
+      value.map { |obj| obj.to_asciimath(update_options(options)) }.join
     end
 
-    def to_html
-      value.map(&:to_html).join
+    def to_html(options = {})
+      value.map { |obj| obj.to_html(update_options(options)) }.join
     end
 
-    def to_unicode
-      value.map(&:to_unicode).join
+    def to_unicode(options = {})
+      value.map { |obj| obj.to_unicode(update_options(options)) }.join
     end
 
-    def to_xml
+    def to_xml(options = {})
+      update_options(options)
       if (dimensions_array = extract_dimensions(value)).any?
-        dimensions(sort_dims(dimensions_array))
+        dimensions(sort_dims(dimensions_array), options)
       elsif @orig_text.match(/-$/)
-        prefixes
+        prefixes(options)
       else
-        units
+        units(options)
       end
     end
 
-    def to_plurimath
+    def to_plurimath(options = {})
       ensure_plurimath_defined!
-      return Plurimath::Math.parse(to_asciimath, :asciimath) if @orig_text.match?(/-$/)
+      options = update_options(options)
+      return Plurimath::Math.parse(to_asciimath(options), :asciimath) if @orig_text.match?(/-$/)
 
-      Plurimath::Math.parse(to_mathml, :mathml)
+      Plurimath::Math.parse(to_mathml(options), :mathml)
     end
 
     private
@@ -112,16 +115,14 @@ module Unitsml
       end
     end
 
-    def units
+    def units(options)
       all_units = extract_units(value)
       norm_text = Utility.postprocess_normtext(all_units)
       dims = Utility.units2dimensions(extract_units(value))
-      dimension, dimension_component = unique_dimensions(dims, norm_text)
       [
-        Utility.unit(all_units, self, dims, norm_text, explicit_value&.dig(:name)),
-        Utility.prefixes(all_units),
-        dimension,
-        dimension_component,
+        Utility.unit(all_units, self, dims, norm_text, explicit_value&.dig(:name), options),
+        Utility.prefixes(all_units, options),
+        *unique_dimensions(dims, norm_text),
         Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
       ].join
     end
@@ -133,10 +134,10 @@ module Unitsml
       ].uniq
     end
 
-    def dimensions(dims)
+    def dimensions(dims, options)
       dim_id = dims.map(&:generate_id).join
       attributes = { id: "D_#{dim_id}" }
-      dims.each { |dim| attributes.merge!(dim.xml_instances_hash) }
+      dims.each { |dim| attributes.merge!(dim.xml_instances_hash(options)) }
       Model::Dimension.new(attributes).to_xml
     end
 
@@ -147,11 +148,11 @@ module Unitsml
       end
     end
 
-    def prefixes
+    def prefixes(options)
       norm_text = @norm_text&.split("-")&.first
       prefix_object = Unit.new("", prefix: Prefix.new(norm_text))
       [
-        Utility.prefixes([prefix_object]),
+        Utility.prefixes([prefix_object], options),
         Utility.dimension(norm_text),
         Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
       ].join
@@ -183,6 +184,13 @@ module Unitsml
 
     def reset_mml_models
       ::Mml::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
+    end
+
+    def update_options(options)
+      return options unless root
+
+      multiplier = options[:multiplier] || explicit_value&.dig(:multiplier)
+      options.merge(multiplier: multiplier).compact
     end
   end
 end

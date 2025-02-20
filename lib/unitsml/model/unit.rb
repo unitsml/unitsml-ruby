@@ -21,9 +21,9 @@ module Unitsml
 
         map_attribute :dimensionURL, to: :dimension_url
         map_attribute :id, to: :id, namespace: nil, prefix: "xml"
+        map_element :UnitSystem, to: :system
         map_element :UnitName, to: :name
         map_element :UnitSymbol, to: :symbol
-        map_element :UnitSystem, to: :system
         map_element :RootUnits, to: :root_units
       end
     end

@@ -23,7 +23,7 @@ module Unitsml
       dim_instance.send(@dim.processed_keys.last).dim_symbols.first
     end
 
-    def to_mathml
+    def to_mathml(_)
       # MathML key's value in unitsdb/dimensions.yaml file includes mi tags only.
       value = ::Mml::Mi.from_xml(dim_symbols.mathml)
       method_name = power_numerator ? :msup : :mi
@@ -40,19 +40,19 @@ module Unitsml
       { method_name: method_name, value: value }
     end
 
-    def to_latex
+    def to_latex(_)
       power_numerator_generic_code(:latex)
     end
 
-    def to_asciimath
+    def to_asciimath(_)
       power_numerator_generic_code(:ascii)
     end
 
-    def to_unicode
+    def to_unicode(_)
       power_numerator_generic_code(:unicode)
     end
 
-    def to_html
+    def to_html(_)
       value = dim_symbols.html
       value = "#{value}<sup>#{power_numerator}</sup>" if power_numerator
       value
@@ -62,7 +62,7 @@ module Unitsml
       "#{dimension_name.split('_').last}#{power_numerator}"
     end
 
-    def to_xml
+    def to_xml(_)
       attributes = {
         symbol: dim_instance.processed_symbol,
         power_numerator: power_numerator || 1,
@@ -70,8 +70,8 @@ module Unitsml
       Model::DimensionQuantities.const_get(modelize(element_name)).new(attributes)
     end
 
-    def xml_instances_hash
-      { element_name => to_xml }
+    def xml_instances_hash(options)
+      { element_name => to_xml(options) }
     end
 
     def modelize(value)

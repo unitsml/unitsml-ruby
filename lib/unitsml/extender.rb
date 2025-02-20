@@ -13,27 +13,38 @@ module Unitsml
         symbol == object&.symbol
     end
 
-    def to_mathml
+    def to_mathml(options)
+      multiplier = case options[:multiplier]
+                   when :space
+                     rspace = "thickmathspace"
+                     "&#x2062;"
+                   when :nospace
+                     "&#x2062;"
+                   else
+                     extender = options[:multiplier] || "⋅"
+                     Utility.string_to_html_entity(extender)
+                   end
       {
         method_name: :mo,
-        value: ::Mml::Mo.new(value: "&#x22c5;"),
+        value: ::Mml::Mo.new(value: multiplier, rspace: rspace),
       }
     end
 
-    def to_latex
-      "/"
+    def to_latex(options)
+      options[:multiplier] || "/"
     end
 
-    def to_asciimath
-      symbol
+    def to_asciimath(options)
+      options[:multiplier] || symbol
     end
 
-    def to_html
-      "&#x22c5;"
+    def to_html(options)
+      options[:multiplier] || "&#x22c5;"
     end
 
-    def to_unicode
-      symbol == "*" ? "·" : symbol
+    def to_unicode(options)
+      options[:multiplier] ||
+        symbol == "*" ? "·" : symbol
     end
   end
 end
