@@ -14,7 +14,10 @@ module Unitsml
     end
 
     def to_mathml
-      Utility.ox_element("mo") << "&#x22c5;"
+      {
+        method_name: :mo,
+        value: ::Mml::Mo.new(value: "&#x22c5;"),
+      }
     end
 
     def to_latex

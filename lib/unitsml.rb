@@ -1,3 +1,13 @@
+# frozen_string_literal: true
+
+module Unitsml
+  UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0".freeze
+
+  def self.parse(string)
+    Unitsml::Parser.new(string).parse
+  end
+end
+
 require "unitsml/error"
 require "unitsml/sqrt"
 require "unitsml/unit"
@@ -10,9 +20,19 @@ require "unitsml/unitsdb"
 require "unitsml/extender"
 require "unitsml/dimension"
 require "unitsml/transform"
-
-module Unitsml
-  def self.parse(string)
-    Unitsml::Parser.new(string).parse
-  end
-end
+require "unitsml/unitsdb/units"
+require "unitsml/unitsdb/prefixes"
+require "unitsml/unitsdb/dimension"
+require "unitsml/unitsdb/dimensions"
+require "unitsml/unitsdb/quantities"
+require "unitsml/unitsdb/dimension_quantity"
+require "unitsdb/config"
+Unitsdb::Config.models = {
+  units: Unitsml::Unitsdb::Units,
+  prefixes: Unitsml::Unitsdb::Prefixes,
+  dimension: Unitsml::Unitsdb::Dimension,
+  dimensions: Unitsml::Unitsdb::Dimensions,
+  quantities: Unitsml::Unitsdb::Quantities,
+  dimension_quantity: Unitsml::Unitsdb::DimensionQuantity,
+}
+require "unitsdb"

@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
-require "ox"
-require "htmlentities"
+require "unitsml/model/unit"
+require "unitsml/model/prefix"
+require "unitsml/model/quantity"
+require "unitsml/model/dimension"
+
 module Unitsml
   module Utility
     Ox.default_options = { encoding: "UTF-8" }
 
-    UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0".freeze
     # Unit to dimension
     U2D = {
       "m" => { dimension: "Length", order: 1, symbol: "L" },
@@ -45,10 +47,12 @@ module Unitsml
     ].freeze
 
     class << self
-      include Unitsml::Unitsdb
+      def unit_instance(unit)
+        Unitsdb.units.find_by_symbol_id(unit)
+      end
 
-      def fields(unit)
-        Unitsdb.units.dig(unit, :fields)
+      def quantity_instance(id)
+        Unitsdb.quantities.find_by_id(id)
       end
 
       def units2dimensions(units)
@@ -69,10 +73,9 @@ module Unitsml
       def dim_id(dims)
         return nil if dims.nil? || dims.empty?
 
-        dimensions = Unitsdb.dimensions_hash.values
         dim_hash = dims.each_with_object({}) { |h, m| m[h[:dimension]] = h }
         dims_vector = DIMS_VECTOR.map { |h| dim_hash.dig(h, :exponent) }.join(":")
-        id = dimensions.select { |d| d[:vector] == dims_vector }&.first&.dig(:id) and return id.to_s
+        id = Unitsdb.dimensions.find_by_vector(dims_vector)&.id and return id.to_s
         "D_" + dims.map do |d|
           (U2D.dig(d[:unit], :symbol) || Dim2D.dig(d[:id], :symbol)) +
             (d[:exponent] == 1 ? "" : float_to_display(d[:exponent]))
@@ -86,18 +89,18 @@ module Unitsml
       def decompose_unit(u)
         if u&.unit_name == "g" || u.system_type == "SI_base"
           { unit: u, prefix: u&.prefix }
-        elsif !u.si_derived_bases
+        elsif u.si_derived_bases.empty?
           { unit: Unit.new("unknown") }
         else
-          u.si_derived_bases.each_with_object([]) do |k, m|
-            prefix = if !k["prefix"].nil? && !k["prefix"].empty?
-                       combine_prefixes(prefix_object(k["prefix"]), u.prefix)
+          u.si_derived_bases.each_with_object([]) do |k, object|
+            prefix = if !k.prefix.nil? && !k.prefix.empty?
+                       combine_prefixes(prefix_object(k.prefix), u.prefix)
                      else
                        u.prefix
                      end
-            unit_name = Unitsdb.load_units.dig(k.dig("id"), "unit_symbols", 0, "id")
-            exponent = (k["power"]&.to_i || 1) * (u.power_numerator&.to_f || 1)
-            m << { prefix: prefix,
+            unit_name = Unitsdb.units.find_by_id(k.id).unit_symbols.first.id
+            exponent = (k.power&.to_i || 1) * (u.power_numerator&.to_f || 1)
+            object << { prefix: prefix,
                    unit: Unit.new(unit_name, exponent, prefix: prefix),
                  }
           end
@@ -120,9 +123,9 @@ module Unitsml
 
       def prefix_object(prefix)
         return prefix unless prefix.is_a?(String)
-        return nil unless Unitsdb.prefixes.any?(prefix)
+        return nil unless Unitsdb.prefixes_array.any?(prefix)
 
-        prefix.is_a?(String) ? Prefix.new(prefix) : prefix
+        Prefix.new(prefix)
       end
 
       def combine_prefixes(p1, p2)
@@ -131,7 +134,7 @@ module Unitsml
         return p2.symbolid if p1.nil?
         return "unknown" if p1.base != p2.base
 
-        Unitsdb.prefixes_hash.each do |prefix_name, _|
+        Unitsdb.prefixes_array.each do |prefix_name|
           p = prefix_object(prefix_name)
           return p if p.base == p1.base && p.power == p1.power + p2.power
         end
@@ -140,14 +143,15 @@ module Unitsml
       end
 
       def unit(units, formula, dims, norm_text, name)
-        attributes = { xmlns: UNITSML_NS, "xml:id": unit_id(norm_text) }
-        attributes[:dimensionURL] = "##{dim_id(dims)}" if dims
-        unit_node = ox_element("Unit", attributes: attributes)
-        nodes = Array(unitsystem(units))
-        nodes += Array(unitname(units, norm_text, name))
-        nodes += Array(unitsymbols(formula))
-        nodes += Array(rootunits(units))
-        Ox.dump(update_nodes(unit_node, nodes))
+        attributes = {
+          id: unit_id(norm_text),
+          system: unitsystem(units),
+          name: unitname(units, norm_text, name),
+          symbol: unitsymbols(formula),
+          root_units: rootunits(units),
+        }
+        attributes[:dimension_url] = "##{dim_id(dims)}" if dims
+        Model::Unit.new(attributes).to_xml
           .gsub("&lt;", "<")
           .gsub("&gt;", ">")
           .gsub("&amp;", "&")
@@ -156,8 +160,9 @@ module Unitsml
       end
 
       def unitname(units, text, name)
-        name ||= Unitsdb.units[text] ? Unit.new(text).enumerated_name : text
-        ox_element("UnitName", attributes: { "xml:lang": "en" }) << name
+        Model::Units::Name.new(
+          name: unit_instance(text)&.unit_name&.first || text
+        )
       end
 
       def postprocess_normtext(units)
@@ -169,46 +174,43 @@ module Unitsml
       end
 
       def unitsymbols(formula)
-        [
-          (ox_element("UnitSymbol", attributes: { type: "HTML" }) << formula.to_html),
-          (ox_element("UnitSymbol", attributes: { type: "MathMl" }) << Ox.parse(formula.to_mathml)),
-        ]
+        %w[HTML MathMl].map do |lang|
+          Model::Units::Symbol.new(type: lang, content: formula.public_send(:"to_#{lang.downcase}"))
+        end
       end
 
       def unitsystem(units)
         ret = []
         if units.any? { |u| u.system_name != "SI" }
-          ret << ox_element("UnitSystem", attributes: { name: "not_SI", type: "not_SI", "xml:lang": 'en-US' })
+          ret << Model::Units::System.new(name: "not_SI", type: "not_SI")
         end
         if units.any? { |u| u.system_name == "SI" }
           if units.size == 1
             base = units[0].system_type == "SI-base"
             base = true if units[0].unit_name == "g" && units[0]&.prefix_name == "k"
           end
-          ret << ox_element("UnitSystem", attributes: { name: "SI", type: (base ? 'SI_base' : 'SI_derived'), "xml:lang": 'en-US' })
+          ret << Model::Units::System.new(name: "SI", type: (base ? 'SI_base' : 'SI_derived'))
         end
         ret
       end
 
       def dimension(norm_text)
-        return unless fields(norm_text)&.dig("dimension_url")
+        dim_url = unit_instance(norm_text)&.dimension_url
+        return unless dim_url
 
-        dim_id = fields(norm_text).dig("dimension_url").sub("#", '')
-        dim_node = ox_element("Dimension", attributes: { xmlns: UNITSML_NS, "xml:id": dim_id })
-        Ox.dump(
-          update_nodes(
-            dim_node,
-            dimid2dimensions(dim_id)&.compact&.map { |u| dimension1(u) }
-          )
-        )
+        dim_id = dim_url.sub("#", '')
+        dim_attrs = { id: dim_id }
+        dimid2dimensions(dim_id)&.compact&.each { |u| dimension1(u, dim_attrs) }
+        Model::Dimension.new(dim_attrs).to_xml
       end
 
-      def dimension1(dim)
-        attributes = {
+      def dimension1(dim, dims_hash)
+        dim_name = dim[:dimension]
+        dim_klass = Model::DimensionQuantities.const_get(dim_name)
+        dims_hash[underscore(dim_name).to_sym] = dim_klass.new(
           symbol: dim[:symbol],
-          powerNumerator: float_to_display(dim[:exponent])
-        }
-        ox_element(dim[:dimension], attributes: attributes)
+          power_numerator: float_to_display(dim[:exponent])
+        )
       end
 
       def float_to_display(float)
@@ -216,97 +218,79 @@ module Unitsml
       end
 
       def dimid2dimensions(normtext)
-        dims ||= Unitsdb.load_dimensions[normtext]
-        dims&.keys&.reject { |d| d.is_a?(Symbol) }&.map do |k|
-          humanized = k.split("_").map(&:capitalize).join
+        dims = Unitsdb.dimensions.find_by_id(normtext)
+        dims&.processed_keys&.map do |processed_key|
+          humanized = processed_key.split("_").map(&:capitalize).join
           next unless DIMS_VECTOR.include?(humanized)
 
+          dim_quantity = dims.public_send(processed_key)
           {
             dimension: humanized,
-            symbol: dims.dig(k, "symbol"),
-            exponent: dims.dig(k, "powerNumerator")
+            symbol: dim_quantity.symbol,
+            exponent: dim_quantity.power_numerator,
           }
         end
       end
 
       def prefixes(units)
         uniq_prefixes = units.map { |unit| unit.prefix }.compact.uniq {|d| d.prefix_name }
-        uniq_prefixes.map do |p|
-          prefix_attr = { xmlns: UNITSML_NS, prefixBase: p&.base, prefixPower: p&.power, "xml:id": p&.id }
-          prefix_node = ox_element("Prefix", attributes: prefix_attr)
-          contents = []
-          contents << (ox_element("PrefixName", attributes: { "xml:lang": "en" }) << p&.name)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "ASCII" }) << p&.to_asciimath)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "unicode" }) << p&.to_unicode)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "LaTex" }) << p&.to_latex)
-          contents << (ox_element("PrefixSymbol", attributes: { type: "HTML" }) << p&.to_html)
-          Ox.dump(update_nodes(prefix_node, contents)).gsub("&amp;", "&")
+        uniq_prefixes.map do |prefix|
+          prefix_attrs = { prefix_base: prefix&.base, prefix_power: prefix&.power, id: prefix&.id }
+          type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode, LaTex: :to_latex, HTML: :to_html }
+          prefix_attrs[:name] = Model::Prefixes::Name.new(content: prefix&.name)
+          prefix_attrs[:symbol] = type_and_methods.map do |type, method_name|
+            Model::Prefixes::Symbol.new(
+              type: type,
+              content: prefix&.public_send(method_name),
+            )
+          end
+          Model::Prefix.new(prefix_attrs).to_xml.gsub("&amp;", "&")
         end.join("\n")
       end
 
       def rootunits(units)
         return if units.size == 1 && !units[0].prefix
 
-        root_unit = ox_element("RootUnits")
-        units.each do |u|
-          attributes = { unit: u.enumerated_name }
-          attributes[:prefix] = u.prefix_name if u.prefix
-          u.power_numerator && u.power_numerator != "1" and
-            attributes[:powerNumerator] = u.power_numerator
-          root_unit << ox_element("EnumeratedRootUnit", attributes: attributes)
+        enum_root_units = units.map do |unit|
+          attributes = { unit: unit.enumerated_name }
+          attributes[:prefix] = unit.prefix_name if unit.prefix
+          unit.power_numerator && unit.power_numerator != "1" and
+            attributes[:power_numerator] = unit.power_numerator
+          Model::Units::EnumeratedRootUnit.new(attributes)
         end
-        root_unit
+        Model::Units::RootUnits.new(enumerated_root_unit: enum_root_units)
       end
 
       def unit_id(text)
         norm_text = text
         text = text&.gsub(/[()]/, "")
-        /-$/.match(text) and return Unitsdb.prefixes[text.sub(/-$/, "")][:id]
-        unit_hash = Unitsdb.units[norm_text]
-        "U_#{unit_hash ? unit_hash[:id]&.gsub(/'/, '_') : norm_text&.gsub(/\*/, '.')&.gsub(/\^/, '')}"
+        unit = unit_instance(norm_text)
+        "U_#{unit ? unit.id&.gsub(/'/, '_') : norm_text&.gsub(/\*/, '.')&.gsub(/\^/, '')}"
       end
 
       def dimension_components(dims)
         return if dims.nil? || dims.empty?
 
-        attributes = { xmlns: UNITSML_NS, "xml:id": dim_id(dims) }
-        dim_node = ox_element("Dimension", attributes: attributes)
-        Ox.dump(update_nodes(dim_node, dims.map { |u| dimension1(u) }))
+        dim_attrs = { id: dim_id(dims) }
+        dims.map { |u| dimension1(u, dim_attrs) }
+        Model::Dimension.new(dim_attrs).to_xml
       end
 
       def quantity(normtext, quantity)
-        units = Unitsdb.units
-        quantity_references = units.dig(normtext, :fields, "quantity_reference")
-        return unless units[normtext] && quantity_references.size == 1 ||
-          Unitsdb.quantities[quantity]
+        unit = unit_instance(normtext)
+        return unless unit && unit.quantity_reference.size == 1 ||
+          quantity_instance(quantity)
 
-        id = quantity || quantity_references&.first&.dig("url")
-        attributes = { xmlns: UNITSML_NS, "xml:id": id.sub('#', '') }
-        dim_url = units.dig(normtext, :fields, "dimension_url")
-        dim_url and attributes[:dimensionURL] = "#{dim_url}"
-        attributes[:quantityType] = "base"
-        quantity_element = ox_element("Quantity", attributes: attributes)
-        Ox.dump(update_nodes(quantity_element, quantity_name(id.sub('#', ''))))
+        id = (quantity || unit.quantity_reference&.first&.url).sub('#', '')
+        dim_url = unit.dimension_url
+        attributes = { id: id, name: quantity_name(id), dimension_url: dim_url }
+        Model::Quantity.new(attributes).to_xml
       end
 
       def quantity_name(id)
-        ret = []
-        Unitsdb.quantities[id]&.dig("quantity_name")&.each do |q|
-          node = (ox_element("QuantityName", attributes: { "xml:lang": "en-US" }) << q)
-          ret << node
+        quantity_instance(id)&.quantity_name&.map do |content|
+          Model::Quantities::Name.new(content: content)
         end
-        ret
-      end
-
-      def ox_element(node, attributes: [])
-        element = Ox::Element.new(node)
-        attributes&.each { |attr_key, attr_value| element[attr_key] = attr_value }
-        element
-      end
-
-      def update_nodes(element, nodes)
-        nodes&.each { |node| element << node unless node.nil? }
-        element
       end
 
       def string_to_html_entity(string)
@@ -320,6 +304,14 @@ module Unitsml
       def html_entity_to_unicode(string)
         entities = HTMLEntities.new
         entities.decode(string)
+      end
+
+      def underscore(str)
+        str.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
+      end
+
+      def class_name(klass)
+        klass.name.split("::").last
       end
     end
   end
