@@ -7,8 +7,6 @@ require "unitsml/model/dimension"
 
 module Unitsml
   module Utility
-    Ox.default_options = { encoding: "UTF-8" }
-
     # Unit to dimension
     U2D = {
       "m" => { dimension: "Length", order: 1, symbol: "L" },
