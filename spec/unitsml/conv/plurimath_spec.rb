@@ -101,4 +101,55 @@ RSpec.describe Unitsml::Parser do
       expect(formula).to eq(expected_value)
     end
   end
+
+  context "Unitsml example crashing in plurimath/plurimath#343" do
+    let(:exp) { "unitsml(kg^(-1)*m^(-3)*s^4*A^2)" }
+    let(:expected_value) do
+      Plurimath::Math::Formula.new(
+        [
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("kg"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ])
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("m"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("3"),
+            ])
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("s"),
+              "normal",
+            ),
+            Plurimath::Math::Number.new("4"),
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("A"),
+              "normal",
+            ),
+            Plurimath::Math::Number.new("2"),
+          ),
+        ],
+      )
+    end
+
+    it "compares expected value with to_plurimath method output" do
+      expect(formula).to eq(expected_value)
+    end
+  end
 end
