@@ -33,15 +33,7 @@ module Unitsml
         math = ::Mml::MathWithNamespace.new(display: "block")
         math.ordered = true
         math.element_order ||= []
-        value.each do |instance|
-          processed_instance = instance.to_mathml(options)
-          case processed_instance
-          when Array
-            processed_instance.each { |hash| add_math_element(math, hash) }
-          when Hash
-            add_math_element(math, processed_instance)
-          end
-        end
+        value.each { |instance| process_value(math, instance.to_mathml(options)) }
         reset_mml_models if plurimath_available?
         math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
       else
@@ -184,6 +176,15 @@ module Unitsml
 
     def reset_mml_models
       ::Mml::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
+    end
+
+    def process_value(math, mathml_instances)
+      case mathml_instances
+      when Array
+        mathml_instances.each { |hash| process_value(math, hash) }
+      when Hash
+        add_math_element(math, mathml_instances)
+      end
     end
 
     def update_options(options)
