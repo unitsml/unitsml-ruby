@@ -168,7 +168,7 @@ module Unitsml
 
     def add_math_element(math_instance, child_hash)
       method_name = child_hash[:method_name]
-      method_value = math_instance.public_send(:"#{method_name}_value")
+      method_value = math_instance.public_send(:"#{method_name}_value") || []
       method_value += Array(child_hash[:value])
       math_instance.public_send(:"#{method_name}_value=", method_value)
       math_instance.element_order << Lutaml::Model::XmlAdapter::Element.new("Element", method_name.to_s)

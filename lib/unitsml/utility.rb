@@ -87,7 +87,7 @@ module Unitsml
       def decompose_unit(u)
         if u&.unit_name == "g" || u.system_type == "SI_base"
           { unit: u, prefix: u&.prefix }
-        elsif u.si_derived_bases.empty?
+        elsif u.si_derived_bases.nil? || u.si_derived_bases.empty?
           { unit: Unit.new("unknown") }
         else
           u.si_derived_bases.each_with_object([]) do |k, object|
