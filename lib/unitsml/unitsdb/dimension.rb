@@ -78,7 +78,7 @@ module Unitsml
 
         instance_variable_set(:"@#{instance_var}", value)
         @processed_keys << instance_var.to_s
-        return if value.dim_symbols.empty?
+        return if value.dim_symbols.nil? || value.dim_symbols.empty?
 
         @parsable = true
         value.dim_symbols_ids(@parsables, id)
