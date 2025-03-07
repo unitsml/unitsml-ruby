@@ -4,7 +4,7 @@ RSpec.describe Unitsml::Parser do
 
   before(:all) { Lutaml::Model::Config.xml_adapter_type = :ox }
 
-  subject(:formula) { described_class.new(exp).parse.to_xml }
+  subject(:formula) { described_class.new(exp).parse }
 
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^-2)" }
@@ -40,7 +40,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -78,7 +78,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -107,7 +107,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -137,7 +137,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -172,7 +172,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -202,7 +202,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -243,7 +243,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -269,7 +269,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -302,7 +302,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -332,7 +332,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -364,7 +364,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -413,7 +413,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -452,7 +452,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -480,7 +480,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -508,7 +508,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -527,7 +527,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -554,7 +554,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -594,7 +594,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -634,7 +634,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -702,7 +702,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -747,7 +747,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -796,7 +796,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -848,7 +848,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -864,7 +864,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -880,7 +880,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -923,7 +923,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -938,7 +938,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -982,7 +982,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -1033,7 +1033,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -1067,7 +1067,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -1111,7 +1111,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
     end
   end
 
@@ -1151,7 +1151,142 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #34 example from plurimath/plurimath#321" do
+    let(:exp) { "unitsml(m*kg^-2)" }
+    let(:space_expected_value) do
+      <<~XML
+      <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
+        <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+        <UnitName xml:lang="en">m*kg^-2</UnitName>
+        <UnitSymbol type="HTML">m⁢kg<sup>&#x2212;2</sup></UnitSymbol>
+        <UnitSymbol type="MathMl">
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="normal">m</mi>
+            <mo rspace="thickmathspace">⁢</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">kg</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>2</mn>
+              </mrow>
+            </msup>
+          </math>
+        </UnitSymbol>
+        <RootUnits>
+          <EnumeratedRootUnit unit="meter"/>
+          <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
+        </RootUnits>
+      </Unit>
+      <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="3" xml:id="NISTp10_3">
+        <PrefixName xml:lang="en">kilo</PrefixName>
+        <PrefixSymbol type="ASCII">k</PrefixSymbol>
+        <PrefixSymbol type="unicode">k</PrefixSymbol>
+        <PrefixSymbol type="LaTex">k</PrefixSymbol>
+        <PrefixSymbol type="HTML">k</PrefixSymbol>
+      </Prefix>
+      <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
+        <Length symbol="L" powerNumerator="1"/>
+        <Mass symbol="M" powerNumerator="-2"/>
+      </Dimension>
+      XML
+    end
+
+    let(:nospace_expected_value) do
+      <<~XML
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitName xml:lang="en">m*kg^-2</UnitName>
+          <UnitSymbol type="HTML">m⁢kg<sup>&#x2212;2</sup></UnitSymbol>
+          <UnitSymbol type="MathMl">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi mathvariant="normal">m</mi>
+              <mo>⁢</mo>
+              <msup>
+                <mrow>
+                  <mi mathvariant="normal">kg</mi>
+                </mrow>
+                <mrow>
+                  <mo>&#x2212;</mo>
+                  <mn>2</mn>
+                </mrow>
+              </msup>
+            </math>
+          </UnitSymbol>
+          <RootUnits>
+            <EnumeratedRootUnit unit="meter"/>
+            <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
+          </RootUnits>
+        </Unit>
+        <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="3" xml:id="NISTp10_3">
+          <PrefixName xml:lang="en">kilo</PrefixName>
+          <PrefixSymbol type="ASCII">k</PrefixSymbol>
+          <PrefixSymbol type="unicode">k</PrefixSymbol>
+          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="HTML">k</PrefixSymbol>
+        </Prefix>
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
+          <Length symbol="L" powerNumerator="1"/>
+          <Mass symbol="M" powerNumerator="-2"/>
+        </Dimension>
+      XML
+    end
+
+    let(:custom_expected_value) do
+      <<~XML
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitName xml:lang="en">m*kg^-2</UnitName>
+          <UnitSymbol type="HTML">mXkg<sup>&#x2212;2</sup></UnitSymbol>
+          <UnitSymbol type="MathMl">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi mathvariant="normal">m</mi>
+              <mo>X</mo>
+              <msup>
+                <mrow>
+                  <mi mathvariant="normal">kg</mi>
+                </mrow>
+                <mrow>
+                  <mo>&#x2212;</mo>
+                  <mn>2</mn>
+                </mrow>
+              </msup>
+            </math>
+          </UnitSymbol>
+          <RootUnits>
+            <EnumeratedRootUnit unit="meter"/>
+            <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
+          </RootUnits>
+        </Unit>
+        <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="3" xml:id="NISTp10_3">
+          <PrefixName xml:lang="en">kilo</PrefixName>
+          <PrefixSymbol type="ASCII">k</PrefixSymbol>
+          <PrefixSymbol type="unicode">k</PrefixSymbol>
+          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="HTML">k</PrefixSymbol>
+        </Prefix>
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
+          <Length symbol="L" powerNumerator="1"/>
+          <Mass symbol="M" powerNumerator="-2"/>
+        </Dimension>
+      XML
+    end
+
+    it "matches Unitsml to MathML converted string with :space multiplier argument" do
+      expect(formula.to_xml(multiplier: :space)).to be_equivalent_to(space_expected_value)
+    end
+
+    it "matches Unitsml to MathML converted string with :nospace multiplier argument" do
+      expect(formula.to_xml(multiplier: :nospace)).to be_equivalent_to(nospace_expected_value)
+    end
+
+    it "matches Unitsml to MathML converted string with custom multiplier argument" do
+      expect(formula.to_xml(multiplier: "X")).to be_equivalent_to(custom_expected_value)
     end
   end
 end
