@@ -27,7 +27,7 @@ $ gem install unitsml
 
 == Usage
 
-UnitsML Ruby provides functionality to represent and convert units between different formats including MathML, LaTeX, AsciiMath, HTML, Unicode, and XML.
+*UnitsML* Ruby provides functionality to represent and convert units between different formats including *MathML*, *LaTeX*, *AsciiMath*, *HTML*, *Unicode*, and *XML*(*Unitsml* schema based elements).
 
 === Basic Usage
 
