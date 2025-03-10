@@ -1,6 +1,6 @@
-= unitsml-ruby
+= UnitsML Ruby
 
-Gem-wrapper for unitsdb
+A Ruby implementation for handling Units Markup Language (UnitsML) expressions and converting them to various formats.
 
 == Installation
 
@@ -13,32 +13,105 @@ gem 'unitsml'
 
 And then execute:
 
-[source,sh]
+[source,console]
 ----
 $ bundle install
 ----
 
-Or install it yourself as:
+Or install it yourself with:
 
-[source,sh]
+[source,console]
 ----
 $ gem install unitsml
 ----
 
 == Usage
 
-=== Unit lookup
+UnitsML Ruby provides functionality to represent and convert units between different formats including MathML, LaTeX, AsciiMath, HTML, Unicode, and XML.
+
+=== Basic Usage
 
 [source,ruby]
 ----
-Unitsml.find_unit(ascii: 'mL') # Unitsml::Unit (with unit attributes)
+require 'unitsml'
+
+Unitsml.parse("mm*kg/s^2") # Parse a unit expression
 ----
+
+=== Format Conversions
+
+Units can be converted to different formats:
+
+[source,ruby]
+----
+unit = Unitsml.parse("m/s") # Create a unit example
+
+# Convert to different formats
+unit.to_mathml
+unit.to_latex
+unit.to_asciimath
+unit.to_html
+unit.to_unicode
+unit.to_xml
+----
+
+=== Extenders
+
+An `Extender` is the symbol between units (like multiplication or division):
+
+[[example]]
+[source, ruby]
+----
+formula = Unitsml.parse("m*m") # the '*' is the extender
+formula.to_mathml
+----
+```xml
+<math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi mathvariant="normal">m</mi>
+  <mo>&#x22c5;</mo>
+  <mi mathvariant="normal">m</mi>
+</math>
+```
+
+The output of extenders can be customized by passing the `multiplier` argument:
+
+[[example]]
+
+[source, ruby]
+----
+formula = Unitsml.parse("m/m")
+formula.to_asciimath(multiplier: "·") # the '·' is the extender for the output
+> "m·m^-1"
+----
+
+The `multiplier` argument is supported in all supported conversions.
+
+==== Supported multipliers
+
+The `multiplier` argument supports following types of input:
+
+* `:space` - Represents multiplication with a space
+* `:nospace` - Represents multiplication with no space
+* Custom symbols - Like "·", "/", "*", "aA", "12", etc.
+
+=== Plurimath support
+
+This gem requires the *Plurimath* gem to provide `to_plurimath` method functionality. You need to explicitly install it, please follow the installtion instructions in the https://github.com/plurimath/plurimath?tab=readme-ov-file#installation[*Plurimath*] repository.
 
 == Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `bundle exec spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to https://rubygems.org[rubygems.org].
+=== Submodules
+
+When developing or contributing to *UnitsML Ruby*, you'll need to ensure the submodules are available. After cloning the repository, verify that the submodules exists in the directory. If not, populate the submodules by running:
+
+[source,console]
+----
+$ git submodule update --init --recursive
+----
+
+*Unitsdb* is the only submodule required in this gem for now.
 
 == Contributing
 
