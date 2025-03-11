@@ -1162,11 +1162,11 @@ RSpec.describe Unitsml::Parser do
       <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
         <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
         <UnitName xml:lang="en">m*kg^-2</UnitName>
-        <UnitSymbol type="HTML">m⁢kg<sup>&#x2212;2</sup></UnitSymbol>
+        <UnitSymbol type="HTML">m&#xa0;kg<sup>&#x2212;2</sup></UnitSymbol>
         <UnitSymbol type="MathMl">
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mi mathvariant="normal">m</mi>
-            <mo rspace="thickmathspace">⁢</mo>
+            <mo rspace="thickmathspace">&#x2062;</mo>
             <msup>
               <mrow>
                 <mi mathvariant="normal">kg</mi>

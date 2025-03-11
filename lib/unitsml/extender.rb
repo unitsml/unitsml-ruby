@@ -15,9 +15,10 @@ module Unitsml
 
     def to_mathml(options)
       rspace = "thickmathspace" if options[:multiplier] == :space
+      extender = multiplier(options[:multiplier] || "⋅", unicode: true)
       {
         method_name: :mo,
-        value: ::Mml::Mo.new(value: unicode_extender(options), rspace: rspace),
+        value: ::Mml::Mo.new(value: extender, rspace: rspace),
       }
     end
 
@@ -30,7 +31,7 @@ module Unitsml
     end
 
     def to_html(options)
-      unicode_extender(options)
+      multiplier(options[:multiplier] || "⋅", unicode: true, html: true)
     end
 
     def to_unicode(options)
@@ -41,14 +42,14 @@ module Unitsml
 
     private
 
-    def unicode_extender(options)
-      multiplier(options[:multiplier] || "⋅", unicode: true)
-    end
-
-    def multiplier(extender, unicode: false)
+    def multiplier(extender, unicode: false, html: false)
       case extender
       when :space
-        unicode ? "&#x2062;" : " "
+        if html
+          "&#xa0;"
+        else
+          unicode ? "&#x2062;" : " "
+        end
       when :nospace
         unicode ? "&#x2062;" : ""
       else
