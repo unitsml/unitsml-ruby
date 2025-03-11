@@ -37,14 +37,7 @@ Unitsdb::Config.models = {
 }
 require "unitsdb"
 
-DEFAULT_XML_ADAPTER = if RUBY_ENGINE == "opal"
-  require "lutaml/model/xml_adapter/oga_adapter"
-  :oga
-else
-  require "lutaml/model/xml_adapter/ox_adapter"
-  :ox
-end
-
+DEFAULT_XML_ADAPTER = RUBY_ENGINE == "opal" ? :oga :  :ox
 Lutaml::Model::Config.xml_adapter_type = DEFAULT_XML_ADAPTER
 # TODO: Remove Moxml adapter assignment when Lutaml::Model utilizes Moxml completely
 Moxml::Config.default_adapter = DEFAULT_ADAPTER
