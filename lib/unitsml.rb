@@ -36,3 +36,8 @@ Unitsdb::Config.models = {
   dimension_quantity: Unitsml::Unitsdb::DimensionQuantity,
 }
 require "unitsdb"
+
+DEFAULT_XML_ADAPTER = RUBY_ENGINE == "opal" ? :oga :  :ox
+Lutaml::Model::Config.xml_adapter_type = DEFAULT_XML_ADAPTER
+# TODO: Remove Moxml adapter assignment when Lutaml::Model utilizes Moxml completely
+Moxml::Config.default_adapter = DEFAULT_ADAPTER
