@@ -167,7 +167,9 @@ module Unitsml
     end
 
     def plurimath_available?
-      Object.const_defined?(:Plurimath)
+      Object.const_defined?(:Plurimath) &&
+        Plurimath.const_defined?(:Math) &&
+        Plurimath.const_defined?(:Mathml)
     end
 
     def nullify_mml_models
