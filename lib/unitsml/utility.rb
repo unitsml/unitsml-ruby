@@ -234,7 +234,7 @@ module Unitsml
         uniq_prefixes = units.map { |unit| unit.prefix }.compact.uniq {|d| d.prefix_name }
         uniq_prefixes.map do |prefix|
           prefix_attrs = { prefix_base: prefix&.base, prefix_power: prefix&.power, id: prefix&.id }
-          type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode, LaTex: :to_latex, HTML: :to_html }
+          type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode, LaTeX: :to_latex, HTML: :to_html }
           prefix_attrs[:name] = Model::Prefixes::Name.new(content: prefix&.name)
           prefix_attrs[:symbol] = type_and_methods.map do |type, method_name|
             Model::Prefixes::Symbol.new(
