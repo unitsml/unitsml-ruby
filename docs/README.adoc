@@ -3,7 +3,7 @@
 https://github.com/unitsml/unitsml-ruby[image:https://img.shields.io/github/stars/unitsml/unitsml-ruby.svg?style=social[GitHub Stars]]
 https://github.com/unitsml/unitsml-ruby[image:https://img.shields.io/github/forks/unitsml/unitsml-ruby.svg?style=social[GitHub Forks]]
 image:https://img.shields.io/github/license/unitsml/unitsml-ruby.svg[License]
-image:https://img.shields.io/github/actions/workflow/status/unitsml/unitsml-ruby/test.yml?branch=main[Build Status]
+image:https://img.shields.io/github/actions/workflow/status/unitsml/unitsml-ruby/rake.yml?branch=main[Build Status]
 image:https://img.shields.io/gem/v/unitsml.svg[RubyGems Version]
 
 == Purpose
