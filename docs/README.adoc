@@ -1,6 +1,175 @@
-= UnitsML Ruby
+= UnitsML in Ruby
 
-A Ruby implementation for handling Units Markup Language (UnitsML) expressions and converting them to various formats.
+https://github.com/unitsml/unitsml-ruby[image:https://img.shields.io/github/stars/unitsml/unitsml-ruby.svg?style=social[GitHub Stars]]
+https://github.com/unitsml/unitsml-ruby[image:https://img.shields.io/github/forks/unitsml/unitsml-ruby.svg?style=social[GitHub Forks]]
+image:https://img.shields.io/github/license/unitsml/unitsml-ruby.svg[License]
+image:https://img.shields.io/github/actions/workflow/status/unitsml/unitsml-ruby/test.yml?branch=main[Build Status]
+image:https://img.shields.io/gem/v/unitsml.svg[RubyGems Version]
+
+== Purpose
+
+UnitsML is a markup language for representing units of measurement in a
+machine-readable format.
+
+It is designed to be used in various applications, including scientific
+computing, data analysis, and engineering.
+
+The UnitsML Ruby library provides the following components:
+
+XML syntax for:
+
+* representing units and quantity information
+Composite units
+
+* Parser for the UnitsML  parser - Parses UnitsML expressions.
+* Unit Converter - Converts units between formats.
+* Formatter - Formats units for display in various formats.
+
+
+The UnitsML Ruby library is a gem for parsing, manipulating, and converting unit expressions based on the Units Markup Language (UnitsML) specification. This library provides functionality to handle units of measurement in a standardized way across different formats.
+
+
+== Structure
+
+The UnitsML Ruby library consists of several key components:
+
+* Parser: Parses string expressions into structured data
+* Transform: Transforms parsed data into domain objects
+* Formula: Represents compound unit expressions
+* Unit: Represents individual units
+* Prefix: Represents unit prefixes (k, m, μ, etc.)
+* Dimension: Represents physical dimensions
+
+The library also includes the full https://github.com/unitsml/unitsdb[UnitsDB]
+units database, which contains standard units, prefixes, and dimensions.
+
+
+== Usage
+
+=== AsciiUnits
+
+The UnitsML Ruby library supports AsciiUnits, a text-based syntax for
+representing units of measurement in a compact and human-readable format.
+
+The UnitsML Ruby library supports all available units defined in the official
+UnitsDB database.
+
+=== Basic units
+
+A basic unit is a unit that has an entry in the UnitsDB database
+with a unique identifier.
+
+Basic units are represented in the library as `Unitsml::Unit` objects.
+
+[source,ruby]
+----
+require 'unitsml'
+unit = Unitsml.parse("m") # Parse a unit expression
+unit.to_s # => "m"
+unit.to_xml
+# =>
+<Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1" dimensionURL="#NISTd1">
+  <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+  <UnitName xml:lang="en">meter</UnitName>
+  <UnitSymbol type="HTML">m</UnitSymbol>
+  <UnitSymbol type="MathMl">
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+      <mi mathvariant="normal">m</mi>
+    </math>
+  </UnitSymbol>
+</Unit>
+
+<Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd1">
+  <Length symbol="L" powerNumerator="1"/>
+</Dimension>
+----
+
+
+=== Prefixed units
+
+A prefixed unit is a unit that has a prefix (like kilo, milli, micro, etc.)
+that modifies its value.
+
+Prefixed units are represented in the library as `Unitsml::Prefix` objects.
+
+The library supports the full range of prefixes defined in the UnitsDB database.
+
+[source,ruby]
+----
+require 'unitsml'
+unit = Unitsml.parse("um") # Parse a unit expression
+unit.to_s # => "um"
+unit.to_xml
+# =>
+<Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_um" dimensionURL="#NISTd1">
+  <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+  <UnitName xml:lang="en">um</UnitName>
+  <UnitSymbol type="HTML">&micro;m</UnitSymbol>
+  <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+  <mi mathvariant='normal'>µm</mi>
+</math>
+</UnitSymbol>
+  <RootUnits>
+    <EnumeratedRootUnit unit="meter" prefix="u"/>
+  </RootUnits>
+</Unit>
+
+<Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="-6" xml:id="NISTp10_-6">
+  <PrefixName xml:lang="en">micro</PrefixName>
+  <PrefixSymbol type="ASCII">u</PrefixSymbol>
+  <PrefixSymbol type="unicode">μ</PrefixSymbol>
+  <PrefixSymbol type="LaTeX">$mu$</PrefixSymbol>
+  <PrefixSymbol type="HTML">&micro;</PrefixSymbol>
+</Prefix>
+
+<Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd1">
+  <Length symbol="L" powerNumerator="1"/>
+</Dimension>
+----
+
+Prefixed units: mm, kg, μm
+
+
+=== Creating composite units
+
+A composite unit is a unit that is derived from two or more basic units
+conjoined by multiplication or division.
+
+Composite units are created using the `Unitsml.parse` method.
+
+Compound units with operations: kg*s^-2
+Units with powers: C^3
+Square roots: sqrt(Hz)
+Units with prefixes: m/s, m^2/s^2
+
+
+=== Format representation
+
+The library supports representation of UnitsML-encoded units in various formats.
+
+These formats include:
+
+* MathML
+* LaTeX
+* AsciiMath
+* HTML
+* Unicode
+* XML (in UnitsML)
+
+Units can be converted to multiple formats as follows:
+
+[source,ruby]
+----
+unit = Unitsml.parse("m/s")
+unit.to_mathml     # MathML representation
+unit.to_latex      # LaTeX representation
+unit.to_asciimath  # AsciiMath representation
+unit.to_html       # HTML representation
+unit.to_unicode    # Unicode representation
+unit.to_xml        # XML (in UnitsML) representation
+----
+
+
 
 == Installation
 
@@ -65,13 +234,15 @@ An `Extender` is the symbol between units (like multiplication or division):
 formula = Unitsml.parse("m*m") # the '*' is the extender
 formula.to_mathml
 ----
-```xml
+
+[source,xml]
+----
 <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
   <mi mathvariant="normal">m</mi>
   <mo>&#x22c5;</mo>
   <mi mathvariant="normal">m</mi>
 </math>
-```
+----
 
 The output of extenders can be customized by passing the `multiplier` argument:
 
@@ -96,7 +267,11 @@ The `multiplier` argument supports following types of input:
 
 === Plurimath support
 
-This gem requires the *Plurimath* gem to provide `to_plurimath` method functionality. You need to explicitly install it, please follow the installtion instructions in the https://github.com/plurimath/plurimath?tab=readme-ov-file#installation[*Plurimath*] repository.
+This gem requires the *Plurimath* gem to provide `to_plurimath` method
+functionality. You need to explicitly install it, please follow the installtion
+instructions in the
+https://github.com/plurimath/plurimath?tab=readme-ov-file#installation[*Plurimath*]
+repository.
 
 == Development
 
@@ -104,24 +279,30 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 === Submodules
 
-When developing or contributing to *UnitsML Ruby*, you'll need to ensure the submodules are available. After cloning the repository, verify that the submodules exists in the directory. If not, populate the submodules by running:
+When developing or contributing to *UnitsML Ruby*, you'll need to ensure the
+submodules are available. After cloning the repository, verify that the
+submodules exist in the directory.
+
+If not, populate the submodules by running:
 
 [source,console]
 ----
 $ git submodule update --init --recursive
 ----
 
-*Unitsdb* is the only submodule required in this gem for now.
+*`unitsdb`* is the only submodule required in this gem for now.
 
-== Contributing
-
-Bug reports and pull requests are welcome on GitHub at `https://github.com/unitsml/unitsml-ruby`. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the https://github.com/unitsml/unitsml-ruby/blob/master/docs/CODE_OF_CONDUCT.adoc[code of conduct].
-
-
-== License
-
-The gem is available as open source under the terms of the https://opensource.org/licenses/MIT[MIT license].
 
 == Code of Conduct
 
-Everyone interacting in the Unitsml project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the https://github.com/unitsml/unitsml-ruby/blob/master/docs/CODE_OF_CONDUCT.adoc[code of conduct].
+Everyone interacting in the Unitsml project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the
+https://github.com/unitsml/unitsml-ruby/blob/master/docs/CODE_OF_CONDUCT.adoc[code of conduct].
+
+
+== License and Copyright
+
+This project is licensed under the BSD 2-clause License.
+
+See the link:LICENSE.md[] file for details.
+
+Copyright Ribose.
