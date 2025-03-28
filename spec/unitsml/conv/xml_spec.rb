@@ -27,7 +27,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">milli</PrefixName>
           <PrefixSymbol type="ASCII">m</PrefixSymbol>
           <PrefixSymbol type="unicode">m</PrefixSymbol>
-          <PrefixSymbol type="LaTex">m</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">m</PrefixSymbol>
           <PrefixSymbol type="HTML">m</PrefixSymbol>
         </Prefix>
 
@@ -66,7 +66,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">micro</PrefixName>
           <PrefixSymbol type="ASCII">u</PrefixSymbol>
           <PrefixSymbol type="unicode">μ</PrefixSymbol>
-          <PrefixSymbol type="LaTex">$mu$</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">$mu$</PrefixSymbol>
           <PrefixSymbol type="HTML">&micro;</PrefixSymbol>
         </Prefix>
 
@@ -228,7 +228,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
@@ -401,7 +401,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
@@ -439,7 +439,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">milli</PrefixName>
           <PrefixSymbol type="ASCII">m</PrefixSymbol>
           <PrefixSymbol type="unicode">m</PrefixSymbol>
-          <PrefixSymbol type="LaTex">m</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">m</PrefixSymbol>
           <PrefixSymbol type="HTML">m</PrefixSymbol>
         </Prefix>
 
@@ -464,7 +464,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">deci</PrefixName>
           <PrefixSymbol type="ASCII">d</PrefixSymbol>
           <PrefixSymbol type="unicode">d</PrefixSymbol>
-          <PrefixSymbol type="LaTex">d</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">d</PrefixSymbol>
           <PrefixSymbol type="HTML">d</PrefixSymbol>
         </Prefix>
 
@@ -492,7 +492,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">hecto</PrefixName>
           <PrefixSymbol type="ASCII">h</PrefixSymbol>
           <PrefixSymbol type="unicode">h</PrefixSymbol>
-          <PrefixSymbol type="LaTex">h</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">h</PrefixSymbol>
           <PrefixSymbol type="HTML">h</PrefixSymbol>
         </Prefix>
 
@@ -520,7 +520,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">deka</PrefixName>
           <PrefixSymbol type="ASCII">da</PrefixSymbol>
           <PrefixSymbol type="unicode">da</PrefixSymbol>
-          <PrefixSymbol type="LaTex">da</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">da</PrefixSymbol>
           <PrefixSymbol type="HTML">da</PrefixSymbol>
         </Prefix>
       XML
@@ -539,7 +539,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">micro</PrefixName>
           <PrefixSymbol type="ASCII">u</PrefixSymbol>
           <PrefixSymbol type="unicode">μ</PrefixSymbol>
-          <PrefixSymbol type="LaTex">$mu$</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">$mu$</PrefixSymbol>
           <PrefixSymbol type="HTML">&micro;</PrefixSymbol>
         </Prefix>
 
@@ -682,7 +682,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
@@ -736,7 +736,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
@@ -784,7 +784,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
@@ -833,7 +833,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">milli</PrefixName>
           <PrefixSymbol type="ASCII">m</PrefixSymbol>
           <PrefixSymbol type="unicode">m</PrefixSymbol>
-          <PrefixSymbol type="LaTex">m</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">m</PrefixSymbol>
           <PrefixSymbol type="HTML">m</PrefixSymbol>
         </Prefix>
 
@@ -841,7 +841,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">centi</PrefixName>
           <PrefixSymbol type="ASCII">c</PrefixSymbol>
           <PrefixSymbol type="unicode">c</PrefixSymbol>
-          <PrefixSymbol type="LaTex">c</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">c</PrefixSymbol>
           <PrefixSymbol type="HTML">c</PrefixSymbol>
         </Prefix>
       XML
@@ -971,7 +971,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">milli</PrefixName>
           <PrefixSymbol type="ASCII">m</PrefixSymbol>
           <PrefixSymbol type="unicode">m</PrefixSymbol>
-          <PrefixSymbol type="LaTex">m</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">m</PrefixSymbol>
           <PrefixSymbol type="HTML">m</PrefixSymbol>
         </Prefix>
 
@@ -1019,7 +1019,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">giga</PrefixName>
           <PrefixSymbol type="ASCII">G</PrefixSymbol>
           <PrefixSymbol type="unicode">G</PrefixSymbol>
-          <PrefixSymbol type="LaTex">G</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">G</PrefixSymbol>
           <PrefixSymbol type="HTML">G</PrefixSymbol>
         </Prefix>
 
@@ -1137,7 +1137,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">milli</PrefixName>
           <PrefixSymbol type="ASCII">m</PrefixSymbol>
           <PrefixSymbol type="unicode">m</PrefixSymbol>
-          <PrefixSymbol type="LaTex">m</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">m</PrefixSymbol>
           <PrefixSymbol type="HTML">m</PrefixSymbol>
         </Prefix>
 
@@ -1187,7 +1187,7 @@ RSpec.describe Unitsml::Parser do
         <PrefixName xml:lang="en">kilo</PrefixName>
         <PrefixSymbol type="ASCII">k</PrefixSymbol>
         <PrefixSymbol type="unicode">k</PrefixSymbol>
-        <PrefixSymbol type="LaTex">k</PrefixSymbol>
+        <PrefixSymbol type="LaTeX">k</PrefixSymbol>
         <PrefixSymbol type="HTML">k</PrefixSymbol>
       </Prefix>
       <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
@@ -1227,7 +1227,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
@@ -1267,7 +1267,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixName xml:lang="en">kilo</PrefixName>
           <PrefixSymbol type="ASCII">k</PrefixSymbol>
           <PrefixSymbol type="unicode">k</PrefixSymbol>
-          <PrefixSymbol type="LaTex">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
