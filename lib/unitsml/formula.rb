@@ -3,6 +3,7 @@
 require "mml"
 require "htmlentities"
 require "unitsml/utility"
+
 module Unitsml
   class Formula
     attr_accessor :value, :explicit_value, :root
@@ -34,8 +35,10 @@ module Unitsml
         math.ordered = true
         math.element_order ||= []
         value.each { |instance| process_value(math, instance.to_mathml(options)) }
+
+        generated_math = math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
         reset_mml_models if plurimath_available?
-        math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
+        generated_math
       else
         value.map { |obj| obj.to_mathml(options) }
       end
@@ -163,7 +166,7 @@ module Unitsml
       method_value = math_instance.public_send(:"#{method_name}_value") || []
       method_value += Array(child_hash[:value])
       math_instance.public_send(:"#{method_name}_value=", method_value)
-      math_instance.element_order << Lutaml::Model::XmlAdapter::Element.new("Element", method_name.to_s)
+      math_instance.element_order << Lutaml::Model::Xml::Element.new("Element", method_name.to_s)
     end
 
     def plurimath_available?
