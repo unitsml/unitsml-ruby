@@ -632,7 +632,7 @@ RSpec.describe Unitsml::Parser do
         </math>
       MATHML
     end
-    it "returns parslet tree of parsed Unitsml string" do
+    it "matches MathML string" do
       expect(mathml).to be_equivalent_to(expected_value)
     end
   end
