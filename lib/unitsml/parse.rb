@@ -4,12 +4,16 @@ require "parslet"
 require "unitsml/unitsdb"
 module Unitsml
   class Parse < Parslet::Parser
-    rule(:power)    { str("^") >> intermediate_exp(number) }
-    rule(:hyphen)   { str("-") }
-    rule(:number)   { (hyphen.maybe >> match(/[0-9]/).repeat(1)).as(:integer) }
-    rule(:extender) { (str("//") | str("/") | str("*")).as(:extender) }
+    rule(:power)  { str("^") >> intermediate_exp(slashed_number) }
+    rule(:hyphen) { str("-") }
+    rule(:number) { hyphen.maybe >> match(/[0-9]/).repeat(1) }
+
+    rule(:extender) { (forward_slashes | str("*")).as(:extender) }
     rule(:sequence) { single_letter_prefixes >> units | double_letter_prefixes >> units | units }
-    rule(:unit_and_power) { units >> power.maybe }
+
+    rule(:unit_and_power)  { units >> power.maybe }
+    rule(:slashed_number)  { (number >> (forward_slashes >> number).maybe).as(:integer) }
+    rule(:forward_slashes) { str("//") | str("/") }
 
     rule(:units) do
       @@filtered_units ||= arr_to_expression(Unitsdb.units.filtered, "units")
