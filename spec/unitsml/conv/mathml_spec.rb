@@ -591,4 +591,49 @@ RSpec.describe Unitsml::Parser do
       expect(formula.to_mathml(multiplier: :nospace)).to be_equivalent_to(nospace_expected_value)
     end
   end
+
+  context "contains plurimath/plurimath#356 Unitsml #28 example" do
+    let(:exp) { "unitsml(kg*m^-1*s^-1*K^(-1//2))" }
+
+    let(:expected_value) do
+      <<~MATHML
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mi mathvariant="normal">kg</mi>
+          <mo>&#x22c5;</mo>
+          <msup>
+            <mrow>
+              <mi mathvariant="normal">m</mi>
+            </mrow>
+            <mrow>
+              <mo>&#x2212;</mo>
+              <mn>1</mn>
+            </mrow>
+          </msup>
+          <mo>&#x22c5;</mo>
+          <msup>
+            <mrow>
+              <mi mathvariant="normal">s</mi>
+            </mrow>
+            <mrow>
+              <mo>&#x2212;</mo>
+              <mn>1</mn>
+            </mrow>
+          </msup>
+          <mo>&#x22c5;</mo>
+          <msup>
+            <mrow>
+              <mi mathvariant="normal">K</mi>
+            </mrow>
+            <mrow>
+              <mo>&#x2212;</mo>
+              <mn>1//2</mn>
+            </mrow>
+          </msup>
+        </math>
+      MATHML
+    end
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(mathml).to be_equivalent_to(expected_value)
+    end
+  end
 end

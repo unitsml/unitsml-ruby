@@ -9,7 +9,7 @@ module Unitsml
       end
 
       def units
-        @@units_file ||= ::Unitsdb::Units.from_yaml(load_file((:units)))
+        @@units_file ||= ::Unitsdb::Units.from_yaml(load_file(:units))
       end
 
       def prefixes
@@ -21,7 +21,7 @@ module Unitsml
       end
 
       def quantities
-        @@quantities ||= ::Unitsdb::Quantities.from_yaml(load_file((:quantities)))
+        @@quantities ||= ::Unitsdb::Quantities.from_yaml(load_file(:quantities))
       end
 
       def prefixes_array
