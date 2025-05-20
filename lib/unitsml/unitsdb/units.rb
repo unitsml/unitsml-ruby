@@ -5,6 +5,10 @@ module Unitsml
     class Units
       attr_accessor :units
 
+      def initialize(register = nil)
+        @register = register
+      end
+
       def find_by_id(u_id)
         units.find { |unit| unit.id == u_id }
       end

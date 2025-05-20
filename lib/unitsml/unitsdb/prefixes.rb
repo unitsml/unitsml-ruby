@@ -5,6 +5,10 @@ module Unitsml
     class Prefixes
       attr_accessor :prefixes
 
+      def initialize(register = nil)
+        @register = register
+      end
+
       def find_by_symbol_name(ascii_sym)
         prefixes.find { |prefix| prefix.symbol.ascii == ascii_sym }
       end
