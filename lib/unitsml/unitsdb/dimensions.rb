@@ -5,6 +5,10 @@ module Unitsml
     class Dimensions
       attr_accessor :dimensions
 
+      def initialize(register = nil)
+        @register = register
+      end
+
       def find_by_vector(vector)
         vectored
         find(:vector, vector)

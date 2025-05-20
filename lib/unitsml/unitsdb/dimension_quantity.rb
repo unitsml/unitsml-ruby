@@ -7,6 +7,10 @@ module Unitsml
                     :symbol,
                     :dim_symbols
 
+      def initialize(register = nil)
+        @register = register
+      end
+
       def dim_symbols_ids(hash, dim_id)
         dim_symbols.each { |dim_sym| hash[dim_sym.id] = dim_id }
       end

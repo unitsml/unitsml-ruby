@@ -19,7 +19,8 @@ module Unitsml
                   :parsable,
                   :processed_keys
 
-      def initialize
+      def initialize(register = nil)
+        @register = register
         @parsables = {}
         @processed_keys = []
         @parsable = false
