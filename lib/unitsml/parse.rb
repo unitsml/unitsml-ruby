@@ -3,8 +3,31 @@
 require "parslet"
 require "unitsml/unitsdb"
 module Unitsml
+  module IntermediateExpRules
+    include Parslet
+
+    # Rules for slashed number
+    rule(:slashed_number_int_exp) { slashed_number | str("(") >> slashed_number_named_exp >> str(")") }
+    rule(:slashed_number_named_exp) { slashed_number | str("(").as(:open_parenthesis) >> slashed_number_named_exp >> str(")").as(:close_parenthesis) }
+
+    # Rules for prefixes_units
+    rule(:prefixes_units_int_exp) { prefixes_units | str("(") >> prefixes_units_named_exp >> str(")") }
+    rule(:prefixes_units_named_exp) { prefixes_units | str("(").as(:open_parenthesis) >> prefixes_units_named_exp >> str(")").as(:close_parenthesis) }
+
+    # Rules for dimension_rules
+    rule(:dimension_rules_int_exp) { dimension_rules | str("(") >> dimension_rules_named_exp >> str(")") }
+    rule(:dimension_rules_named_exp) { dimension_rules | str("(").as(:open_parenthesis) >> dimension_rules_named_exp >> str(")").as(:close_parenthesis) }
+
+    # Rules for dimensions
+    rule(:powered_dimensions) { dimensions >> power.maybe }
+    rule(:dimensions_int_exp) { powered_dimensions | str("(") >> dimensions_named_exp >> str(")") }
+    rule(:dimensions_named_exp) { powered_dimensions | str("(").as(:open_parenthesis) >> dimensions_named_exp >> str(")").as(:close_parenthesis) }
+  end
+
   class Parse < Parslet::Parser
-    rule(:power)  { str("^") >> intermediate_exp(slashed_number) }
+    include IntermediateExpRules
+
+    rule(:power)  { str("^") >> slashed_number_int_exp }
     rule(:hyphen) { str("-") }
     rule(:number) { hyphen.maybe >> match(/[0-9]/).repeat(1) }
 
@@ -32,24 +55,24 @@ module Unitsml
     end
 
     rule(:prefixes_units) do
-      (sqrt(sequence) >> extend_exp(prefixes_units)) |
-        (str("1").as(:units) >> extend_exp(prefixes_units)) |
-        (unit_and_power >> extender >> intermediate_exp(prefixes_units).as(:sequence)) |
+      (sqrt(sequence) >> (extender >> prefixes_units_int_exp.as(:sequence)).as(:sequence)) |
+        (str("1").as(:units) >> (extender >> prefixes_units_int_exp.as(:sequence)).as(:sequence)) |
+        (unit_and_power >> extender >> prefixes_units_int_exp.as(:sequence)) |
         unit_and_power |
-        (single_letter_prefixes >> unit_and_power >> extender >> intermediate_exp(prefixes_units).as(:sequence)) |
+        (single_letter_prefixes >> unit_and_power >> extender >> prefixes_units_int_exp.as(:sequence)) |
         (single_letter_prefixes >> unit_and_power) |
-        (double_letter_prefixes >> unit_and_power >> extender >> intermediate_exp(prefixes_units).as(:sequence)) |
+        (double_letter_prefixes >> unit_and_power >> extender >> prefixes_units_int_exp.as(:sequence)) |
         (double_letter_prefixes >> unit_and_power)
     end
 
     rule(:dimension_rules) do
-      (sqrt(intermediate_exp(dimensions >> power.maybe)) >> extend_exp(dimension_rules)) |
-        (dimensions >> power.maybe >> extend_exp(dimension_rules))
+      (sqrt(dimensions_int_exp) >> (extender >> dimension_rules_int_exp.as(:sequence)).maybe) |
+        (powered_dimensions >> (extender >> dimension_rules_int_exp.as(:sequence)).as(:sequence))
     end
 
     rule(:expression) do
-      intermediate_exp(prefixes_units) |
-        intermediate_exp(dimension_rules) |
+      prefixes_units_named_exp |
+        dimension_rules_named_exp |
         single_letter_prefixes >> hyphen |
         double_letter_prefixes >> hyphen
     end
@@ -66,14 +89,6 @@ module Unitsml
 
     def sqrt(rule)
       str("sqrt(") >> rule.as(:sqrt) >> str(")")
-    end
-
-    def extend_exp(rule)
-      (extender >> intermediate_exp(rule).as(:sequence)).maybe
-    end
-
-    def intermediate_exp(rule)
-      rule | (str("(") >> rule >> str(")"))
     end
   end
 end
