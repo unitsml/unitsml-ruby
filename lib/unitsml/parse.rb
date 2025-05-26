@@ -8,20 +8,28 @@ module Unitsml
 
     # Rules for slashed number
     rule(:slashed_number_int_exp) { slashed_number | str("(") >> slashed_number_named_exp >> str(")") }
-    rule(:slashed_number_named_exp) { slashed_number | str("(").as(:open_parenthesis) >> slashed_number_named_exp >> str(")").as(:close_parenthesis) }
+    rule(:slashed_number_named_exp) { slashed_number | str("(").as(:open_parenthesis) >> slashed_number_named_exp.as(:int_exp) >> str(")").as(:close_parenthesis) }
 
     # Rules for prefixes_units
     rule(:prefixes_units_int_exp) { prefixes_units | str("(") >> prefixes_units_named_exp >> str(")") }
-    rule(:prefixes_units_named_exp) { prefixes_units | str("(").as(:open_parenthesis) >> prefixes_units_named_exp >> str(")").as(:close_parenthesis) }
+    rule(:extended_prefixed_units) { extender >> prefixes_units_int_exp.as(:sequence) }
+    rule(:prefixes_units_named_exp) { prefixes_units | str("(").as(:open_parenthesis) >> prefixes_units_named_exp.as(:int_exp) >> str(")").as(:close_parenthesis) }
 
     # Rules for dimension_rules
     rule(:dimension_rules_int_exp) { dimension_rules | str("(") >> dimension_rules_named_exp >> str(")") }
-    rule(:dimension_rules_named_exp) { dimension_rules | str("(").as(:open_parenthesis) >> dimension_rules_named_exp >> str(")").as(:close_parenthesis) }
+    rule(:extended_dimension_rules) { extender >> dimension_rules_int_exp.as(:sequence) }
+    rule(:dimension_rules_named_exp) { dimension_rules | str("(").as(:open_parenthesis) >> dimension_rules_named_exp.as(:int_exp) >> str(")").as(:close_parenthesis) }
 
     # Rules for dimensions
+    rule(:sqrt_dimensions) { str("sqrt(") >> dimensions_named_exp.as(:sqrt) >> str(")") }
     rule(:powered_dimensions) { dimensions >> power.maybe }
     rule(:dimensions_int_exp) { powered_dimensions | str("(") >> dimensions_named_exp >> str(")") }
-    rule(:dimensions_named_exp) { powered_dimensions | str("(").as(:open_parenthesis) >> dimensions_named_exp >> str(")").as(:close_parenthesis) }
+    rule(:dimensions_named_exp) { powered_dimensions | str("(").as(:open_parenthesis) >> dimensions_named_exp.as(:int_exp) >> str(")").as(:close_parenthesis) }
+
+    # Rules for Sequence sqrt
+    rule(:sqrt_sequence) { str("sqrt(") >> sequence_int_exp.as(:sqrt) >> str(")") }
+    rule(:sequence_int_exp) { sequence | str("(") >> sequence_named_exp >> str(")") }
+    rule(:sequence_named_exp) { sequence | str("(").as(:open_parenthesis) >> sequence_named_exp.as(:int_exp) >> str(")").as(:close_parenthesis) }
   end
 
   class Parse < Parslet::Parser
@@ -55,19 +63,19 @@ module Unitsml
     end
 
     rule(:prefixes_units) do
-      (sqrt(sequence) >> (extender >> prefixes_units_int_exp.as(:sequence)).as(:sequence)) |
-        (str("1").as(:units) >> (extender >> prefixes_units_int_exp.as(:sequence)).as(:sequence)) |
-        (unit_and_power >> extender >> prefixes_units_int_exp.as(:sequence)) |
+      (sqrt_sequence >> extended_prefixed_units.maybe) |
+        (str("1").as(:units) >> extended_prefixed_units.maybe) |
+        (unit_and_power >> extended_prefixed_units) |
         unit_and_power |
-        (single_letter_prefixes >> unit_and_power >> extender >> prefixes_units_int_exp.as(:sequence)) |
+        (single_letter_prefixes >> unit_and_power >> extended_prefixed_units) |
         (single_letter_prefixes >> unit_and_power) |
-        (double_letter_prefixes >> unit_and_power >> extender >> prefixes_units_int_exp.as(:sequence)) |
+        (double_letter_prefixes >> unit_and_power >> extended_prefixed_units) |
         (double_letter_prefixes >> unit_and_power)
     end
 
     rule(:dimension_rules) do
-      (sqrt(dimensions_int_exp) >> (extender >> dimension_rules_int_exp.as(:sequence)).maybe) |
-        (powered_dimensions >> (extender >> dimension_rules_int_exp.as(:sequence)).as(:sequence))
+      (sqrt_dimensions >> extended_dimension_rules.maybe) |
+        (powered_dimensions >> extended_dimension_rules.maybe)
     end
 
     rule(:expression) do
@@ -85,10 +93,6 @@ module Unitsml
         expression = str(expression).as(file_name.to_sym) if expression.is_a?(String)
         expression | str(expr_string).as(file_name.to_sym)
       end
-    end
-
-    def sqrt(rule)
-      str("sqrt(") >> rule.as(:sqrt) >> str(")")
     end
   end
 end

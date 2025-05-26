@@ -30,6 +30,24 @@ module Unitsml
       Unit.new(unit.to_s, integer.to_s, prefix: prefix_obj)
     end
 
+    rule(open_parenthesis: simple(:open_paren),
+         int_exp: simple(:exp),
+         close_parenthesis: simple(:close_paren)) do
+      Fenced.new(open_paren.to_s, exp, close_paren.to_s)
+    end
+
+    rule(open_parenthesis: simple(:open_paren),
+         int_exp: simple(:exp),
+         close_parenthesis: simple(:close_paren),
+         sequence: sequence(:sequence)) do
+      Formula.new(
+        [
+          Fenced.new(open_paren.to_s, exp, close_paren.to_s),
+          sequence,
+        ],
+      )
+    end
+
     rule(prefixes: simple(:prefix),
          units: simple(:unit),
          integer: simple(:integer),
