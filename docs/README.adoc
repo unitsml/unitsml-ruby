@@ -169,7 +169,28 @@ unit.to_unicode    # Unicode representation
 unit.to_xml        # XML (in UnitsML) representation
 ----
 
+==== Explicit Parenthesis
+When converting units to formats like MathML or LaTeX, you can specify whether to use explicit parentheses for clarity in complex expressions.
+Default value of `explicit_parenthesis` is `true`, which means the parsed parentheses will be included in the output appropriately.
+[source,ruby]
+----
+unit = Unitsml.parse("(m/s)")
+unit.to_asciimath # equivalent to (explicit_parenthesis: true) => "(m/s^-1)"
+unit = Unitsml.parse("((m/s))*((m/s))")
+unit.to_asciimath(explicit_parenthesis: true) # "((m/s^-1))*(m/s^-1)"
+----
 
+Setting the `explicit_parenthesis` to `false` will omit the parentheses in the output:
+
+[source,ruby]
+----  
+unit = Unitsml.parse("(m/s)")
+unit.to_asciimath(explicit_parenthesis: false) # => "m/s"
+unit = Unitsml.parse("((m/s))*((m/s))")
+unit.to_asciimath(explicit_parenthesis: false) # "m/s^-1*m/s^-1"
+----
+
+NOTE: Parentheses around unit expressions (e.g., `(m/s)`) are parsed and their inclusion in the output can be controlled. However, nested parentheses around exponents are not supported. For instance, `m/s^(2)` is valid, but `m/s^((2))` is not and will result in a parsing error.
 
 == Installation
 

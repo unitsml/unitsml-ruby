@@ -1,6 +1,10 @@
 RSpec.describe Unitsml::Parser do
 
-  subject(:formula) { described_class.new(exp).parse.to_plurimath }
+  subject(:formula) do
+    described_class.new(exp).parse.to_plurimath(
+      respond_to?(:options) ? options : {}
+    )
+  end
 
   context "when plurimath is not required/installed" do
     let(:exp) { "unitsml(mm*s^-2)" }
@@ -147,6 +151,51 @@ RSpec.describe Unitsml::Parser do
         ],
       )
     end
+
+    it "compares expected value with to_plurimath method output" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "Unitsml example contains unit only wrapped in parentheses with default explicit_parenthesis: true" do
+    let(:exp) { "unitsml(((g)))" }
+    let(:expected_value) do
+      Plurimath::Math::Formula.new([
+        Plurimath::Math::Function::Fenced.new(
+          Plurimath::Math::Symbols::Paren::Lround.new,
+          [
+            Plurimath::Math::Function::Fenced.new(
+              Plurimath::Math::Symbols::Paren::Lround.new,
+              [
+                Plurimath::Math::Function::FontStyle::Normal.new(
+                  Plurimath::Math::Symbols::Symbol.new("g"),
+                  "normal",
+                ),
+              ],
+              Plurimath::Math::Symbols::Paren::Rround.new,
+            ),
+          ],
+          Plurimath::Math::Symbols::Paren::Rround.new,
+        )
+      ])
+    end
+
+    it "compares expected value with to_plurimath method output" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "Unitsml example contains unit only wrapped in parentheses with explicit_parenthesis: false" do
+    let(:exp) { "unitsml(((g)))" }
+    let(:expected_value) do
+      Plurimath::Math::Formula.new([
+        Plurimath::Math::Function::FontStyle::Normal.new(
+          Plurimath::Math::Symbols::Symbol.new("g"),
+          "normal",
+        )
+      ])
+    end
+    let(:options) { { explicit_parenthesis: false } }
 
     it "compares expected value with to_plurimath method output" do
       expect(formula).to eq(expected_value)

@@ -1289,4 +1289,92 @@ RSpec.describe Unitsml::Parser do
       expect(formula.to_xml(multiplier: "X")).to be_equivalent_to(custom_expected_value)
     end
   end
+
+  context "contains Unitsml #35 example" do
+    let(:exp) { "unitsml((m^-2))" }
+    let(:expected_value) do
+      <<~XML
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_m-2" dimensionURL="#D_L-2">
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitName xml:lang="en">m^-2</UnitName>
+          <UnitSymbol type="HTML">(m<sup>&#x2212;2</sup>)</UnitSymbol>
+          <UnitSymbol type="MathMl">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mrow>
+                <mo>(</mo>
+                <msup>
+                  <mrow>
+                    <mi mathvariant="normal">m</mi>
+                  </mrow>
+                  <mrow>
+                    <mo>&#x2212;</mo>
+                    <mn>2</mn>
+                  </mrow>
+                </msup>
+                <mo>)</mo>
+              </mrow>
+            </math>
+          </UnitSymbol>
+        </Unit>
+
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
+          <Length symbol="L" powerNumerator="-2"/>
+        </Dimension>
+      XML
+    end
+
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #36 example" do
+    let(:exp) { "unitsml((dim_Theta^10)*dim_L^2)" }
+    let(:expected_value) do
+      <<~XML
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L2Theta10">
+          <Length symbol="L" powerNumerator="2"/>
+          <ThermodynamicTemperature symbol="Theta" powerNumerator="10"/>
+        </Dimension>
+      XML
+    end
+
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula.to_xml).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #35 example" do
+    let(:exp) { "unitsml((m^-2))" }
+    let(:expected_value) do
+      <<~XML
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_m-2" dimensionURL="#D_L-2">
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitName xml:lang="en">m^-2</UnitName>
+          <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
+          <UnitSymbol type="MathMl">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <msup>
+                <mrow>
+                  <mi mathvariant="normal">m</mi>
+                </mrow>
+                <mrow>
+                  <mo>&#x2212;</mo>
+                  <mn>2</mn>
+                </mrow>
+              </msup>
+            </math>
+          </UnitSymbol>
+        </Unit>
+
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
+          <Length symbol="L" powerNumerator="-2"/>
+        </Dimension>
+      XML
+    end
+
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula.to_xml(explicit_parenthesis: false)).to be_equivalent_to(expected_value)
+    end
+  end
 end

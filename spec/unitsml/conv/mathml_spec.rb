@@ -636,4 +636,44 @@ RSpec.describe Unitsml::Parser do
       expect(mathml).to be_equivalent_to(expected_value)
     end
   end
+
+  context "contains Unitsml #29 example" do
+    let(:exp) { "unitsml(Rm*((A)))" }
+
+    let(:expected_value) do
+      <<~MATHML
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mi mathvariant="normal">Rm</mi>
+          <mo>X</mo>
+          <mrow>
+            <mo>(</mo>
+            <mi mathvariant="normal">A</mi>
+            <mo>)</mo>
+          </mrow>
+        </math>
+      MATHML
+    end
+
+    it "matches Unitsml to MathML converted string with custom multiplier argument" do
+      expect(formula.to_mathml(multiplier: "X")).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #29 example" do
+    let(:exp) { "unitsml(Rm*((A)))" }
+
+    let(:expected_value) do
+      <<~MATHML
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mi mathvariant="normal">Rm</mi>
+          <mo>X</mo>
+          <mi mathvariant="normal">A</mi>
+        </math>
+      MATHML
+    end
+
+    it "matches Unitsml to MathML converted string with custom multiplier argument" do
+      expect(formula.to_mathml(multiplier: "X", explicit_parenthesis: false)).to be_equivalent_to(expected_value)
+    end
+  end
 end

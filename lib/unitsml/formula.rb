@@ -29,7 +29,7 @@ module Unitsml
 
     def to_mathml(options = {})
       if root
-        update_options(options)
+        options = update_options(options)
         nullify_mml_models if plurimath_available?
         math = ::Mml::MathWithNamespace.new(display: "block")
         math.ordered = true
@@ -61,7 +61,7 @@ module Unitsml
     end
 
     def to_xml(options = {})
-      update_options(options)
+      options = update_options(options)
       if (dimensions_array = extract_dimensions(value)).any?
         dimensions(sort_dims(dimensions_array), options)
       elsif @orig_text.match(/-$/)
@@ -91,6 +91,8 @@ module Unitsml
           dimensions << sqrt_term
         elsif term.is_a?(Formula)
           dimensions.concat(extract_dimensions(term.value))
+        elsif term.is_a?(Fenced)
+          dimensions.concat(extract_dimensions([term.value]))
         end
       end
     end
@@ -106,6 +108,8 @@ module Unitsml
           next unless term.value.is_a?(Unit)
 
           units_arr << term.value
+        when Fenced
+          units_arr.concat(extract_units([term.value]))
         end
       end
     end
@@ -196,7 +200,8 @@ module Unitsml
       return options unless root
 
       multiplier = options[:multiplier] || explicit_value&.dig(:multiplier)
-      options.merge(multiplier: multiplier).compact
+      explicit_parenthesis = options.key?(:explicit_parenthesis) ? options[:explicit_parenthesis] : true
+      options.merge(multiplier: multiplier, explicit_parenthesis: explicit_parenthesis).compact
     end
   end
 end
