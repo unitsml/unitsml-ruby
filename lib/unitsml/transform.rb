@@ -7,6 +7,7 @@ module Unitsml
     rule(units: simple(:unit))      { Unit.new(unit.to_s) }
     rule(prefixes: simple(:prefix)) { Prefix.new(prefix.to_s) }
     rule(dimensions: simple(:dimension)) { Dimension.new(dimension.to_s) }
+    rule(intermediate_exp: simple(:int_exp)) { int_exp }
 
     rule(units: simple(:unit),
          integer: simple(:integer)) do
@@ -43,6 +44,18 @@ module Unitsml
       Formula.new(
         [
           Fenced.new(open_paren.to_s, exp, close_paren.to_s),
+          sequence,
+        ],
+      )
+    end
+
+    rule(intermediate_exp: simple(:intermediate_exp),
+         extender: simple(:extender),
+         sequence: simple(:sequence)) do
+      Formula.new(
+        [
+          intermediate_exp,
+          Extender.new(extender.to_s),
           sequence,
         ],
       )

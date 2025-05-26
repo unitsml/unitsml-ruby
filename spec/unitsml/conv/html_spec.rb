@@ -2,7 +2,11 @@ require "spec_helper"
 
 RSpec.describe Unitsml::Parser do
 
-  subject(:formula) { described_class.new(exp).parse.to_html }
+  subject(:formula) do
+    described_class.new(exp).parse.to_html(
+      respond_to?(:options) ? options : {}
+    )
+  end
 
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^-2)" }
@@ -252,6 +256,34 @@ RSpec.describe Unitsml::Parser do
 
     let(:expected_value) { "kcal<sub>IT</sub><sup>100</sup>" }
     it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #29 example" do
+    let(:exp) { "unitsml(dim_Theta^10*((dim_L^2)))" }
+
+    let(:expected_value) { "&#x1D760;<sup>10</sup>&#x22c5;(&#x1D5AB;<sup>2</sup>)" }
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #30 example" do
+    let(:exp) { "unitsml(Hz^10*((darcy^100)))" }
+
+    let(:expected_value) { "Hz<sup>10</sup>&#x22c5;(d<sup>100</sup>)" }
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #31 example with explicit_parenthesis: false" do
+    let(:exp) { "unitsml(dim_Theta^10*((dim_L^2)))" } # Input with explicit parens
+    let(:expected_value) { "&#x1D760;<sup>10</sup>&#x22c5;&#x1D5AB;<sup>2</sup>" }
+    let(:options) { { explicit_parenthesis: false } }
+
+    it "returns parslet tree of parsed Unitsml string without explicit parentheses" do
       expect(formula).to be_equivalent_to(expected_value)
     end
   end

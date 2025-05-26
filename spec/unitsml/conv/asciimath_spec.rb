@@ -2,7 +2,11 @@ require "spec_helper"
 
 RSpec.describe Unitsml::Parser do
 
-  subject(:formula) { described_class.new(exp).parse.to_asciimath }
+  subject(:formula) do
+    described_class.new(exp).parse.to_asciimath(
+      respond_to?(:options) ? options : {}
+    )
+  end
 
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^-2)" }
@@ -233,6 +237,25 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(Hz^10*darcy^100, multiplier: xx)" }
 
     let(:expected_value) { "Hz^10xxd^100" }
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "contains Unitsml #27 example" do
+    let(:exp) { "unitsml((Hz^10)*darcy^100, multiplier: xx)" }
+
+    let(:expected_value) { "(Hz^10)xxd^100" }
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "contains Unitsml #28 example" do
+    let(:exp) { "unitsml((dim_Theta^10*dim_L^2))" }
+    let(:expected_value) { "Theta^10*L^2" }
+    let(:options) { { explicit_parenthesis: false } }
+
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula).to eq(expected_value)
     end

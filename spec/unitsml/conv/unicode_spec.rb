@@ -2,7 +2,7 @@ require "spec_helper"
 
 RSpec.describe Unitsml::Parser do
 
-  subject(:formula) { described_class.new(exp).parse.to_unicode }
+  subject(:formula) { described_class.new(exp).parse.to_unicode(respond_to?(:options) ? options : {}) }
 
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^-2)" }
@@ -232,6 +232,25 @@ RSpec.describe Unitsml::Parser do
   context "contains Unitsml #26 example" do
     let(:exp) { "unitsml(Hz^10*darcy^100)" }
     let(:expected_value) { "Hz^10·d^100" }
+
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #27 example" do
+    let(:exp) { "unitsml((Hz^10)*darcy^100)" }
+    let(:expected_value) { "(Hz^10)·d^100" }
+
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula).to be_equivalent_to(expected_value)
+    end
+  end
+
+  context "contains Unitsml #27 example with explicit_parenthesis: false" do
+    let(:exp) { "unitsml((Hz^10)*darcy^100)" }
+    let(:expected_value) { "Hz^10·d^100" }
+    let(:options) { { explicit_parenthesis: false } }
 
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula).to be_equivalent_to(expected_value)
