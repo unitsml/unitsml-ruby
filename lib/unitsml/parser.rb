@@ -15,7 +15,7 @@ module Unitsml
     def parse
       nodes = Parse.new.parse(text)
       transformed = Transform.new.apply(nodes)
-      formula_value = transformed.is_a?(Formula) ? transformed.value : Array(transformed)
+      formula_value = transformed.is_a?(Formula) ? transformed.value : [transformed].flatten
       formula = Formula.new(
         formula_value,
         explicit_value: @extras_hash,
@@ -28,21 +28,28 @@ module Unitsml
       formula
     end
 
-    def update_units_exponents(array, inverse)
+    def update_units_exponents(array, inverse, sqrt = false)
       array.each do |object|
         if object.is_a?(Sqrt)
           object = object.value
-          object.power_numerator = "0.5"
+          if object.respond_to?(:power_numerator)
+            object.power_numerator = "0.5"
+          else
+            update_units_exponents([object], inverse, true)
+          end
         end
 
         case object
         when Unit
+          next object.power_numerator = "0.5" if sqrt
           next unless inverse
 
           exponent = inverse ? "-#{object&.power_numerator || '1'}" : object.power_numerator
           object.power_numerator = exponent&.sub(/^--+/, "")
+        when Dimension then object.power_numerator = "1" if sqrt
         when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
         when Formula then update_units_exponents(object.value, inverse)
+        when Fenced then update_units_exponents([object.value], inverse, sqrt)
         end
       end
     end
