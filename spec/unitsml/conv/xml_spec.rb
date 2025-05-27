@@ -1377,4 +1377,19 @@ RSpec.describe Unitsml::Parser do
       expect(formula.to_xml(explicit_parenthesis: false)).to be_equivalent_to(expected_value)
     end
   end
+
+  context "contains Unitsml #35 example" do
+    let(:exp) { "unitsml(sqrt((dim_Theta)))" }
+    let(:expected_value) do
+      <<~XML
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_Theta0.5">
+          <ThermodynamicTemperature symbol="Theta" powerNumerator="0.5" xmlns="https://schema.unitsml.org/unitsml/1.0"/>
+        </Dimension>
+      XML
+    end
+
+    it "returns parslet tree of parsed Unitsml string" do
+      expect(formula.to_xml(explicit_parenthesis: false)).to be_equivalent_to(expected_value)
+    end
+  end
 end

@@ -56,6 +56,15 @@ module Unitsml
       "#{open_paren}#{unicode}#{close_paren}"
     end
 
+    def dimensions_extraction
+      case value
+      when Dimension
+        value
+      when Formula, Fenced
+        value.dimensions_extraction
+      end
+    end
+
     private
 
     def add_math_element(instance, child_hash)

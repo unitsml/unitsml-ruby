@@ -46,7 +46,7 @@ module Unitsml
 
           exponent = inverse ? "-#{object&.power_numerator || '1'}" : object.power_numerator
           object.power_numerator = exponent&.sub(/^--+/, "")
-        when Dimension then object.power_numerator = "1" if sqrt
+        when Dimension then object.power_numerator = "0.5" if sqrt
         when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
         when Formula then update_units_exponents(object.value, inverse)
         when Fenced then update_units_exponents([object.value], inverse, sqrt)
