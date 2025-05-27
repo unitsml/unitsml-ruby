@@ -16,17 +16,11 @@ module Unitsml
     end
 
     def to_asciimath(options = {})
-      asciimath = value.to_asciimath(options)
-      return asciimath unless options[:explicit_parenthesis]
-
-      "#{open_paren}#{asciimath}#{close_paren}"
+      fenced_conversion_for(lang: :asciimath, options: options)
     end
 
     def to_latex(options = {})
-      latex = value.to_latex(options)
-      return latex unless options[:explicit_parenthesis]
-
-      "#{open_paren}#{latex}#{close_paren}"
+      fenced_conversion_for(lang: :latex, options: options)
     end
 
     def to_mathml(options = {})
@@ -43,17 +37,11 @@ module Unitsml
     end
 
     def to_html(options = {})
-      html = value.to_html(options)
-      return html unless options[:explicit_parenthesis]
-
-      "#{open_paren}#{html}#{close_paren}"
+      fenced_conversion_for(lang: :html, options: options)
     end
 
     def to_unicode(options = {})
-      unicode = value.to_unicode(options)
-      return unicode unless options[:explicit_parenthesis]
-
-      "#{open_paren}#{unicode}#{close_paren}"
+      fenced_conversion_for(lang: :unicode, options: options)
     end
 
     def dimensions_extraction
@@ -77,6 +65,13 @@ module Unitsml
 
     def xml_order_element(tag_name)
       Lutaml::Model::Xml::Element.new("Element", tag_name)
+    end
+
+    def fenced_conversion_for(lang:, options:)
+      lang_value = value.send(:"to_#{lang}", options)
+      return lang_value unless options[:explicit_parenthesis]
+
+      "#{open_paren}#{lang_value}#{close_paren}"
     end
   end
 end
