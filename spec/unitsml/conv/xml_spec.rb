@@ -1291,7 +1291,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #35 example" do
-    let(:exp) { "unitsml((m^-2))" }
+    let(:exp) { "unitsml((((m^-2))))" }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_m-2" dimensionURL="#D_L-2">

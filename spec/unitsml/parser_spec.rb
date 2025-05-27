@@ -535,7 +535,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #33 example" do
-    let(:exp) { "unitsml((mm*mm))" }
+    let(:exp) { "unitsml(((mm*mm)))" }
 
     it "returns Unitsml::Formula of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
@@ -549,8 +549,8 @@ RSpec.describe Unitsml::Parser do
             ")",
           ),
         ],
-        norm_text: "(mm*mm)",
-        orig_text: "(mm*mm)",
+        norm_text: "((mm*mm))",
+        orig_text: "((mm*mm))",
         root: true,
       )
       expect(formula).to eq(expected_value)
@@ -558,7 +558,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #34 example" do
-    let(:exp) { "(mm*mm)*mm" }
+    let(:exp) { "((mm*mm))*mm" }
 
     it "returns Unitsml::Formula of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
@@ -574,8 +574,8 @@ RSpec.describe Unitsml::Parser do
           Unitsml::Extender.new("*"),
           Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
         ],
-        norm_text: "(mm*mm)*mm",
-        orig_text: "(mm*mm)*mm",
+        norm_text: "((mm*mm))*mm",
+        orig_text: "((mm*mm))*mm",
         root: true,
       )
       expect(formula).to eq(expected_value)
@@ -583,25 +583,28 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #35 example" do
-    let(:exp) { "(mm*mm)*(mm*m)" }
+    let(:exp) { "(mm*mm)*(((mm*m)))" }
 
     it "returns Unitsml::Formula of parsed Unitsml string" do
-      expected_value = Unitsml::Formula.new([
-          Unitsml::Fenced.new(
-            "(",
-            Unitsml::Formula.new([
-              Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-              Unitsml::Extender.new("*"),
-              Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-            ]),
-            ")",
-          ),
-          Unitsml::Extender.new("*"),
+      expected_value = Unitsml::Formula.new(
+        [
           Unitsml::Formula.new([
             Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
             Unitsml::Extender.new("*"),
-            Unitsml::Unit.new("m"),
+            Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
           ]),
+          Unitsml::Extender.new("*"),
+          Unitsml::Fenced.new(
+            "(",
+            Unitsml::Formula.new(
+              [
+                Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
+                Unitsml::Extender.new("*"),
+                Unitsml::Unit.new("m"),
+              ]
+            ),
+            ")",
+          ),
         ],
         norm_text: "(mm*mm)*(mm*m)",
         orig_text: "(mm*mm)*(mm*m)",
@@ -612,7 +615,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #36 example" do
-    let(:exp) { "(dim_Theta)*dim_N*(dim_J*dim_Theta)" }
+    let(:exp) { "((dim_Theta))*dim_N*(dim_J*dim_Theta)" }
 
     it "returns Unitsml::Formula of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
@@ -632,8 +635,8 @@ RSpec.describe Unitsml::Parser do
             ]),
           ])
         ],
-        norm_text: "(dim_Theta)*dim_N*(dim_J*dim_Theta)",
-        orig_text: "(dim_Theta)*dim_N*(dim_J*dim_Theta)",
+        norm_text: "((dim_Theta))*dim_N*(dim_J*dim_Theta)",
+        orig_text: "((dim_Theta))*dim_N*(dim_J*dim_Theta)",
         root: true,
       )
       expect(formula).to eq(expected_value)
@@ -641,7 +644,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #37 example" do
-    let(:exp) { "(dim_Theta^12)*dim_N^12*(dim_J^10*dim_Theta^10)" }
+    let(:exp) { "((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)" }
 
     it "returns Unitsml::Formula of parsed Unitsml string" do
       expected_value = Unitsml::Formula.new([
@@ -661,11 +664,36 @@ RSpec.describe Unitsml::Parser do
             ]),
           ])
         ],
-        norm_text: "(dim_Theta^12)*dim_N^12*(dim_J^10*dim_Theta^10)",
-        orig_text: "(dim_Theta^12)*dim_N^12*(dim_J^10*dim_Theta^10)",
+        norm_text: "((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)",
+        orig_text: "((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)",
         root: true,
       )
       expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "contains Unitsml #38 example from unitsml/unitsml-ruby#43" do
+    let(:exp) { "unitsml(J/((A*m)))" }
+
+    it "matches Unitsml::Formula of processed Unitsml string" do
+      expected_value = Unitsml::Formula.new(
+        [
+          Unitsml::Unit.new("J"),
+          Unitsml::Extender.new("/"),
+          Unitsml::Fenced.new(
+            "(",
+            Unitsml::Formula.new([
+              Unitsml::Unit.new("A"),
+              Unitsml::Extender.new("*"),
+              Unitsml::Unit.new("m"),
+            ]),
+            ")",
+          ),
+        ],
+        norm_text: "J/((A*m))",
+        orig_text: "J/((A*m))",
+        root: true,
+      )
     end
   end
 end

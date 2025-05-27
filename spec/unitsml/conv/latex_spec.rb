@@ -261,7 +261,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #29 example" do
-    let(:exp) { "unitsml((dim_Theta^10*((dim_L^2))))" }
+    let(:exp) { "unitsml((((dim_Theta^10*(((dim_L^2)))))))" }
     let(:expected_value) { "(\\ensuremath{\\mathsf{\\Theta}}^10/(\\ensuremath{\\mathsf{L}}^2))" }
 
     it "returns parslet tree of parsed Unitsml string" do
@@ -270,7 +270,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #30 example" do
-    let(:exp) { "unitsml(((Hz^10)*darcy^100))" }
+    let(:exp) { "unitsml(((((Hz^10)*darcy^100))))" }
     let(:expected_value) { "((\\ensuremath{\\mathrm{Hz}}^10)/\\ensuremath{\\mathrm{d}}^100)" }
 
     it "returns parslet tree of parsed Unitsml string" do

@@ -158,7 +158,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "Unitsml example contains unit only wrapped in parentheses with default explicit_parenthesis: true" do
-    let(:exp) { "unitsml(((g)))" }
+    let(:exp) { "unitsml(((((g)))))" }
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::Fenced.new(
