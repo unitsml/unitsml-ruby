@@ -79,20 +79,28 @@ module Unitsml
       Plurimath::Math.parse(to_mathml(options), :mathml)
     end
 
+    def dimensions_extraction
+      extract_dimensions(value)
+    end
+
     private
 
     def extract_dimensions(formula)
       formula.each_with_object([]) do |term, dimensions|
         if term.is_a?(Dimension)
           dimensions << term
-        elsif term.is_a?(Sqrt) && term.value.is_a?(Dimension)
-          sqrt_term = term.value.dup
-          sqrt_term.power_numerator = "0.5"
-          dimensions << sqrt_term
+        elsif term.is_a?(Sqrt)
+          if term.value.is_a?(Dimension)
+            sqrt_term = term.value.dup
+            sqrt_term.power_numerator = "0.5"
+            dimensions << sqrt_term
+          elsif term.value.is_a?(Fenced)
+            dimensions.concat(Array(term.value.dimensions_extraction))
+          end
         elsif term.is_a?(Formula)
           dimensions.concat(extract_dimensions(term.value))
         elsif term.is_a?(Fenced)
-          dimensions.concat(extract_dimensions([term.value]))
+          dimensions.concat(Array(term.dimensions_extraction))
         end
       end
     end
