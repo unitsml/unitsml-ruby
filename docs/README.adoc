@@ -170,14 +170,37 @@ unit.to_xml        # XML (in UnitsML) representation
 ----
 
 ==== Explicit Parenthesis
+
 When converting units to formats like MathML or LaTeX, you can specify whether to use explicit parentheses for clarity in complex expressions.
+
 Default value of `explicit_parenthesis` is `true`, which means the parsed parentheses will be included in the output appropriately.
+
+The input should include pairs of parentheses `(())` in order to ensure the parentheses are rendered correctly(if `explicit_parenthesis` is set to `true`).
+
+For example:
+
+[source, ruby]
+----
+Unitsml.parse("((m/s))").to_asciimath
+> "(m/s^-1)" # Only one of the two pairs of parentheses are included in the output
+----
+
+If an extra pair of parentheses is included, it will be considered as grouping parentheses and will not be included in the Unitsml::Formula or the output.
+
+[source, ruby]
+----
+Unitsml.parse("(((m/s)))").to_asciimath
+> "(m/s^-1)" # the third pair of parentheses are ignored as grouping parentheses
+Unitsml.parse("(((((m/s)))))").to_asciimath
+> "((m/s^-1))" # the fifth pair of parentheses are ignored as grouping parentheses
+----
+
 [source,ruby]
 ----
-unit = Unitsml.parse("(m/s)")
+unit = Unitsml.parse("((m/s))")
 unit.to_asciimath # equivalent to (explicit_parenthesis: true) => "(m/s^-1)"
 unit = Unitsml.parse("((m/s))*((m/s))")
-unit.to_asciimath(explicit_parenthesis: true) # "((m/s^-1))*(m/s^-1)"
+unit.to_asciimath(explicit_parenthesis: true) # "(m/s^-1)*(m/s^-1)"
 ----
 
 Setting the `explicit_parenthesis` to `false` will omit the parentheses in the output:
@@ -189,8 +212,6 @@ unit.to_asciimath(explicit_parenthesis: false) # => "m/s"
 unit = Unitsml.parse("((m/s))*((m/s))")
 unit.to_asciimath(explicit_parenthesis: false) # "m/s^-1*m/s^-1"
 ----
-
-NOTE: Parentheses around unit expressions (e.g., `(m/s)`) are parsed and their inclusion in the output can be controlled. However, nested parentheses around exponents are not supported. For instance, `m/s^(2)` is valid, but `m/s^((2))` is not and will result in a parsing error.
 
 == Installation
 
