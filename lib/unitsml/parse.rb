@@ -51,8 +51,8 @@ module Unitsml
     end
 
     rule(:expression) do
-      prefixes_units_named_exp |
-        dimension_rules_named_exp |
+      prefixes_units_int_exp |
+        dimension_rules_int_exp |
         single_letter_prefixes >> hyphen |
         double_letter_prefixes >> hyphen
     end
