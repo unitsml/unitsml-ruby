@@ -169,24 +169,73 @@ unit.to_unicode    # Unicode representation
 unit.to_xml        # XML (in UnitsML) representation
 ----
 
-==== Explicit Parenthesis
+==== Explicit parenthesis
 
-When converting units to formats like MathML or LaTeX, you can specify whether to use explicit parentheses for clarity in complex expressions.
+When converting units to formats like MathML or LaTeX, you can specify whether
+to use explicit parentheses for clarity in complex expressions.
 
-Default value of `explicit_parenthesis` is `true`, which means the parsed parentheses will be included in the output appropriately.
+A pair of parentheses is typically used for two purposes:
 
-The input should include pairs of parentheses `(())` in order to ensure the parentheses are rendered correctly(if `explicit_parenthesis` is set to `true`).
+. For grouping to indicate operator precedence in mathematical expressions. When
+expressing units, most of the time, parentheses are used to indicate operator
+precedence, parentheses are only kept in cases where it indicates precedence.
+When parentheses are not needed for precedence, such as in the expression
+`(m/s)`, the parentheses can be removed whilch simplifies the expression into
+`m/s`.
 
-For example:
+. For indicating that an expression is a compound unit. These parentheses are
+explicit parentheses that cannot be removed without changing the meaning of the
+expression.
 
+UnitsML Ruby provides an option `explicit_parenthesis` to control the inclusion
+of parentheses in the output.
+
+In an expression:
+
+* `(...)` is considered an implicit parenthesis for grouping and operator
+precedence and can be removed without changing the meaning of the expression.
+
+* `((...))` is considered an explicit parenthesis, which indicates that the
+parentheses need to be preserved in the output regardless of operator
+precedence.
+
+The `explicit_parenthesis` option allows you to control how parentheses are
+considered in the output formats. It can be set to `true` or `false`.
+
+Syntax for using `explicit_parenthesis` is as follows:
+
+[source,ruby]
+----
+unit.to_asciimath(explicit_parenthesis: true) # or false
+unit.to_mathml(explicit_parenthesis: true) # or false
+unit.to_latex(explicit_parenthesis: true) # or false
+----
+
+When `explicit_parenthesis` is set to:
+
+`true`:: (default) the usage of `(...)` and `((...))` is differentiated as
+implicit and explicit parentheses, respectively.
+
+`false`:: all parentheses are treated as grouping parentheses, there is no
+difference between `(...)` and `((...))`.
+
+
+.By default `explicit_parenthesis` is `true` and double parentheses are considered explicit parentheses
+[example]
+====
 [source, ruby]
 ----
 Unitsml.parse("((m/s))").to_asciimath
 > "(m/s^-1)" # Only one of the two pairs of parentheses are included in the output
 ----
+====
 
-If an extra pair of parentheses is included, it will be considered as grouping parentheses and will not be included in the Unitsml::Formula or the output.
+If an extra pair of parentheses is included, it will be considered as grouping
+parentheses and will not be included in the Unitsml::Formula or the output.
 
+.By default `explicit_parenthesis` is `true` and double parentheses are considered explicit parentheses
+[example]
+====
 [source, ruby]
 ----
 Unitsml.parse("(((m/s)))").to_asciimath
@@ -202,16 +251,23 @@ unit.to_asciimath # equivalent to (explicit_parenthesis: true) => "(m/s^-1)"
 unit = Unitsml.parse("((m/s))*((m/s))")
 unit.to_asciimath(explicit_parenthesis: true) # "(m/s^-1)*(m/s^-1)"
 ----
+====
 
-Setting the `explicit_parenthesis` to `false` will omit the parentheses in the output:
+When `explicit_parenthesis` is `false`, all parentheses are treated as grouping parentheses
+and therefore will be reduced to only the necessary parentheses for operator precedence.
 
+.When `explicit_parenthesis` is `false`, all parentheses are treated as grouping parentheses
+[example]
+====
 [source,ruby]
-----  
+----
 unit = Unitsml.parse("(m/s)")
 unit.to_asciimath(explicit_parenthesis: false) # => "m/s"
 unit = Unitsml.parse("((m/s))*((m/s))")
 unit.to_asciimath(explicit_parenthesis: false) # "m/s^-1*m/s^-1"
 ----
+====
+
 
 == Installation
 
@@ -238,7 +294,9 @@ $ gem install unitsml
 
 == Usage
 
-*UnitsML* Ruby provides functionality to represent and convert units between different formats including *MathML*, *LaTeX*, *AsciiMath*, *HTML*, *Unicode*, and *XML*(*Unitsml* schema based elements).
+*UnitsML* Ruby provides functionality to represent and convert units between
+different formats including *MathML*, *LaTeX*, *AsciiMath*, *HTML*, *Unicode*,
+and *XML*(*Unitsml* schema based elements).
 
 === Basic Usage
 
@@ -317,7 +375,9 @@ repository.
 
 == Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `bundle exec spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run
+`bundle exec spec` to run the tests. You can also run `bin/console` for an
+interactive prompt that will allow you to experiment.
 
 === Submodules
 
