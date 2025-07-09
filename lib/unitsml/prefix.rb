@@ -20,15 +20,15 @@ module Unitsml
     end
 
     def id
-      @prefix.id
+      @id ||= prefix_instance.identifiers.find { |prefix| prefix.type == "nist" }&.id
     end
 
     def name
-      prefix_instance.name
+      @name ||= prefix_instance.names.find { |name| name.lang == "en" }.value
     end
 
     def prefixes_symbols
-      prefix_instance.symbol
+      prefix_instance.symbols.last
     end
 
     def to_mathml(_)

@@ -20,7 +20,7 @@ module Unitsml
     end
 
     def dim_symbols
-      dim_instance.send(@dim.processed_keys.last).dim_symbols.first
+      dim_instance.send(@dim.processed_keys.last).symbols.first
     end
 
     def to_mathml(_)

@@ -24,7 +24,7 @@ module Unitsml
     end
 
     def unit_symbols
-      unit_instance.unit_symbols.find { |symbol| symbol.id == unit_name }
+      unit_instance.symbols.find { |symbol| symbol.id == unit_name }
     end
 
     def numerator_value(mathml = true)
@@ -89,7 +89,7 @@ module Unitsml
     end
 
     def enumerated_name
-      unit_instance&.unit_name&.first
+      unit_instance.names.find { |name| name.lang == "en" }&.value
     end
 
     def prefix_name
@@ -97,15 +97,27 @@ module Unitsml
     end
 
     def system_type
-      unit_instance.unit_system.type
-    end
-
-    def system_name
-      unit_instance.unit_system.name
+      system_reference&.first&.id
     end
 
     def si_derived_bases
       unit_instance.si_derived_bases
+    end
+
+    def xml_postprocess_name
+      "#{prefix_name}#{unit_name}#{display_exp}"
+    end
+
+    private
+
+    def display_exp
+      return unless power_numerator
+
+      "^#{power_numerator}" if power_numerator != "1"
+    end
+
+    def system_reference
+      unit_instance.unit_system_reference
     end
   end
 end

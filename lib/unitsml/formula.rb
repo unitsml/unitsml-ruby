@@ -124,7 +124,7 @@ module Unitsml
 
     def units(options)
       all_units = extract_units(value)
-      norm_text = Utility.postprocess_normtext(all_units)
+      norm_text = all_units.map(&:xml_postprocess_name).join("*")
       dims = Utility.units2dimensions(extract_units(value))
       [
         Utility.unit(all_units, self, dims, norm_text, explicit_value&.dig(:name), options),

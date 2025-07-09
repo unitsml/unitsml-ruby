@@ -6,7 +6,7 @@ module Unitsml
 
     def initialize(text)
       @regexp = %r{(quantity|name|symbol|multiplier):\s*}
-      @text = text&.match(/unitsml\((.*)\)/) ? Regexp.last_match[1] : text
+      @text = extract_equation(text)
       @orig_text = @text
       @text = @text.gsub("−", "-")
       post_extras
@@ -68,6 +68,14 @@ module Unitsml
 
       key, _, value = text&.partition(":")
       @extras_hash[key&.to_sym] ||= value&.strip
+    end
+
+    private
+
+    def extract_equation(text)
+      return text unless text&.start_with?("unitsml(")
+
+      text.delete_prefix("unitsml(").delete_suffix(")")
     end
   end
 end
