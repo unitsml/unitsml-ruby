@@ -1,13 +1,22 @@
 # frozen_string_literal: true
 
 module Unitsml
-  UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0".freeze
+  extend self
 
-  def self.parse(string)
+  UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0"
+
+  def parse(string)
     Unitsml::Parser.new(string).parse
+  end
+
+  def register
+    @register ||= Lutaml::Model::GlobalRegister.lookup(
+      Lutaml::Model::Config.default_register,
+    )
   end
 end
 
+require "unitsdb"
 require "unitsml/error"
 require "unitsml/sqrt"
 require "unitsml/unit"
@@ -21,24 +30,28 @@ require "unitsml/unitsdb"
 require "unitsml/extender"
 require "unitsml/dimension"
 require "unitsml/transform"
+require "unitsml/unitsdb/unit"
 require "unitsml/unitsdb/units"
 require "unitsml/unitsdb/prefixes"
 require "unitsml/unitsdb/dimension"
 require "unitsml/unitsdb/dimensions"
 require "unitsml/unitsdb/quantities"
+require "unitsml/unitsdb/prefix_reference"
 require "unitsml/unitsdb/dimension_quantity"
-require "unitsdb/config"
-Unitsdb::Config.models = {
-  units: Unitsml::Unitsdb::Units,
-  prefixes: Unitsml::Unitsdb::Prefixes,
-  dimension: Unitsml::Unitsdb::Dimension,
-  dimensions: Unitsml::Unitsdb::Dimensions,
-  quantities: Unitsml::Unitsdb::Quantities,
-  dimension_quantity: Unitsml::Unitsdb::DimensionQuantity,
-}
-require "unitsdb"
 
-DEFAULT_XML_ADAPTER = RUBY_ENGINE == "opal" ? :oga :  :ox
-Lutaml::Model::Config.xml_adapter_type = DEFAULT_XML_ADAPTER
-# TODO: Remove Moxml adapter assignment when Lutaml::Model utilizes Moxml completely
-Moxml::Config.default_adapter = DEFAULT_ADAPTER
+{
+  ::Unitsdb::Unit => Unitsml::Unitsdb::Unit,
+  ::Unitsdb::Units => Unitsml::Unitsdb::Units,
+  ::Unitsdb::Prefixes => Unitsml::Unitsdb::Prefixes,
+  ::Unitsdb::Dimension => Unitsml::Unitsdb::Dimension,
+  ::Unitsdb::PrefixReference => Unitsml::Unitsdb::PrefixReference,
+  ::Unitsdb::DimensionDetails => Unitsml::Unitsdb::DimensionQuantity,
+}.each do |key, value|
+  Unitsml.register
+    .register_global_type_substitution(
+      from_type: key,
+      to_type: value,
+    )
+end
+
+Lutaml::Model::Config.xml_adapter_type = RUBY_ENGINE == "opal" ? :oga : :ox

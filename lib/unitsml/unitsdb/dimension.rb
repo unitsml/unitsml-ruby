@@ -2,25 +2,14 @@
 
 module Unitsml
   module Unitsdb
-    class Dimension
-      attr_accessor :vector,
-                    :id,
-                    :dimensionless
-
-      attr_reader :length,
-                  :mass,
-                  :time,
-                  :electric_current,
-                  :thermodynamic_temperature,
-                  :amount_of_substance,
-                  :luminous_intensity,
-                  :plane_angle,
-                  :parsables,
+    class Dimension < ::Unitsdb::Dimension
+      attr_reader :parsables,
                   :parsable,
-                  :processed_keys
+                  :processed_keys,
+                  :vector
 
-      def initialize(register = nil)
-        @register = register
+      def initialize(attrs, register: nil)
+        super(attrs, register: register)
         @parsables = {}
         @processed_keys = []
         @parsable = false
@@ -68,8 +57,12 @@ module Unitsml
 
       def set_vector
         @vector ||= Utility::DIMS_VECTOR.map do |h|
-          public_send(Utility.underscore(h))&.power_numerator
+          public_send(Utility.underscore(h))&.power
         end.join(":")
+      end
+
+      def id
+        identifiers.find { |id| id.type == "nist" }&.id
       end
 
       private
@@ -79,7 +72,7 @@ module Unitsml
 
         instance_variable_set(:"@#{instance_var}", value)
         @processed_keys << instance_var.to_s
-        return if value.dim_symbols.nil? || value.dim_symbols.empty?
+        return if Lutaml::Model::Utils.empty?(value.symbols)
 
         @parsable = true
         value.dim_symbols_ids(@parsables, id)

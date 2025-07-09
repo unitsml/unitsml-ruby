@@ -17,7 +17,7 @@ RSpec.describe Unitsml::Parser do
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi mathvariant='normal'>mm</mi><mo>&#x22c5;</mo><msup><mrow><mi mathvariant='normal'>s</mi></mrow><mrow><mo>&#x2212;</mo><mn>2</mn></mrow></msup></math>
         </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="meter" prefix="m"/>
+            <EnumeratedRootUnit unit="metre" prefix="m"/>
             <EnumeratedRootUnit unit="second" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -49,7 +49,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_um" dimensionURL="#NISTd1">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">um</UnitName>
           <UnitSymbol type="HTML">&micro;m</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -57,7 +57,7 @@ RSpec.describe Unitsml::Parser do
         </math>
         </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="meter" prefix="u"/>
+            <EnumeratedRootUnit unit="metre" prefix="u"/>
           </RootUnits>
         </Unit>
 
@@ -87,7 +87,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu5" dimensionURL="#NISTd5">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">kelvin</UnitName>
           <UnitSymbol type="HTML">&#176;K</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -99,10 +99,6 @@ RSpec.describe Unitsml::Parser do
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd5">
           <ThermodynamicTemperature symbol="Theta" powerNumerator="1"/>
         </Dimension>
-
-        <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq5" quantityType="base" dimensionURL="#NISTd5">
-          <QuantityName xml:lang="en-US">thermodynamic temperature</QuantityName>
-        </Quantity>
       XML
     end
 
@@ -117,7 +113,7 @@ RSpec.describe Unitsml::Parser do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu147">
           <UnitSystem name="not_SI" type="not_SI" xml:lang="en-US"/>
-          <UnitName xml:lang="en">minute (minute of arc)</UnitName>
+          <UnitName xml:lang="en">arcminute</UnitName>
           <UnitSymbol type="HTML">&#8242;</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <mi mathvariant='normal'>&#8242;</mi>
@@ -156,18 +152,13 @@ RSpec.describe Unitsml::Parser do
           </UnitSymbol>
         </Unit>
 
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd9">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd98">
           <PlaneAngle symbol="phi" powerNumerator="1"/>
         </Dimension>
 
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L0">
           <Length symbol="L" powerNumerator="0"/>
         </Dimension>
-
-        <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq9" dimensionURL="#NISTd9" quantityType="base">
-          <QuantityName xml:lang="en-US">plane angle</QuantityName>
-          <QuantityName xml:lang="en-US">angle</QuantityName>
-        </Quantity>
       XML
     end
 
@@ -180,7 +171,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(Hz)" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu31" dimensionURL="#NISTd24">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu31" dimensionURL="#NISTd101">
           <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
           <UnitName xml:lang="en">hertz</UnitName>
           <UnitSymbol type="HTML">Hz</UnitSymbol>
@@ -192,6 +183,10 @@ RSpec.describe Unitsml::Parser do
         </Unit>
 
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd24">
+          <Time symbol="T" powerNumerator="-1"/>
+        </Dimension>
+
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd101">
           <Time symbol="T" powerNumerator="-1"/>
         </Dimension>
 
@@ -252,8 +247,8 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1" dimensionURL="#NISTd1">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
-          <UnitName xml:lang="en">meter</UnitName>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitName xml:lang="en">metre</UnitName>
           <UnitSymbol type="HTML">m</UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -311,7 +306,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu27" dimensionURL="#NISTd2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">gram</UnitName>
           <UnitSymbol type="HTML">g</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -825,7 +820,7 @@ RSpec.describe Unitsml::Parser do
           </UnitSymbol>
           <RootUnits>
             <EnumeratedRootUnit unit="watt" prefix="m"/>
-            <EnumeratedRootUnit unit="meter" prefix="c" powerNumerator="-2"/>
+            <EnumeratedRootUnit unit="metre" prefix="c" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
 
@@ -947,7 +942,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm0.5" dimensionURL="#D_L0.5">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">mm^0.5</UnitName>
           <UnitSymbol type="HTML">mm<sup>0.5</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -963,7 +958,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="meter" prefix="m" powerNumerator="0.5"/>
+            <EnumeratedRootUnit unit="metre" prefix="m" powerNumerator="0.5"/>
           </RootUnits>
         </Unit>
 
@@ -1041,9 +1036,9 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(m^(-2))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_m-2" dimensionURL="#D_L-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
-          <UnitName xml:lang="en">m^-2</UnitName>
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#NISTd96">
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -1060,9 +1055,13 @@ RSpec.describe Unitsml::Parser do
           </UnitSymbol>
         </Unit>
 
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd96">
           <Length symbol="L" powerNumerator="-2"/>
         </Dimension>
+
+        <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq190" quantityType="base" dimensionURL="#NISTd96">
+          <QuantityName xml:lang="en-US" xmlns="https://schema.unitsml.org/unitsml/1.0">fluence</QuantityName>
+        </Quantity>
       XML
     end
 
@@ -1099,7 +1098,7 @@ RSpec.describe Unitsml::Parser do
           <RootUnits>
             <EnumeratedRootUnit unit="candela"/>
             <EnumeratedRootUnit unit="steradian"/>
-            <EnumeratedRootUnit unit="meter" powerNumerator="-2"/>
+            <EnumeratedRootUnit unit="metre" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
 
@@ -1179,7 +1178,7 @@ RSpec.describe Unitsml::Parser do
           </math>
         </UnitSymbol>
         <RootUnits>
-          <EnumeratedRootUnit unit="meter"/>
+          <EnumeratedRootUnit unit="metre"/>
           <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
         </RootUnits>
       </Unit>
@@ -1219,7 +1218,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="meter"/>
+            <EnumeratedRootUnit unit="metre"/>
             <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -1259,7 +1258,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="meter"/>
+            <EnumeratedRootUnit unit="metre"/>
             <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -1294,9 +1293,9 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml((((m^-2))))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_m-2" dimensionURL="#D_L-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
-          <UnitName xml:lang="en">m^-2</UnitName>
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#NISTd96">
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">(m<sup>&#x2212;2</sup>)</UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -1317,9 +1316,13 @@ RSpec.describe Unitsml::Parser do
           </UnitSymbol>
         </Unit>
 
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd96">
           <Length symbol="L" powerNumerator="-2"/>
         </Dimension>
+
+        <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq190" quantityType="base" dimensionURL="#NISTd96">
+          <QuantityName xml:lang="en-US" xmlns="https://schema.unitsml.org/unitsml/1.0">fluence</QuantityName>
+        </Quantity>
       XML
     end
 
@@ -1344,13 +1347,13 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #35 example" do
+  context "contains Unitsml #37 example" do
     let(:exp) { "unitsml((m^-2))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_m-2" dimensionURL="#D_L-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
-          <UnitName xml:lang="en">m^-2</UnitName>
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#NISTd96">
+          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -1367,9 +1370,13 @@ RSpec.describe Unitsml::Parser do
           </UnitSymbol>
         </Unit>
 
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd96">
           <Length symbol="L" powerNumerator="-2"/>
         </Dimension>
+
+        <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq190" quantityType="base" dimensionURL="#NISTd96">
+          <QuantityName xml:lang="en-US" xmlns="https://schema.unitsml.org/unitsml/1.0">fluence</QuantityName>
+        </Quantity>
       XML
     end
 
@@ -1378,7 +1385,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #35 example" do
+  context "contains Unitsml #38 example" do
     let(:exp) { "unitsml(sqrt((dim_Theta)))" }
     let(:expected_value) do
       <<~XML

@@ -2,15 +2,9 @@
 
 module Unitsml
   module Unitsdb
-    class Dimensions
-      attr_accessor :dimensions
-
-      def initialize(register = nil)
-        @register = register
-      end
-
+    class Dimensions < ::Unitsdb::Dimensions
       def find_by_vector(vector)
-        vectored
+        @vectored ||= dimensions.each(&:set_vector)
         find(:vector, vector)
       end
 
@@ -30,13 +24,11 @@ module Unitsml
 
       private
 
-      def vectored
-        @vectored ||= dimensions.each(&:set_vector)
-      end
-
       def find(field, matching_data)
         dimensions.find { |dim| dim.send(field) == matching_data }
       end
     end
   end
 end
+
+Unitsml.register.register_model(Unitsml::Unitsdb::Dimensions, id: :unitsdb_dimensions)

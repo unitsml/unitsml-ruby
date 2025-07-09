@@ -43,6 +43,7 @@ module Unitsml
       Mass
       Time
     ].freeze
+    SI_UNIT_SYSTEM = %w[si-base SI_derived_special SI_derived_non-special].freeze
 
     class << self
       def unit_instance(unit)
@@ -74,6 +75,7 @@ module Unitsml
         dim_hash = dims.each_with_object({}) { |h, m| m[h[:dimension]] = h }
         dims_vector = DIMS_VECTOR.map { |h| dim_hash.dig(h, :exponent) }.join(":")
         id = Unitsdb.dimensions.find_by_vector(dims_vector)&.id and return id.to_s
+
         "D_" + dims.map do |d|
           (U2D.dig(d[:unit], :symbol) || Dim2D.dig(d[:id], :symbol)) +
             (d[:exponent] == 1 ? "" : float_to_display(d[:exponent]))
@@ -85,18 +87,18 @@ module Unitsml
       end
 
       def decompose_unit(u)
-        if u&.unit_name == "g" || u.system_type == "SI_base"
+        if u&.unit_name == "g" || Lutaml::Model::Utils.snake_case(u.system_type) == "si_base"
           { unit: u, prefix: u&.prefix }
         elsif u.si_derived_bases.nil? || u.si_derived_bases.empty?
           { unit: Unit.new("unknown") }
         else
           u.si_derived_bases.each_with_object([]) do |k, object|
-            prefix = if !k.prefix.nil? && !k.prefix.empty?
-                       combine_prefixes(prefix_object(k.prefix), u.prefix)
+            prefix = if !k.prefix_reference.nil?
+                       combine_prefixes(prefix_object(k.prefix_reference), u.prefix)
                      else
                        u.prefix
                      end
-            unit_name = Unitsdb.units.find_by_id(k.id).unit_symbols.first.id
+            unit_name = Unitsdb.units.find_by_id(k.unit_reference.id).symbols.first.id
             exponent = (k.power&.to_i || 1) * (u.power_numerator&.to_f || 1)
             object << { prefix: prefix,
                    unit: Unit.new(unit_name, exponent, prefix: prefix),
@@ -144,7 +146,7 @@ module Unitsml
         attributes = {
           id: unit_id(norm_text),
           system: unitsystem(units),
-          name: unitname(units, norm_text, name),
+          name: unitname(norm_text),
           symbol: unitsymbols(formula, options),
           root_units: rootunits(units),
         }
@@ -157,34 +159,29 @@ module Unitsml
           .gsub(/⋅/, "&#x22c5;")
       end
 
-      def unitname(units, text, name)
+      def unitname(text)
         Model::Units::Name.new(
-          name: unit_instance(text)&.unit_name&.first || text
+          name: (unit_instance(text)&.en_name || text),
         )
-      end
-
-      def postprocess_normtext(units)
-        units.map { |u| "#{u.prefix_name}#{u.unit_name}#{display_exp(u)}" }.join("*")
-      end
-
-      def display_exp(unit)
-        unit.power_numerator && unit.power_numerator != "1" ? "^#{unit.power_numerator}" : ""
       end
 
       def unitsymbols(formula, options)
         %w[HTML MathMl].map do |lang|
-          Model::Units::Symbol.new(type: lang, content: formula.public_send(:"to_#{lang.downcase}", options))
+          Model::Units::Symbol.new(
+            type: lang,
+            content: formula.public_send(:"to_#{lang.downcase}", options),
+          )
         end
       end
 
       def unitsystem(units)
         ret = []
-        if units.any? { |u| u.system_name != "SI" }
+        if units.any? { |u| !SI_UNIT_SYSTEM.include?(u.system_type) }
           ret << Model::Units::System.new(name: "not_SI", type: "not_SI")
         end
-        if units.any? { |u| u.system_name == "SI" }
+        if units.any? { |u| SI_UNIT_SYSTEM.include?(u.system_type) }
           if units.size == 1
-            base = units[0].system_type == "SI-base"
+            base = units[0].system_type == "si-base"
             base = true if units[0].unit_name == "g" && units[0]&.prefix_name == "k"
           end
           ret << Model::Units::System.new(name: "SI", type: (base ? 'SI_base' : 'SI_derived'))
@@ -193,10 +190,9 @@ module Unitsml
       end
 
       def dimension(norm_text)
-        dim_url = unit_instance(norm_text)&.dimension_url
-        return unless dim_url
+        dim_id = unit_instance(norm_text)&.dimension_url
+        return unless dim_id
 
-        dim_id = dim_url.sub("#", '')
         dim_attrs = { id: dim_id }
         dimid2dimensions(dim_id)&.compact&.each { |u| dimension1(u, dim_attrs) }
         Model::Dimension.new(dim_attrs).to_xml
@@ -225,13 +221,13 @@ module Unitsml
           {
             dimension: humanized,
             symbol: dim_quantity.symbol,
-            exponent: dim_quantity.power_numerator,
+            exponent: dim_quantity.power,
           }
         end
       end
 
       def prefixes(units, options)
-        uniq_prefixes = units.map { |unit| unit.prefix }.compact.uniq {|d| d.prefix_name }
+        uniq_prefixes = units.map { |unit| unit.prefix }.compact.uniq { |d| d.prefix_name }
         uniq_prefixes.map do |prefix|
           prefix_attrs = { prefix_base: prefix&.base, prefix_power: prefix&.power, id: prefix&.id }
           type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode, LaTeX: :to_latex, HTML: :to_html }
@@ -260,10 +256,10 @@ module Unitsml
       end
 
       def unit_id(text)
-        norm_text = text
         text = text&.gsub(/[()]/, "")
-        unit = unit_instance(norm_text)
-        "U_#{unit ? unit.id&.gsub(/'/, '_') : norm_text&.gsub(/\*/, '.')&.gsub(/\^/, '')}"
+        unit = unit_instance(text)
+
+        "U_#{unit ? unit.nist_id&.gsub(/'/, '_') : text&.gsub(/\*/, '.')&.gsub(/\^/, '')}"
       end
 
       def dimension_components(dims)
@@ -276,40 +272,38 @@ module Unitsml
 
       def quantity(normtext, quantity)
         unit = unit_instance(normtext)
-        return unless unit && unit.quantity_reference.size == 1 ||
+        return unless unit && unit.quantity_references.size == 1 ||
           quantity_instance(quantity)
 
-        id = (quantity || unit.quantity_reference&.first&.url).sub('#', '')
-        dim_url = unit.dimension_url
-        attributes = { id: id, name: quantity_name(id), dimension_url: dim_url }
-        Model::Quantity.new(attributes).to_xml
+        id = (quantity || unit.quantity_references&.first&.id)
+        Model::Quantity.new(
+          id: id,
+          name: quantity_name(id),
+          dimension_url: "##{unit.dimension_url}",
+        ).to_xml
       end
 
       def quantity_name(id)
-        quantity_instance(id)&.quantity_name&.map do |content|
-          Model::Quantities::Name.new(content: content)
+        quantity_instance(id)&.names&.filter_map do |name|
+          next unless name.lang == "en"
+
+          Model::Quantities::Name.new(content: name.value)
         end
       end
 
       def string_to_html_entity(string)
-        entities = HTMLEntities.new
-        entities.encode(
+        HTMLEntities.new.encode(
           string.frozen? ? string : string.force_encoding('UTF-8'),
           :hexadecimal,
         )
       end
 
       def html_entity_to_unicode(string)
-        entities = HTMLEntities.new
-        entities.decode(string)
+        HTMLEntities.new.decode(string)
       end
 
       def underscore(str)
         str.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
-      end
-
-      def class_name(klass)
-        klass.name.split("::").last
       end
     end
   end
