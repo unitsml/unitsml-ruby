@@ -179,7 +179,7 @@ module Unitsml
         end
         if units.any?(&:si_system_type?)
           if units.size == 1
-            base = units[0].system_type == "si-base"
+            base = units[0].downcase_system_type == "si_base"
             base = true if units[0].unit_name == "g" && units[0]&.prefix_name == "k"
           end
           ret << Model::Units::System.new(name: "SI", type: (base ? 'SI_base' : 'SI_derived'))

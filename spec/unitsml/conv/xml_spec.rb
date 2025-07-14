@@ -1114,7 +1114,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #33 example" do
+  context "contains Unitsml #32 example" do
     let(:exp) { "unitsml(mOhm)" }
     let(:expected_value) do
       <<~XML
@@ -1154,7 +1154,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #34 example from plurimath/plurimath#321" do
+  context "contains Unitsml #33 example from plurimath/plurimath#321" do
     let(:exp) { "unitsml(m*kg^-2)" }
     let(:space_expected_value) do
       <<~XML
@@ -1289,7 +1289,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #35 example" do
+  context "contains Unitsml #34 example" do
     let(:exp) { "unitsml((((m^-2))))" }
     let(:expected_value) do
       <<~XML
@@ -1331,7 +1331,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #36 example" do
+  context "contains Unitsml #35 example" do
     let(:exp) { "unitsml((dim_Theta^10)*dim_L^2)" }
     let(:expected_value) do
       <<~XML
@@ -1347,7 +1347,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #37 example" do
+  context "contains Unitsml #36 example" do
     let(:exp) { "unitsml((m^-2))" }
     let(:expected_value) do
       <<~XML
@@ -1385,7 +1385,7 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
-  context "contains Unitsml #38 example" do
+  context "contains Unitsml #37 example" do
     let(:exp) { "unitsml(sqrt((dim_Theta)))" }
     let(:expected_value) do
       <<~XML
