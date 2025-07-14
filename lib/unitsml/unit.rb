@@ -111,9 +111,11 @@ module Unitsml
     end
 
     def si_system_type?
-      SI_UNIT_SYSTEM.include?(
-        Lutaml::Model::Utils.snake_case(system_type),
-      )
+      SI_UNIT_SYSTEM.include?(downcase_system_type)
+    end
+
+    def downcase_system_type
+      Lutaml::Model::Utils.snake_case(system_type)
     end
 
     private
