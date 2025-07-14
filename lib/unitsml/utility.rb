@@ -43,7 +43,6 @@ module Unitsml
       Mass
       Time
     ].freeze
-    SI_UNIT_SYSTEM = %w[si-base SI_derived_special SI_derived_non-special].freeze
 
     class << self
       def unit_instance(unit)
@@ -146,7 +145,7 @@ module Unitsml
         attributes = {
           id: unit_id(norm_text),
           system: unitsystem(units),
-          name: unitname(norm_text),
+          name: unitname(norm_text, name),
           symbol: unitsymbols(formula, options),
           root_units: rootunits(units),
         }
@@ -159,10 +158,9 @@ module Unitsml
           .gsub(/⋅/, "&#x22c5;")
       end
 
-      def unitname(text)
-        Model::Units::Name.new(
-          name: (unit_instance(text)&.en_name || text),
-        )
+      def unitname(text, name)
+        name ||= unit_instance(text)&.en_name || text
+        Model::Units::Name.new(name: name)
       end
 
       def unitsymbols(formula, options)
@@ -176,10 +174,10 @@ module Unitsml
 
       def unitsystem(units)
         ret = []
-        if units.any? { |u| !SI_UNIT_SYSTEM.include?(u.system_type) }
+        if units.any? { |u| !u.si_system_type? }
           ret << Model::Units::System.new(name: "not_SI", type: "not_SI")
         end
-        if units.any? { |u| SI_UNIT_SYSTEM.include?(u.system_type) }
+        if units.any?(&:si_system_type?)
           if units.size == 1
             base = units[0].system_type == "si-base"
             base = true if units[0].unit_name == "g" && units[0]&.prefix_name == "k"

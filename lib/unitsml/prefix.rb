@@ -27,14 +27,14 @@ module Unitsml
       @name ||= prefix_instance.names.find { |name| name.lang == "en" }.value
     end
 
-    def prefixes_symbols
+    def prefix_symbols
       prefix_instance.symbols.last
     end
 
     def to_mathml(_)
       symbol = Utility.string_to_html_entity(
         Utility.html_entity_to_unicode(
-          prefixes_symbols.html
+          prefix_symbols.html
         ),
       )
       return symbol unless only_instance
@@ -43,23 +43,23 @@ module Unitsml
     end
 
     def to_latex(_)
-      prefixes_symbols.latex
+      prefix_symbols.latex
     end
 
     def to_asciimath(_)
-      prefixes_symbols.ascii
+      prefix_symbols.ascii
     end
 
     def to_html(_)
-      prefixes_symbols.html
+      prefix_symbols.html
     end
 
     def to_unicode(_)
-      prefixes_symbols.unicode
+      prefix_symbols.unicode
     end
 
     def symbolid
-      prefixes_symbols.ascii if prefixes_symbols
+      prefix_symbols.ascii if prefix_symbols
     end
 
     def base
