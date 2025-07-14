@@ -45,12 +45,12 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #2 example" do
-    let(:exp) { "unitsml(um)" }
+    let(:exp) { "unitsml(um, name: micro meter)" }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_um" dimensionURL="#NISTd1">
           <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
-          <UnitName xml:lang="en">um</UnitName>
+          <UnitName xml:lang="en">micro meter</UnitName>
           <UnitSymbol type="HTML">&micro;m</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <mi mathvariant='normal'>µm</mi>
@@ -202,12 +202,12 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #7 example" do
-    let(:exp) { "unitsml(kg)" }
+    let(:exp) { "unitsml(kg, name: custom kilogram)" }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu2" dimensionURL="#NISTd2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
-          <UnitName xml:lang="en">kilogram</UnitName>
+          <UnitName xml:lang="en">custom kilogram</UnitName>
           <UnitSymbol type="HTML">kg</UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">

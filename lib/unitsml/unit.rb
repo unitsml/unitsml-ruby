@@ -4,6 +4,8 @@ module Unitsml
   class Unit
     attr_accessor :unit_name, :power_numerator, :prefix
 
+    SI_UNIT_SYSTEM = %w[si_base si_derived_special si_derived_non_special].freeze
+
     def initialize(unit_name,
                    power_numerator = nil,
                    prefix: nil)
@@ -106,6 +108,12 @@ module Unitsml
 
     def xml_postprocess_name
       "#{prefix_name}#{unit_name}#{display_exp}"
+    end
+
+    def si_system_type?
+      SI_UNIT_SYSTEM.include?(
+        Lutaml::Model::Utils.snake_case(system_type),
+      )
     end
 
     private
