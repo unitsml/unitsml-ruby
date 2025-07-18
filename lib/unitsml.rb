@@ -1,20 +1,24 @@
 # frozen_string_literal: true
 
+require "lutaml/model"
 module Unitsml
   extend self
 
   UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0"
+  REGISTER_ID = :unitsml_ruby
 
   def parse(string)
     Unitsml::Parser.new(string).parse
   end
 
   def register
-    @register ||= Lutaml::Model::GlobalRegister.lookup(
-      Lutaml::Model::Config.default_register,
-    )
+    @register ||= Lutaml::Model::GlobalRegister.lookup(REGISTER_ID)
   end
 end
+
+Lutaml::Model::GlobalRegister.register(
+  Lutaml::Model::Register.new(Unitsml::REGISTER_ID)
+)
 
 require "unitsdb"
 require "unitsml/error"
