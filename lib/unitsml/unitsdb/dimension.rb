@@ -8,8 +8,8 @@ module Unitsml
                   :processed_keys,
                   :vector
 
-      def initialize(attrs, register: nil)
-        super(attrs, register: register)
+      def initialize(attrs)
+        super
         @parsables = {}
         @processed_keys = []
         @parsable = false
