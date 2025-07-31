@@ -31,4 +31,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'mml'
   spec.add_dependency 'parslet'
   spec.add_dependency 'unitsdb', '~> 2.0'
+  spec.add_dependency 'lutaml-model', '0.7.6'
 end
