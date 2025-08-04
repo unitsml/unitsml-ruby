@@ -8,10 +8,10 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(mm*s^-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("m")
-      expect(formula[:units]).to eq("m")
+      expect(formula[:prefix]).to eq("m")
+      expect(formula[:unit]).to eq("m")
       expect(formula[:extender]).to eq("*")
-      expect(formula[:sequence][:units]).to eq("s")
+      expect(formula[:sequence][:unit]).to eq("s")
       expect(formula[:sequence][:integer]).to eq("-2")
     end
   end
@@ -20,8 +20,8 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(um)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("u")
-      expect(formula[:units]).to eq("m")
+      expect(formula[:prefix]).to eq("u")
+      expect(formula[:unit]).to eq("m")
     end
   end
 
@@ -29,7 +29,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(degK)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("degK")
+      expect(formula[:unit]).to eq("degK")
     end
   end
 
@@ -37,7 +37,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(prime)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("prime")
+      expect(formula[:unit]).to eq("prime")
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(rad)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("rad")
+      expect(formula[:unit]).to eq("rad")
     end
   end
 
@@ -53,7 +53,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(Hz)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("Hz")
+      expect(formula[:unit]).to eq("Hz")
     end
   end
 
@@ -61,8 +61,8 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(kg)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("k")
-      expect(formula[:units]).to eq("g")
+      expect(formula[:prefix]).to eq("k")
+      expect(formula[:unit]).to eq("g")
     end
   end
 
@@ -70,7 +70,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(m)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("m")
+      expect(formula[:unit]).to eq("m")
     end
   end
 
@@ -78,7 +78,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(sqrt(Hz))" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:sqrt][:units]).to eq("Hz")
+      expect(formula[:sqrt][:unit]).to eq("Hz")
     end
   end
 
@@ -86,8 +86,8 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(kg)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("k")
-      expect(formula[:units]).to eq("g")
+      expect(formula[:prefix]).to eq("k")
+      expect(formula[:unit]).to eq("g")
     end
   end
 
@@ -95,7 +95,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(g)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("g")
+      expect(formula[:unit]).to eq("g")
     end
   end
 
@@ -103,7 +103,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(hp)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("hp")
+      expect(formula[:unit]).to eq("hp")
     end
   end
 
@@ -113,10 +113,10 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:prefixes]).to eq("k")
-      expect(formula[:units]).to eq("g")
+      expect(formula[:prefix]).to eq("k")
+      expect(formula[:unit]).to eq("g")
       expect(formula[:extender]).to eq("*")
-      expect(sequence[:units]).to eq("s")
+      expect(sequence[:unit]).to eq("s")
       expect(sequence[:integer]).to eq("-2")
     end
   end
@@ -125,7 +125,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(degK)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("degK")
+      expect(formula[:unit]).to eq("degK")
     end
   end
 
@@ -133,8 +133,8 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(mbar)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("m")
-      expect(formula[:units]).to eq("bar")
+      expect(formula[:prefix]).to eq("m")
+      expect(formula[:unit]).to eq("bar")
     end
   end
 
@@ -142,7 +142,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(p-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("p")
+      expect(formula[:prefix]).to eq("p")
     end
   end
 
@@ -150,7 +150,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(h-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("h")
+      expect(formula[:prefix]).to eq("h")
     end
   end
 
@@ -158,7 +158,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(da-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("da")
+      expect(formula[:prefix]).to eq("da")
     end
   end
 
@@ -166,7 +166,7 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(u-)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("u")
+      expect(formula[:prefix]).to eq("u")
     end
   end
 
@@ -176,9 +176,9 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:units]).to eq("A")
+      expect(formula[:unit]).to eq("A")
       expect(formula[:extender]).to eq("*")
-      expect(sequence[:units]).to eq("C")
+      expect(sequence[:unit]).to eq("C")
       expect(sequence[:integer]).to eq("3")
     end
   end
@@ -189,9 +189,9 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:units]).to eq("A")
+      expect(formula[:unit]).to eq("A")
       expect(formula[:extender]).to eq("/")
-      expect(sequence[:units]).to eq("C")
+      expect(sequence[:unit]).to eq("C")
       expect(sequence[:integer]).to eq("-3")
     end
   end
@@ -202,12 +202,12 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:units]).to eq("J")
+      expect(formula[:unit]).to eq("J")
       expect(formula[:extender]).to eq("/")
-      expect(sequence[:prefixes]).to eq("k")
-      expect(sequence[:units]).to eq("g")
+      expect(sequence[:prefix]).to eq("k")
+      expect(sequence[:unit]).to eq("g")
       expect(sequence[:extender]).to eq("*")
-      expect(sequence[:sequence][:units]).to eq("K")
+      expect(sequence[:sequence][:unit]).to eq("K")
     end
   end
 
@@ -215,8 +215,8 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(kg^-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:prefixes]).to eq("k")
-      expect(formula[:units]).to eq("g")
+      expect(formula[:prefix]).to eq("k")
+      expect(formula[:unit]).to eq("g")
       expect(formula[:integer]).to eq("-2")
     end
   end
@@ -235,10 +235,10 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:prefixes]).to eq("k")
-      expect(formula[:units]).to eq("g")
+      expect(formula[:prefix]).to eq("k")
+      expect(formula[:unit]).to eq("g")
       expect(formula[:extender]).to eq("*")
-      expect(sequence[:units]).to eq("s")
+      expect(sequence[:unit]).to eq("s")
       expect(sequence[:integer]).to eq("-2")
     end
   end
@@ -249,11 +249,11 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:prefixes]).to eq("m")
-      expect(formula[:units]).to eq("W")
+      expect(formula[:prefix]).to eq("m")
+      expect(formula[:unit]).to eq("W")
       expect(formula[:extender]).to eq("*")
-      expect(sequence[:prefixes]).to eq("c")
-      expect(sequence[:units]).to eq("m")
+      expect(sequence[:prefix]).to eq("c")
+      expect(sequence[:unit]).to eq("m")
       expect(sequence[:integer]).to eq("-2")
     end
   end
@@ -264,9 +264,9 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:dimensions]).to eq("dim_Theta")
+      expect(formula[:dimension]).to eq("dim_Theta")
       expect(formula[:extender]).to eq("*")
-      expect(sequence[:dimensions]).to eq("dim_L")
+      expect(sequence[:dimension]).to eq("dim_L")
       expect(sequence[:integer]).to eq("2")
     end
   end
@@ -277,10 +277,10 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       sequence = formula[:sequence]
 
-      expect(formula[:dimensions]).to eq("dim_Theta")
+      expect(formula[:dimension]).to eq("dim_Theta")
       expect(formula[:integer]).to eq("10")
       expect(formula[:extender]).to eq("*")
-      expect(sequence[:dimensions]).to eq("dim_L")
+      expect(sequence[:dimension]).to eq("dim_L")
       expect(sequence[:integer]).to eq("2")
     end
   end
@@ -289,10 +289,10 @@ RSpec.describe Unitsml::Parse do
     let(:exp) { "unitsml(Hz^10*darcy^100)" }
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula[:units]).to eq("Hz")
+      expect(formula[:unit]).to eq("Hz")
       expect(formula[:integer]).to eq("10")
       expect(formula[:extender]).to eq("*")
-      expect(formula[:sequence][:units]).to eq("darcy")
+      expect(formula[:sequence][:unit]).to eq("darcy")
       expect(formula[:sequence][:integer]).to eq("100")
     end
   end

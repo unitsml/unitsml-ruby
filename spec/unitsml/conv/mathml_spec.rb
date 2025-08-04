@@ -676,4 +676,396 @@ RSpec.describe Unitsml::Parser do
       expect(formula.to_mathml(multiplier: "X", explicit_parenthesis: false)).to be_equivalent_to(expected_value)
     end
   end
+
+  describe "implicit extender" do
+    context "implicit extender example #1 from issue#53" do
+      let(:exp) { "unitsml(J(kg*K))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="normal">J</mi>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">kg</mi>
+              <mo>)</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #2 from issue#53" do
+      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="normal">J</mi>
+            <mo>&#x22c5;</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">kg</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1</mn>
+              </mrow>
+            </msup>
+            <mo>&#x22c5;</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">K</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1</mn>
+              </mrow>
+            </msup>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #3 from issue#53" do
+      let(:exp) { "unitsml(J/mol * K)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="normal">J</mi>
+            <mo>&#x22c5;</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">mol</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1</mn>
+              </mrow>
+            </msup>
+            <mo>&#x22c5;</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">K</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1</mn>
+              </mrow>
+            </msup>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #4 from issue#53" do
+      let(:exp) { "unitsml(J/(mol * K))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="normal">J</mi>
+            <mo>&#x22c5;</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">mol</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1</mn>
+              </mrow>
+            </msup>
+            <mo>&#x22c5;</mo>
+            <msup>
+              <mrow>
+                <mi mathvariant="normal">K</mi>
+              </mrow>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1</mn>
+              </mrow>
+            </msup>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #5" do
+      let(:exp) { "unitsml((mol * K)J)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">mol</mi>
+              <mo>)</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+            <mi mathvariant="normal">J</mi>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #6" do
+      let(:exp) { "unitsml((mol * K) J)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">mol</mi>
+              <mo>)</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+            <mi mathvariant="normal">J</mi>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #7" do
+      let(:exp) { "unitsml((mol * K)(J))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">mol</mi>
+              <mo>)</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">J</mi>
+              <mo>)</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #8" do
+      let(:exp) { "unitsml((mol * K)(J*K))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">mol</mi>
+              <mo>)</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">J</mi>
+              <mo>)</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #9" do
+      let(:exp) { "unitsml(E_erlang(mm)*kg)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="normal">E</mi>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="normal">mm</mi>
+              <mo>)</mo>
+            </mrow>
+            <mo>&#x22c5;</mo>
+            <mi mathvariant="normal">kg</mi>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #10" do
+      let(:exp) { "unitsml(dim_Theta(dim_phi))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="sans-serif">Θ</mi>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="sans-serif">φ</mi>
+              <mo>)</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #11" do
+      let(:exp) { "unitsml((dim_Theta)dim_L)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="sans-serif">Θ</mi>
+              <mo>)</mo>
+            </mrow>
+            <mi mathvariant="sans-serif">L</mi>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #12" do
+      let(:exp) { "unitsml(dim_Theta dim_L)" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="sans-serif">Θ</mi>
+            <mo>&#x22c5;</mo>
+            <mi mathvariant="sans-serif">L</mi>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #13" do
+      let(:exp) { "unitsml(dim_phi (dim_Theta dim_L))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="sans-serif">φ</mi>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="sans-serif">Θ</mi>
+              <mo>)</mo>
+              <mi mathvariant="sans-serif">L</mi>
+              <mo>&#x22c5;</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #14" do
+      let(:exp) { "unitsml((dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="sans-serif">φ</mi>
+              <mrow>
+                <mo>(</mo>
+                <mi mathvariant="sans-serif">I</mi>
+                <mo>)</mo>
+              </mrow>
+              <mo>)</mo>
+            </mrow>
+            <mrow>
+              <mo>(</mo>
+              <mrow>
+                <mo>(</mo>
+                <mi mathvariant="sans-serif">Θ</mi>
+                <mo>)</mo>
+              </mrow>
+              <mi mathvariant="sans-serif">L</mi>
+              <mo>)</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+
+    context "implicit extender example #15" do
+      let(:exp) { "unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:expected_value) do
+        <<~MATHML
+          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mi mathvariant="sans-serif">φ</mi>
+            <mrow>
+              <mo>(</mo>
+              <mi mathvariant="sans-serif">I</mi>
+              <mo>)</mo>
+            </mrow>
+            <mrow>
+              <mo>(</mo>
+              <mrow>
+                <mo>(</mo>
+                <mi mathvariant="sans-serif">Θ</mi>
+                <mo>)</mo>
+              </mrow>
+              <mi mathvariant="sans-serif">L</mi>
+              <mo>)</mo>
+            </mrow>
+          </math>
+        MATHML
+      end
+
+      it "matches the UnitsML to MathML converted value" do
+        expect(mathml).to be_equivalent_to(expected_value)
+      end
+    end
+  end
 end

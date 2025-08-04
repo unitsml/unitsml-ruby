@@ -16,7 +16,7 @@ module Unitsml
     end
 
     def prefix_instance
-      @prefix ||= Unitsdb.prefixes.find_by_symbol_name(prefix_name)
+      @prefix_instance ||= Unitsdb.prefixes.find_by_symbol_name(prefix_name)
     end
 
     def id

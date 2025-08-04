@@ -287,4 +287,141 @@ RSpec.describe Unitsml::Parser do
       expect(formula).to be_equivalent_to(expected_value)
     end
   end
+
+  describe "implicit extender" do
+    context "implicit extender example #1 from issue#53" do
+      let(:exp) { "unitsml(J(kg*K))" }
+      let(:expected_value) { "\\ensuremath{\\mathrm{J}}(k\\ensuremath{\\mathrm{g}}/\\ensuremath{\\mathrm{K}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #2 from issue#53" do
+      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
+      let(:expected_value) { "\\ensuremath{\\mathrm{J}}/k\\ensuremath{\\mathrm{g}}^-1/\\ensuremath{\\mathrm{K}}^-1" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #3 from issue#53" do
+      let(:exp) { "unitsml(J/mol * K)" }
+      let(:expected_value) { "\\ensuremath{\\mathrm{J}}/\\ensuremath{\\mathrm{mol}}^-1/\\ensuremath{\\mathrm{K}}^-1" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #4 from issue#53" do
+      let(:exp) { "unitsml(J/(mol * K))" }
+      let(:expected_value) { "\\ensuremath{\\mathrm{J}}/\\ensuremath{\\mathrm{mol}}^-1/\\ensuremath{\\mathrm{K}}^-1" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #5" do
+      let(:exp) { "unitsml((mol * K)J)" }
+      let(:expected_value) { "(\\ensuremath{\\mathrm{mol}}/\\ensuremath{\\mathrm{K}})\\ensuremath{\\mathrm{J}}" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #6" do
+      let(:exp) { "unitsml((mol * K) J)" }
+      let(:expected_value) { "(\\ensuremath{\\mathrm{mol}}/\\ensuremath{\\mathrm{K}})\\ensuremath{\\mathrm{J}}" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #7" do
+      let(:exp) { "unitsml((mol * K)(J))" }
+      let(:expected_value) { "(\\ensuremath{\\mathrm{mol}}/\\ensuremath{\\mathrm{K}})(\\ensuremath{\\mathrm{J}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #8" do
+      let(:exp) { "unitsml((mol * K)(J*K))" }
+      let(:expected_value) { "(\\ensuremath{\\mathrm{mol}}/\\ensuremath{\\mathrm{K}})(\\ensuremath{\\mathrm{J}}/\\ensuremath{\\mathrm{K}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #9" do
+      let(:exp) { "unitsml(E_erlang(mm)*kg)" }
+      let(:expected_value) { "\\ensuremath{\\mathrm{E}}(m\\ensuremath{\\mathrm{m}})/k\\ensuremath{\\mathrm{g}}" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #10" do
+      let(:exp) { "unitsml(dim_Theta(dim_phi))" }
+      let(:expected_value) { "\\ensuremath{\\mathsf{\\Theta}}(\\ensuremath{\\mathsf{\\phi}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #11" do
+      let(:exp) { "unitsml((dim_Theta)dim_L)" }
+      let(:expected_value) { "(\\ensuremath{\\mathsf{\\Theta}})\\ensuremath{\\mathsf{L}}" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #12" do
+      let(:exp) { "unitsml(dim_Theta dim_L)" }
+      let(:expected_value) { "\\ensuremath{\\mathsf{\\Theta}}/\\ensuremath{\\mathsf{L}}" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #13" do
+      let(:exp) { "unitsml(dim_phi (dim_Theta dim_L))" }
+      let(:expected_value) { "\\ensuremath{\\mathsf{\\phi}}(\\ensuremath{\\mathsf{\\Theta}}/\\ensuremath{\\mathsf{L}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #14" do
+      let(:exp) { "unitsml((dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:expected_value) { "(\\ensuremath{\\mathsf{\\phi}}(\\ensuremath{\\mathsf{I}}))((\\ensuremath{\\mathsf{\\Theta}})\\ensuremath{\\mathsf{L}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #15" do
+      let(:exp) { "unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:expected_value) { "\\ensuremath{\\mathsf{\\phi}}(\\ensuremath{\\mathsf{I}})((\\ensuremath{\\mathsf{\\Theta}})\\ensuremath{\\mathsf{L}})" }
+
+      it "matches the UnitsML to LaTeX converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+  end
 end
