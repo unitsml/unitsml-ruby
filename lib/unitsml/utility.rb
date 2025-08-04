@@ -303,6 +303,12 @@ module Unitsml
       def underscore(str)
         str.gsub(/([a-z])([A-Z])/, '\1_\2').downcase
       end
+
+      def set_to_fence(set)
+        return set unless set.is_a?(Fenced)
+
+        Fenced.new("(", set, ")")
+      end
     end
   end
 end

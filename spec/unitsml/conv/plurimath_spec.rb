@@ -201,4 +201,526 @@ RSpec.describe Unitsml::Parser do
       expect(formula).to eq(expected_value)
     end
   end
+
+  describe "implicit extender" do
+    context "implicit extender example #1 from issue#53" do
+      let(:exp) { "unitsml(J(kg*K))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("J"),
+            "normal",
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("kg"),
+                "normal",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("K"),
+                "normal",
+                )
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          )
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #2 from issue#53" do
+      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("J"),
+            "normal",
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("kg"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ])
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("K"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ]),
+          )
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #3 from issue#53" do
+      let(:exp) { "unitsml(J/mol * K)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("J"),
+            "normal",
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("mol"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ]),
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("K"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ]),
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #4 from issue#53" do
+      let(:exp) { "unitsml(J/(mol * K))" }
+      let(:expected_value) do
+
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("J"),
+            "normal",
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("mol"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ]),
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::Power.new(
+            Plurimath::Math::Function::FontStyle::Normal.new(
+              Plurimath::Math::Symbols::Symbol.new("K"),
+              "normal",
+            ),
+            Plurimath::Math::Formula.new([
+              Plurimath::Math::Symbols::Minus.new,
+              Plurimath::Math::Number.new("1"),
+            ]),
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #5" do
+      let(:exp) { "unitsml((mol * K)J)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("mol"),
+                "normal",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("K"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("J"),
+            "normal",
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #6" do
+      let(:exp) { "unitsml((mol * K) J)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("mol"),
+                "normal",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("K"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("J"),
+            "normal",
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #7" do
+      let(:exp) { "unitsml((mol * K)(J))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("mol"),
+                "normal",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("K"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("J"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #8" do
+      let(:exp) { "unitsml((mol * K)(J*K))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("mol"),
+                "normal",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("K"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("J"),
+                "normal",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("K"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #9" do
+      let(:exp) { "unitsml(E_erlang(mm)*kg)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("E"),
+            "normal",
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::Normal.new(
+                Plurimath::Math::Symbols::Symbol.new("mm"),
+                "normal",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::FontStyle::Normal.new(
+            Plurimath::Math::Symbols::Symbol.new("kg"),
+            "normal",
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #10" do
+      let(:exp) { "unitsml(dim_Theta(dim_phi))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::SansSerif.new(
+            Plurimath::Math::Symbols::UpcaseTheta.new,
+            "sans-serif",
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::Phi.new,
+                "sans-serif",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #11" do
+      let(:exp) { "unitsml((dim_Theta)dim_L)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::UpcaseTheta.new,
+                "sans-serif",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::FontStyle::SansSerif.new(
+            Plurimath::Math::Symbols::Symbol.new("L"),
+            "sans-serif",
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #12" do
+      let(:exp) { "unitsml(dim_Theta dim_L)" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::SansSerif.new(
+            Plurimath::Math::Symbols::UpcaseTheta.new,
+            "sans-serif",
+          ),
+          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Function::FontStyle::SansSerif.new(
+            Plurimath::Math::Symbols::Symbol.new("L"),
+            "sans-serif",
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #13" do
+      let(:exp) { "unitsml(dim_phi (dim_Theta dim_L))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::SansSerif.new(
+            Plurimath::Math::Symbols::Phi.new,
+            "sans-serif",
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::UpcaseTheta.new,
+                "sans-serif",
+              ),
+              Plurimath::Math::Symbols::Cdot.new,
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::Symbol.new("L"),
+                "sans-serif",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #14" do
+      let(:exp) { "unitsml((dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::Phi.new,
+                "sans-serif",
+              ),
+              Plurimath::Math::Function::Fenced.new(
+                Plurimath::Math::Symbols::Paren::Lround.new,
+                [
+                  Plurimath::Math::Function::FontStyle::SansSerif.new(
+                    Plurimath::Math::Symbols::Symbol.new("I"),
+                    "sans-serif",
+                  ),
+                ],
+                Plurimath::Math::Symbols::Paren::Rround.new,
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::Fenced.new(
+                Plurimath::Math::Symbols::Paren::Lround.new,
+                [
+                  Plurimath::Math::Function::FontStyle::SansSerif.new(
+                    Plurimath::Math::Symbols::UpcaseTheta.new,
+                    "sans-serif",
+                  ),
+                ],
+                Plurimath::Math::Symbols::Paren::Rround.new,
+              ),
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::Symbol.new("L"),
+                "sans-serif",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context "implicit extender example #15" do
+      let(:exp) { "unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:expected_value) do
+        Plurimath::Math::Formula.new([
+          Plurimath::Math::Function::FontStyle::SansSerif.new(
+            Plurimath::Math::Symbols::Phi.new,
+            "sans-serif",
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::Symbol.new("I"),
+                "sans-serif",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Function::Fenced.new(
+                Plurimath::Math::Symbols::Paren::Lround.new,
+                [
+                  Plurimath::Math::Function::FontStyle::SansSerif.new(
+                    Plurimath::Math::Symbols::UpcaseTheta.new,
+                    "sans-serif",
+                  ),
+                ],
+                Plurimath::Math::Symbols::Paren::Rround.new,
+              ),
+              Plurimath::Math::Function::FontStyle::SansSerif.new(
+                Plurimath::Math::Symbols::Symbol.new("L"),
+                "sans-serif",
+              ),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
+        ])
+      end
+
+      it "matches the UnitsML to UnicodeMath converted value" do
+        expect(formula).to eq(expected_value)
+      end
+    end
+  end
 end

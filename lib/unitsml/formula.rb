@@ -35,9 +35,9 @@ module Unitsml
         math.ordered = true
         math.element_order ||= []
         value.each { |instance| process_value(math, instance.to_mathml(options)) }
-
         generated_math = math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
         reset_mml_models if plurimath_available?
+
         generated_math
       else
         value.map { |obj| obj.to_mathml(options) }

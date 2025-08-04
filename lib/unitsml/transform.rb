@@ -3,94 +3,109 @@
 require "parslet"
 module Unitsml
   class Transform < Parslet::Transform
-    rule(sqrt: simple(:sqrt))       { Sqrt.new(sqrt) }
-    rule(units: simple(:unit))      { Unit.new(unit.to_s) }
-    rule(prefixes: simple(:prefix)) { Prefix.new(prefix.to_s) }
-    rule(dimensions: simple(:dimension)) { Dimension.new(dimension.to_s) }
-    rule(intermediate_exp: simple(:int_exp)) { int_exp }
+    rule(sqrt: simple(:sqrt)) { Sqrt.new(sqrt) }
+    rule(unit: simple(:unit)) { Unit.new(unit.to_s) }
+    rule(dimension: simple(:dimension)) { Dimension.new(dimension.to_s) }
+    rule(prefix: simple(:prefix)) { Prefix.new(prefix.to_s) }
+    rule(int_exp: simple(:int_exp)) { int_exp }
+    rule(implicit_extended: simple(:implicit_extended)) { implicit_extended }
 
-    rule(units: simple(:unit),
-         integer: simple(:integer)) do
-      Unit.new(unit.to_s, integer.to_s)
+    rule(int_exp: simple(:int_exp),
+         sequence: simple(:sequence)) do
+      Formula.new([int_exp, sequence])
     end
 
-    rule(dimensions: simple(:dimension),
-         integer: simple(:integer)) do
-      Dimension.new(dimension.to_s, integer.to_s)
+    rule(first_int_exp_set: simple(:first_set),
+         second_set: simple(:second_set)) do
+      Formula.new([Utility.set_to_fence(first_set), second_set])
     end
 
-    rule(prefixes: simple(:prefix),
-         units: simple(:unit)) do
+    rule(first_int_exp_set: simple(:first_set),
+         second_int_exp_set: simple(:second_set)) do
+      Formula.new(
+        [Utility.set_to_fence(first_set), Utility.set_to_fence(second_set),
+        ]
+      )
+    end
+
+    rule(first_set: simple(:first_set),
+         second_set: simple(:second_set)) do
+      Formula.new(
+        [
+          first_set,
+          second_set,
+        ]
+      )
+    end
+
+    rule(first_set: simple(:first_set),
+         second_int_exp_set: simple(:second_set)) do
+      Formula.new(
+        [
+          first_set,
+          Utility.set_to_fence(second_set),
+        ]
+      )
+    end
+
+    rule(prefix: simple(:prefix),
+         unit: simple(:unit)) do
       Unit.new(unit.to_s, prefix: Prefix.new(prefix.to_s))
     end
 
-    rule(prefixes: simple(:prefix),
-         units: simple(:unit),
+    rule(unit: simple(:unit),
          integer: simple(:integer)) do
-      prefix_obj = Prefix.new(prefix.to_s)
-      Unit.new(unit.to_s, integer.to_s, prefix: prefix_obj)
+      Unit.new(unit.to_s, integer)
     end
 
-    rule(open_parenthesis: simple(:open_paren),
-         int_exp: simple(:exp),
-         close_parenthesis: simple(:close_paren)) do
-      Fenced.new(open_paren.to_s, exp, close_paren.to_s)
+    rule(dimension: simple(:dimension),
+         integer: simple(:integer)) do
+      Dimension.new(dimension.to_s, integer)
     end
 
-    rule(open_parenthesis: simple(:open_paren),
-         int_exp: simple(:exp),
-         close_parenthesis: simple(:close_paren),
-         sequence: sequence(:sequence)) do
+    rule(prefix: simple(:prefix),
+         unit: simple(:unit),
+         integer: simple(:integer)) do
+      Unit.new(unit.to_s, integer.to_s, prefix: Prefix.new(prefix.to_s))
+    end
+
+    rule(first_set: simple(:first_set),
+         extender: simple(:extender),
+         second_set: simple(:second_set)) do
       Formula.new(
         [
-          Fenced.new(open_paren.to_s, exp, close_paren.to_s),
-          sequence,
-        ],
+          first_set,
+          Extender.new(extender.to_s),
+          second_set,
+        ]
       )
     end
 
-    rule(intermediate_exp: simple(:intermediate_exp),
+    rule(implicit_extended: simple(:implicit_extended),
          extender: simple(:extender),
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          intermediate_exp,
+          implicit_extended,
           Extender.new(extender.to_s),
           sequence,
-        ],
+        ]
       )
     end
 
-    rule(prefixes: simple(:prefix),
-         units: simple(:unit),
-         integer: simple(:integer),
-         extender: simple(:extender),
-         sequence: simple(:sequence),) do
-      prefix_obj = Prefix.new(prefix.to_s)
-      unit_object = Unit.new(unit.to_s, integer.to_s, prefix: prefix_obj)
-      Formula.new(
-        [
-          unit_object,
-          Extender.new(extender.to_s),
-          sequence,
-        ],
-      )
-    end
-
-    rule(prefixes: simple(:prefix),
-         units: simple(:unit),
+    rule(int_exp: simple(:int_exp),
          extender: simple(:extender),
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Unit.new(unit.to_s, prefix: Prefix.new(prefix.to_s)),
+          int_exp,
           Extender.new(extender.to_s),
           sequence,
-        ],
+        ]
       )
     end
 
-    rule(units: simple(:unit),
+    rule(unit: simple(:unit),
          extender: simple(:extender),
          sequence: simple(:sequence)) do
       Formula.new(
@@ -98,24 +113,11 @@ module Unitsml
           Unit.new(unit.to_s),
           Extender.new(extender.to_s),
           sequence,
-        ],
+        ]
       )
     end
 
-    rule(units: simple(:unit),
-         integer: simple(:integer),
-         extender: simple(:extender),
-         sequence: simple(:sequence)) do
-      Formula.new(
-        [
-          Unit.new(unit.to_s, integer.to_s),
-          Extender.new(extender.to_s),
-          sequence,
-        ],
-      )
-    end
-
-    rule(dimensions: simple(:dimension),
+    rule(dimension: simple(:dimension),
          extender: simple(:extender),
          sequence: simple(:sequence)) do
       Formula.new(
@@ -123,18 +125,68 @@ module Unitsml
           Dimension.new(dimension.to_s),
           Extender.new(extender.to_s),
           sequence,
+        ]
+      )
+    end
+
+    rule(open_paren: simple(:open_paren),
+         int_exp: simple(:int_exp),
+         close_paren: simple(:close_paren)) do
+      Fenced.new(
+        open_paren.to_s,
+        int_exp,
+        close_paren.to_s,
+      )
+    end
+
+    rule(unit: simple(:unit),
+         integer: simple(:int),
+         extender: simple(:ext),
+         sequence: simple(:sequence)) do
+      Formula.new(
+        [
+          Unit.new(unit.to_s, int.to_s),
+          Extender.new(ext.to_s),
+          sequence,
         ],
       )
     end
 
-    rule(dimensions: simple(:dimension),
-         integer: simple(:integer),
-         extender: simple(:extender),
+    rule(dimension: simple(:dimension),
+         integer: simple(:int),
+         extender: simple(:ext),
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Dimension.new(dimension.to_s, integer.to_s),
-          Extender.new(extender.to_s),
+          Dimension.new(dimension.to_s, int.to_s),
+          Extender.new(ext.to_s),
+          sequence,
+        ],
+      )
+    end
+
+    rule(prefix: simple(:prefix),
+         unit: simple(:unit),
+         extender: simple(:ext),
+         sequence: simple(:sequence)) do
+      Formula.new(
+        [
+          Unit.new(unit.to_s, prefix: Prefix.new(prefix.to_s)),
+          Extender.new(ext.to_s),
+          sequence,
+        ],
+      )
+    end
+
+    rule(prefix: simple(:prefix),
+         unit: simple(:unit),
+         integer: simple(:integer),
+         extender: simple(:ext),
+         sequence: simple(:sequence)) do
+      Formula.new(
+        [
+          Unit.new(unit.to_s, integer.to_s, prefix: Prefix.new(prefix.to_s)),
+          Extender.new(ext.to_s),
           sequence,
         ],
       )
