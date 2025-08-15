@@ -305,7 +305,7 @@ module Unitsml
       end
 
       def set_to_fence(set)
-        return set unless set.is_a?(Fenced)
+        return set if set.is_a?(Fenced)
 
         Fenced.new("(", set, ")")
       end
