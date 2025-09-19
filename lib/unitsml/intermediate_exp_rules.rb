@@ -3,7 +3,11 @@ module Unitsml
     include Parslet
 
     # Rules for slashed number
-    rule(:slashed_number_int_exp) { slashed_number | (opening_paren >> slashed_number >> closing_paren) }
+    rule(:slashed_number_int_exp) { slashed_number | (opening_paren >> slashed_number_named_int_exp.as(:int_exp) >> closing_paren) }
+    rule(:slashed_number_named_int_exp) do
+      (opening_paren.as(:open_paren) >> slashed_number_int_exp >> closing_paren.as(:close_paren)) |
+        slashed_number_int_exp
+    end
 
     # Rules for prefixes_units
     rule(:wrapper_prefixes_units_value) { int_exp_prefixes_units | prefixes_units_int_exp }

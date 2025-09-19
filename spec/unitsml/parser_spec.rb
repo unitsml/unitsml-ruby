@@ -12,9 +12,16 @@ RSpec.describe Unitsml::Parser do
           Unitsml::Unit.new("K"),
           Unitsml::Extender.new("/"),
           Unitsml::Formula.new([
-            Unitsml::Unit.new("g", "-1", prefix: Unitsml::Prefix.new("k")),
+            Unitsml::Unit.new(
+              "g",
+              Unitsml::Number.new("-1"),
+              prefix: Unitsml::Prefix.new("k"),
+            ),
             Unitsml::Extender.new("*"),
-            Unitsml::Unit.new("m", "-1"),
+            Unitsml::Unit.new(
+              "m",
+              Unitsml::Number.new("-1"),
+            ),
           ])
         ],
         explicit_value: nil,
@@ -55,7 +62,11 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("cal_th"),
           Unitsml::Extender.new("/"),
-          Unitsml::Unit.new("m", "-2", prefix: Unitsml::Prefix.new("c")),
+          Unitsml::Unit.new(
+            "m",
+            Unitsml::Number.new("-2"),
+            prefix: Unitsml::Prefix.new("c"),
+          ),
         ],
         explicit_value: { name: "langley" },
         norm_text: "cal_th/cm^2",
@@ -95,9 +106,12 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("c")),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("s", "-2")
+          Unitsml::Unit.new(
+            "s",
+            Unitsml::Number.new("-2"),
+          ),
         ],
-        explicit_value: { symbol: "cm cdot s^-2"},
+        explicit_value: { symbol: "cm cdot s^-2" },
         root: true,
         orig_text: "cm*s^-2, symbol: cm cdot s^-2",
         norm_text: "cm*s^-2"
@@ -116,7 +130,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("c")),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("s", "-2"),
+          Unitsml::Unit.new(
+            "s",
+            Unitsml::Number.new("-2"),
+          ),
         ],
         explicit_value: { multiplier: "xx" },
         norm_text: "cm*s^-2",
@@ -137,7 +154,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("s", "-2"),
+          Unitsml::Unit.new(
+            "s",
+            Unitsml::Number.new("-2"),
+          ),
         ],
         root: true,
         orig_text: "mm*s^-2",
@@ -282,7 +302,10 @@ RSpec.describe Unitsml::Parser do
       Unitsml::Formula.new(
         [
           Unitsml::Sqrt.new(
-            Unitsml::Unit.new("Hz", "0.5"),
+            Unitsml::Unit.new(
+              "Hz",
+              Unitsml::Number.new("0.5"),
+            ),
           ),
         ],
         norm_text: "sqrt(Hz)",
@@ -339,7 +362,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("g", prefix: Unitsml::Prefix.new("k")),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("s", "-2")
+          Unitsml::Unit.new(
+            "s",
+            Unitsml::Number.new("-2"),
+          ),
         ],
         norm_text: "kg*s^-2",
         orig_text: "kg*s^-2",
@@ -449,7 +475,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("A"),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("C", "3"),
+          Unitsml::Unit.new(
+            "C",
+            Unitsml::Number.new("3"),
+          ),
         ],
         norm_text: "A*C^3",
         orig_text: "A*C^3",
@@ -469,7 +498,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("A"),
           Unitsml::Extender.new("/"),
-          Unitsml::Unit.new("C", "3"),
+          Unitsml::Unit.new(
+            "C",
+            Unitsml::Number.new("3"),
+          ),
         ],
         norm_text: "A/C^-3",
         orig_text: "A/C^-3",
@@ -490,9 +522,16 @@ RSpec.describe Unitsml::Parser do
           Unitsml::Unit.new("J"),
           Unitsml::Extender.new("/"),
           Unitsml::Formula.new([
-            Unitsml::Unit.new("g", "-1", prefix: Unitsml::Prefix.new("k")),
+            Unitsml::Unit.new(
+              "g",
+              Unitsml::Number.new("-1"),
+              prefix: Unitsml::Prefix.new("k"),
+            ),
             Unitsml::Extender.new("*"),
-            Unitsml::Unit.new("K", "-1"),
+            Unitsml::Unit.new(
+              "K",
+              Unitsml::Number.new("-1"),
+            ),
           ])
         ],
         norm_text: "J/kg*K",
@@ -511,7 +550,11 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("g", "-2", prefix: Unitsml::Prefix.new("k")),
+          Unitsml::Unit.new(
+            "g",
+            Unitsml::Number.new("-2"),
+            prefix: Unitsml::Prefix.new("k"),
+          ),
         ],
         norm_text: "kg^-2",
         orig_text: "kg^-2",
@@ -531,7 +574,11 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("W", prefix: Unitsml::Prefix.new("m")),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("m", "-2", prefix: Unitsml::Prefix.new("c")),
+          Unitsml::Unit.new(
+            "m",
+            Unitsml::Number.new("-2"),
+            prefix: Unitsml::Prefix.new("c"),
+          ),
         ],
         norm_text: "mW*cm(-2)",
         orig_text: "mW*cm(-2)",
@@ -551,7 +598,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Dimension.new("dim_Theta"),
           Unitsml::Extender.new("*"),
-          Unitsml::Dimension.new("dim_L", "2"),
+          Unitsml::Dimension.new(
+            "dim_L",
+            Unitsml::Number.new("2"),
+          ),
         ],
         norm_text: "dim_Theta*dim_L^2",
         orig_text: "dim_Theta*dim_L^2",
@@ -569,9 +619,15 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Dimension.new("dim_Theta", "10"),
+          Unitsml::Dimension.new(
+            "dim_Theta",
+            Unitsml::Number.new("10"),
+          ),
           Unitsml::Extender.new("*"),
-          Unitsml::Dimension.new("dim_L", "2"),
+          Unitsml::Dimension.new(
+            "dim_L",
+            Unitsml::Number.new("2"),
+          ),
         ],
         norm_text: "dim_Theta^10*dim_L^2",
         orig_text: "dim_Theta^10*dim_L^2",
@@ -589,9 +645,15 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("Hz", "10"),
+          Unitsml::Unit.new(
+            "Hz",
+            Unitsml::Number.new("10"),
+          ),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("darcy", "-100"),
+          Unitsml::Unit.new(
+            "darcy",
+            Unitsml::Number.new("-100"),
+          ),
         ],
         norm_text: "Hz^10*darcy^-100",
         orig_text: "Hz^10*darcy^-100",
@@ -611,7 +673,10 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Unit.new("W"),
           Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("m", "-2"),
+          Unitsml::Unit.new(
+            "m",
+            Unitsml::Number.new("-2"),
+          ),
         ],
         norm_text: "W*m^(-2)",
         orig_text: "W*m^(-2)",
@@ -751,17 +816,29 @@ RSpec.describe Unitsml::Parser do
         [
           Unitsml::Fenced.new(
             "(",
-            Unitsml::Dimension.new("dim_Theta", "12"),
+            Unitsml::Dimension.new(
+              "dim_Theta",
+              Unitsml::Number.new("12"),
+            ),
             ")",
           ),
           Unitsml::Extender.new("*"),
           Unitsml::Formula.new([
-            Unitsml::Dimension.new("dim_N", "12"),
+            Unitsml::Dimension.new(
+              "dim_N",
+              Unitsml::Number.new("12"),
+            ),
             Unitsml::Extender.new("*"),
             Unitsml::Formula.new([
-              Unitsml::Dimension.new("dim_J", "10"),
+              Unitsml::Dimension.new(
+                "dim_J",
+                Unitsml::Number.new("10"),
+              ),
               Unitsml::Extender.new("*"),
-              Unitsml::Dimension.new("dim_Theta", "10"),
+              Unitsml::Dimension.new(
+                "dim_Theta",
+                Unitsml::Number.new("10"),
+              ),
             ]),
           ])
         ],
@@ -786,9 +863,15 @@ RSpec.describe Unitsml::Parser do
           Unitsml::Fenced.new(
             "(",
             Unitsml::Formula.new([
-              Unitsml::Unit.new("A", "-1"),
+              Unitsml::Unit.new(
+                "A",
+                Unitsml::Number.new("-1"),
+              ),
               Unitsml::Extender.new("*"),
-              Unitsml::Unit.new("m", "-1"),
+              Unitsml::Unit.new(
+                "m",
+                Unitsml::Number.new("-1"),
+              ),
             ]),
             ")",
           ),
@@ -848,13 +931,16 @@ RSpec.describe Unitsml::Parser do
                 Unitsml::Extender.new(" "),
                 Unitsml::Unit.new(
                   "g",
-                  "-1",
+                  Unitsml::Number.new("-1"),
                   prefix: Unitsml::Prefix.new("k"),
                 ),
               ],
             ),
             Unitsml::Extender.new("*"),
-            Unitsml::Unit.new("K", "-1"),
+            Unitsml::Unit.new(
+              "K",
+              Unitsml::Number.new("-1"),
+            ),
           ],
           norm_text: "J kg^-1 * K^-1",
           orig_text: "J kg^-1 * K^-1",
@@ -876,9 +962,15 @@ RSpec.describe Unitsml::Parser do
             Unitsml::Extender.new("/"),
             Unitsml::Formula.new(
               [
-                Unitsml::Unit.new("mol", "-1"),
+                Unitsml::Unit.new(
+                  "mol",
+                  Unitsml::Number.new("-1"),
+                ),
                 Unitsml::Extender.new("*"),
-                Unitsml::Unit.new("K", "-1"),
+                Unitsml::Unit.new(
+                  "K",
+                  Unitsml::Number.new("-1"),
+                ),
               ],
             ),
           ],
@@ -902,9 +994,15 @@ RSpec.describe Unitsml::Parser do
             Unitsml::Extender.new("/"),
             Unitsml::Formula.new(
               [
-                Unitsml::Unit.new("mol", "-1"),
+                Unitsml::Unit.new(
+                  "mol",
+                  Unitsml::Number.new("-1"),
+                ),
                 Unitsml::Extender.new("*"),
-                Unitsml::Unit.new("K", "-1"),
+                Unitsml::Unit.new(
+                  "K",
+                  Unitsml::Number.new("-1"),
+                ),
               ],
             ),
           ],

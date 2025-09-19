@@ -44,4 +44,4 @@ module Unitsml
   end
 end
 
-Unitsml.register.register_model(Unitsml::Unitsdb::Units, id: :unitsdb_units)
+Unitsml.register_model(Unitsml::Unitsdb::Units, id: :unitsdb_units)
