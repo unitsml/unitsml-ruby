@@ -9,8 +9,8 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #1 example" do
-    let(:exp) { "unitsml(mm*s^-2)" }
-    let(:expected_value) { "m\\ensuremath{\\mathrm{m}}/\\ensuremath{\\mathrm{s}}^-2" }
+    let(:exp) { "unitsml(mm*s^((-2)))" }
+    let(:expected_value) { "m\\ensuremath{\\mathrm{m}}/\\ensuremath{\\mathrm{s}}^(-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula).to be_equivalent_to(expected_value)
@@ -108,8 +108,8 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #12 example" do
-    let(:exp) { "unitsml(kg*s^-2)" }
-    let(:expected_value) { "k\\ensuremath{\\mathrm{g}}/\\ensuremath{\\mathrm{s}}^-2" }
+    let(:exp) { "unitsml(kg*s^((-2)))" }
+    let(:expected_value) { "k\\ensuremath{\\mathrm{g}}/\\ensuremath{\\mathrm{s}}^(-2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula).to be_equivalent_to(expected_value)
@@ -216,8 +216,8 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #24 example" do
-    let(:exp) { "unitsml(dim_Theta*dim_L^2)" }
-    let(:expected_value) { "\\ensuremath{\\mathsf{\\Theta}}/\\ensuremath{\\mathsf{L}}^2" }
+    let(:exp) { "unitsml(dim_Theta*dim_L^((2)))" }
+    let(:expected_value) { "\\ensuremath{\\mathsf{\\Theta}}/\\ensuremath{\\mathsf{L}}^(2)" }
 
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula).to be_equivalent_to(expected_value)
@@ -225,8 +225,8 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #25 example" do
-    let(:exp) { "unitsml(dim_Theta^10*dim_L^2)" }
-    let(:expected_value) { "\\ensuremath{\\mathsf{\\Theta}}^10/\\ensuremath{\\mathsf{L}}^2" }
+    let(:exp) { "unitsml(dim_Theta^10*dim_L^((((2)))))" }
+    let(:expected_value) { "\\ensuremath{\\mathsf{\\Theta}}^10/\\ensuremath{\\mathsf{L}}^((2))" }
 
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula).to be_equivalent_to(expected_value)
@@ -299,8 +299,8 @@ RSpec.describe Unitsml::Parser do
     end
 
     context "implicit extender example #2 from issue#53" do
-      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
-      let(:expected_value) { "\\ensuremath{\\mathrm{J}}/k\\ensuremath{\\mathrm{g}}^-1/\\ensuremath{\\mathrm{K}}^-1" }
+      let(:exp) { "unitsml(J kg^-1 * K^((-1)))" }
+      let(:expected_value) { "\\ensuremath{\\mathrm{J}}/k\\ensuremath{\\mathrm{g}}^-1/\\ensuremath{\\mathrm{K}}^(-1)" }
 
       it "matches the UnitsML to LaTeX converted value" do
         expect(formula).to eq(expected_value)

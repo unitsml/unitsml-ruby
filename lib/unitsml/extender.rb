@@ -35,8 +35,7 @@ module Unitsml
     end
 
     def to_unicode(options)
-      extender = options[:multiplier] ||
-                   symbol == "*" ? "·" : symbol
+      extender = options[:multiplier] || (symbol == "*" ? "·" : symbol)
       multiplier(extender)
     end
 
@@ -45,16 +44,18 @@ module Unitsml
     def multiplier(extender, unicode: false, html: false)
       case extender
       when :space
-        if html
-          "&#xa0;"
-        else
-          unicode ? "&#x2062;" : " "
-        end
+        space_extender(html, unicode)
       when :nospace
         unicode ? "&#x2062;" : ""
       else
         unicode ? Utility.string_to_html_entity(extender) : extender
       end
+    end
+
+    def space_extender(html, unicode)
+      return "&#xa0;" if html
+
+      unicode ? "&#x2062;" : " "
     end
   end
 end

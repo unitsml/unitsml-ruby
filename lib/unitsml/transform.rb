@@ -7,6 +7,7 @@ module Unitsml
     rule(unit: simple(:unit)) { Unit.new(unit.to_s) }
     rule(dimension: simple(:dimension)) { Dimension.new(dimension.to_s) }
     rule(prefix: simple(:prefix)) { Prefix.new(prefix.to_s) }
+    rule(integer: simple(:integer)) { Number.new(integer.to_s) }
     rule(int_exp: simple(:int_exp)) { int_exp }
     rule(implicit_extended: simple(:implicit_extended)) { implicit_extended }
 
@@ -54,19 +55,19 @@ module Unitsml
     end
 
     rule(unit: simple(:unit),
-         integer: simple(:integer)) do
-      Unit.new(unit.to_s, integer)
+         power_numerator: simple(:power_numerator)) do
+      Unit.new(unit.to_s, power_numerator)
     end
 
     rule(dimension: simple(:dimension),
-         integer: simple(:integer)) do
-      Dimension.new(dimension.to_s, integer)
+         power_numerator: simple(:power_numerator)) do
+      Dimension.new(dimension.to_s, power_numerator)
     end
 
     rule(prefix: simple(:prefix),
          unit: simple(:unit),
-         integer: simple(:integer)) do
-      Unit.new(unit.to_s, integer.to_s, prefix: Prefix.new(prefix.to_s))
+         power_numerator: simple(:power_numerator)) do
+      Unit.new(unit.to_s, power_numerator, prefix: Prefix.new(prefix.to_s))
     end
 
     rule(first_set: simple(:first_set),
@@ -139,13 +140,23 @@ module Unitsml
       )
     end
 
+    rule(open_paren: simple(:open_paren),
+         integer: simple(:integer),
+         close_paren: simple(:close_paren)) do
+      Fenced.new(
+        open_paren.to_s,
+        Number.new(integer.to_s),
+        close_paren.to_s,
+      )
+    end
+
     rule(unit: simple(:unit),
-         integer: simple(:int),
+         power_numerator: simple(:power_numerator),
          extender: simple(:ext),
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Unit.new(unit.to_s, int.to_s),
+          Unit.new(unit.to_s, power_numerator),
           Extender.new(ext.to_s),
           sequence,
         ],
@@ -153,12 +164,12 @@ module Unitsml
     end
 
     rule(dimension: simple(:dimension),
-         integer: simple(:int),
+         power_numerator: simple(:power_numerator),
          extender: simple(:ext),
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Dimension.new(dimension.to_s, int.to_s),
+          Dimension.new(dimension.to_s, power_numerator),
           Extender.new(ext.to_s),
           sequence,
         ],
@@ -180,12 +191,12 @@ module Unitsml
 
     rule(prefix: simple(:prefix),
          unit: simple(:unit),
-         integer: simple(:integer),
+         power_numerator: simple(:power_numerator),
          extender: simple(:ext),
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Unit.new(unit.to_s, integer.to_s, prefix: Prefix.new(prefix.to_s)),
+          Unit.new(unit.to_s, power_numerator, prefix: Prefix.new(prefix.to_s)),
           Extender.new(ext.to_s),
           sequence,
         ],

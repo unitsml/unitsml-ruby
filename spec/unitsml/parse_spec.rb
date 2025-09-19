@@ -12,7 +12,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:unit]).to eq("m")
       expect(formula[:extender]).to eq("*")
       expect(formula[:sequence][:unit]).to eq("s")
-      expect(formula[:sequence][:integer]).to eq("-2")
+      expect(formula[:sequence][:power_numerator][:integer]).to eq("-2")
     end
   end
 
@@ -117,7 +117,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:unit]).to eq("g")
       expect(formula[:extender]).to eq("*")
       expect(sequence[:unit]).to eq("s")
-      expect(sequence[:integer]).to eq("-2")
+      expect(sequence[:power_numerator][:integer]).to eq("-2")
     end
   end
 
@@ -179,7 +179,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:unit]).to eq("A")
       expect(formula[:extender]).to eq("*")
       expect(sequence[:unit]).to eq("C")
-      expect(sequence[:integer]).to eq("3")
+      expect(sequence[:power_numerator][:integer]).to eq("3")
     end
   end
 
@@ -192,7 +192,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:unit]).to eq("A")
       expect(formula[:extender]).to eq("/")
       expect(sequence[:unit]).to eq("C")
-      expect(sequence[:integer]).to eq("-3")
+      expect(sequence[:power_numerator][:integer]).to eq("-3")
     end
   end
 
@@ -217,7 +217,7 @@ RSpec.describe Unitsml::Parse do
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula[:prefix]).to eq("k")
       expect(formula[:unit]).to eq("g")
-      expect(formula[:integer]).to eq("-2")
+      expect(formula[:power_numerator][:integer]).to eq("-2")
     end
   end
 
@@ -239,7 +239,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:unit]).to eq("g")
       expect(formula[:extender]).to eq("*")
       expect(sequence[:unit]).to eq("s")
-      expect(sequence[:integer]).to eq("-2")
+      expect(sequence[:power_numerator][:integer]).to eq("-2")
     end
   end
 
@@ -254,7 +254,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:extender]).to eq("*")
       expect(sequence[:prefix]).to eq("c")
       expect(sequence[:unit]).to eq("m")
-      expect(sequence[:integer]).to eq("-2")
+      expect(sequence[:power_numerator][:int_exp][:integer]).to eq("-2")
     end
   end
 
@@ -267,7 +267,7 @@ RSpec.describe Unitsml::Parse do
       expect(formula[:dimension]).to eq("dim_Theta")
       expect(formula[:extender]).to eq("*")
       expect(sequence[:dimension]).to eq("dim_L")
-      expect(sequence[:integer]).to eq("2")
+      expect(sequence[:power_numerator][:integer]).to eq("2")
     end
   end
 
@@ -278,10 +278,10 @@ RSpec.describe Unitsml::Parse do
       sequence = formula[:sequence]
 
       expect(formula[:dimension]).to eq("dim_Theta")
-      expect(formula[:integer]).to eq("10")
+      expect(formula[:power_numerator][:integer]).to eq("10")
       expect(formula[:extender]).to eq("*")
       expect(sequence[:dimension]).to eq("dim_L")
-      expect(sequence[:integer]).to eq("2")
+      expect(sequence[:power_numerator][:integer]).to eq("2")
     end
   end
 
@@ -290,10 +290,10 @@ RSpec.describe Unitsml::Parse do
 
     it "returns parslet tree of parsed Unitsml string" do
       expect(formula[:unit]).to eq("Hz")
-      expect(formula[:integer]).to eq("10")
+      expect(formula[:power_numerator][:integer]).to eq("10")
       expect(formula[:extender]).to eq("*")
       expect(formula[:sequence][:unit]).to eq("darcy")
-      expect(formula[:sequence][:integer]).to eq("100")
+      expect(formula[:sequence][:power_numerator][:integer]).to eq("100")
     end
   end
 end

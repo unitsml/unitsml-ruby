@@ -33,7 +33,7 @@ module Unitsml
         if object.is_a?(Sqrt)
           object = object.value
           if object.respond_to?(:power_numerator)
-            object.power_numerator = "0.5"
+            object.power_numerator = Number.new("0.5")
           else
             update_units_exponents([object], inverse, true)
           end
@@ -41,12 +41,11 @@ module Unitsml
 
         case object
         when Unit
-          next object.power_numerator = "0.5" if sqrt
+          next object.power_numerator = Number.new("0.5") if sqrt
           next unless inverse
 
-          exponent = inverse ? "-#{object&.power_numerator || '1'}" : object.power_numerator
-          object.power_numerator = exponent&.sub(/^--+/, "")
-        when Dimension then object.power_numerator = "0.5" if sqrt
+          inverse ? object.inverse_power_numerator : object.power_numerator
+        when Dimension then object.power_numerator = Number.new("0.5") if sqrt
         when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
         when Formula then update_units_exponents(object.value, inverse)
         when Fenced then update_units_exponents([object.value], inverse, sqrt)

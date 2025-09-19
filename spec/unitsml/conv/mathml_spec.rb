@@ -8,7 +8,7 @@ RSpec.describe Unitsml::Parser do
   subject(:mathml) { formula.to_mathml }
 
   context "contains Unitsml #1 example" do
-    let(:exp) { "unitsml(mm*s^-2)" }
+    let(:exp) { "unitsml(mm*s^((-2)))" }
 
     let(:expected_value) do
       <<~MATHML
@@ -16,12 +16,14 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant="normal">mm</mi>
           <mo>&#x22c5;</mo>
           <msup>
+            <mi mathvariant="normal">s</mi>
             <mrow>
-              <mi mathvariant="normal">s</mi>
-            </mrow>
-            <mrow>
-              <mo>&#x2212;</mo>
-              <mn>2</mn>
+              <mo>(</mo>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>2</mn>
+              </mrow>
+              <mo>)</mo>
             </mrow>
           </msup>
         </math>
@@ -144,12 +146,8 @@ RSpec.describe Unitsml::Parser do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>Hz</mi>
-            </mrow>
-            <mrow>
-              <mn>0.5</mn>
-            </mrow>
+            <mi mathvariant='normal'>Hz</mi>
+            <mn>0.5</mn>
           </msup>
         </math>
       MATHML
@@ -190,7 +188,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #12 example" do
-    let(:exp) { "unitsml(kg*s^-2)" }
+    let(:exp) { "unitsml(kg*s^(-2))" }
 
     let(:expected_value) do
       <<~MATHML
@@ -198,9 +196,7 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant='normal'>kg</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>s</mi>
-            </mrow>
+            <mi mathvariant='normal'>s</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>2</mn>
@@ -298,12 +294,8 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant='normal'>A</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>C</mi>
-            </mrow>
-            <mrow>
-              <mn>3</mn>
-            </mrow>
+            <mi mathvariant='normal'>C</mi>
+            <mn>3</mn>
           </msup>
         </math>
       MATHML
@@ -322,12 +314,8 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant='normal'>A</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>C</mi>
-            </mrow>
-            <mrow>
-              <mn>3</mn>
-            </mrow>
+            <mi mathvariant='normal'>C</mi>
+            <mn>3</mn>
           </msup>
         </math>
       MATHML
@@ -346,9 +334,7 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant='normal'>J</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>kg</mi>
-            </mrow>
+            <mi mathvariant='normal'>kg</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>1</mn>
@@ -356,9 +342,7 @@ RSpec.describe Unitsml::Parser do
           </msup>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>K</mi>
-            </mrow>
+            <mi mathvariant='normal'>K</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>1</mn>
@@ -379,9 +363,7 @@ RSpec.describe Unitsml::Parser do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>kg</mi>
-            </mrow>
+            <mi mathvariant='normal'>kg</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>2</mn>
@@ -404,9 +386,7 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant='normal'>kg</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>s</mi>
-            </mrow>
+            <mi mathvariant='normal'>s</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>2</mn>
@@ -429,9 +409,7 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant='normal'>mW</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>cm</mi>
-            </mrow>
+            <mi mathvariant='normal'>cm</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>2</mn>
@@ -446,7 +424,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #24 example" do
-    let(:exp) { "unitsml(dim_Theta*dim_L^2)" }
+    let(:exp) { "unitsml(dim_Theta*dim_L^((((2)))))" }
 
     let(:expected_value) do
       <<~MATHML
@@ -458,7 +436,13 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="sans-serif">L</mi>
             </mrow>
             <mrow>
-              <mn>2</mn>
+              <mo>(</mo>
+                <mrow>
+                  <mo>(</mo>
+                  <mn>2</mn>
+                  <mo>)</mo>
+                </mrow>
+              <mo>)</mo>
             </mrow>
           </msup>
         </math>
@@ -470,7 +454,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains Unitsml #25 example" do
-    let(:exp) { "unitsml(dim_Theta^10*dim_L^2)" }
+    let(:exp) { "unitsml(dim_Theta^10*dim_L^(2))" }
 
     let(:expected_value) do
       <<~MATHML
@@ -479,22 +463,19 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mi mathvariant='sans-serif'>&#x398;</mi>
             </mrow>
-            <mrow>
-              <mn>10</mn>
-            </mrow>
+            <mn>10</mn>
           </msup>
           <mo>&#x22c5;</mo>
           <msup>
             <mrow>
               <mi mathvariant='sans-serif'>L</mi>
             </mrow>
-            <mrow>
-              <mn>2</mn>
-            </mrow>
+            <mn>2</mn>
           </msup>
         </math>
       MATHML
     end
+
     it "returns parslet tree of parsed Unitsml string" do
       expect(mathml).to be_equivalent_to(expected_value)
     end
@@ -507,21 +488,13 @@ RSpec.describe Unitsml::Parser do
       <<~MATHML
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>Hz</mi>
-            </mrow>
-            <mrow>
-              <mn>10</mn>
-            </mrow>
+            <mi mathvariant='normal'>Hz</mi>
+            <mn>10</mn>
           </msup>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant='normal'>d</mi>
-            </mrow>
-            <mrow>
-              <mn>100</mn>
-            </mrow>
+            <mi mathvariant='normal'>d</mi>
+            <mn>100</mn>
           </msup>
         </math>
       MATHML
@@ -593,7 +566,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "contains plurimath/plurimath#356 Unitsml #28 example" do
-    let(:exp) { "unitsml(kg*m^-1*s^-1*K^(-1//2))" }
+    let(:exp) { "unitsml(kg*m^-1*s^-1*K^(((-1//2))))" }
 
     let(:expected_value) do
       <<~MATHML
@@ -601,9 +574,7 @@ RSpec.describe Unitsml::Parser do
           <mi mathvariant="normal">kg</mi>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant="normal">m</mi>
-            </mrow>
+            <mi mathvariant="normal">m</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>1</mn>
@@ -611,9 +582,7 @@ RSpec.describe Unitsml::Parser do
           </msup>
           <mo>&#x22c5;</mo>
           <msup>
-            <mrow>
-              <mi mathvariant="normal">s</mi>
-            </mrow>
+            <mi mathvariant="normal">s</mi>
             <mrow>
               <mo>&#x2212;</mo>
               <mn>1</mn>
@@ -621,12 +590,14 @@ RSpec.describe Unitsml::Parser do
           </msup>
           <mo>&#x22c5;</mo>
           <msup>
+            <mi mathvariant="normal">K</mi>
             <mrow>
-              <mi mathvariant="normal">K</mi>
-            </mrow>
-            <mrow>
-              <mo>&#x2212;</mo>
-              <mn>1//2</mn>
+              <mo>(</mo>
+              <mrow>
+                <mo>&#x2212;</mo>
+                <mn>1//2</mn>
+              </mrow>
+              <mo>)</mo>
             </mrow>
           </msup>
         </math>
@@ -701,16 +672,14 @@ RSpec.describe Unitsml::Parser do
     end
 
     context "implicit extender example #2 from issue#53" do
-      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
+      let(:exp) { "unitsml(J kg^-1 * K^((-1)))" }
       let(:expected_value) do
         <<~MATHML
           <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
             <mi mathvariant="normal">J</mi>
             <mo>&#x22c5;</mo>
             <msup>
-              <mrow>
-                <mi mathvariant="normal">kg</mi>
-              </mrow>
+              <mi mathvariant="normal">kg</mi>
               <mrow>
                 <mo>&#x2212;</mo>
                 <mn>1</mn>
@@ -718,12 +687,14 @@ RSpec.describe Unitsml::Parser do
             </msup>
             <mo>&#x22c5;</mo>
             <msup>
+              <mi mathvariant="normal">K</mi>
               <mrow>
-                <mi mathvariant="normal">K</mi>
-              </mrow>
-              <mrow>
-                <mo>&#x2212;</mo>
-                <mn>1</mn>
+                <mo>(</mo>
+                <mrow>
+                  <mo>&#x2212;</mo>
+                  <mn>1</mn>
+                </mrow>
+                <mo>)</mo>
               </mrow>
             </msup>
           </math>
@@ -743,9 +714,7 @@ RSpec.describe Unitsml::Parser do
             <mi mathvariant="normal">J</mi>
             <mo>&#x22c5;</mo>
             <msup>
-              <mrow>
-                <mi mathvariant="normal">mol</mi>
-              </mrow>
+              <mi mathvariant="normal">mol</mi>
               <mrow>
                 <mo>&#x2212;</mo>
                 <mn>1</mn>
@@ -753,9 +722,7 @@ RSpec.describe Unitsml::Parser do
             </msup>
             <mo>&#x22c5;</mo>
             <msup>
-              <mrow>
-                <mi mathvariant="normal">K</mi>
-              </mrow>
+              <mi mathvariant="normal">K</mi>
               <mrow>
                 <mo>&#x2212;</mo>
                 <mn>1</mn>
@@ -778,9 +745,7 @@ RSpec.describe Unitsml::Parser do
             <mi mathvariant="normal">J</mi>
             <mo>&#x22c5;</mo>
             <msup>
-              <mrow>
-                <mi mathvariant="normal">mol</mi>
-              </mrow>
+              <mi mathvariant="normal">mol</mi>
               <mrow>
                 <mo>&#x2212;</mo>
                 <mn>1</mn>
@@ -788,9 +753,7 @@ RSpec.describe Unitsml::Parser do
             </msup>
             <mo>&#x22c5;</mo>
             <msup>
-              <mrow>
-                <mi mathvariant="normal">K</mi>
-              </mrow>
+              <mi mathvariant="normal">K</mi>
               <mrow>
                 <mo>&#x2212;</mo>
                 <mn>1</mn>
