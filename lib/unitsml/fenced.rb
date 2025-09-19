@@ -1,5 +1,7 @@
 module Unitsml
   class Fenced
+    include FencedNumeric
+
     attr_reader :open_paren, :value, :close_paren
 
     def initialize(open_paren, value, close_paren)
@@ -34,6 +36,18 @@ module Unitsml
       fenced.mo_value << ::Mml::Mo.new(value: close_paren)
       fenced.element_order << xml_order_element("mo")
       { method_name: :mrow, value: fenced }
+    end
+
+    def negative?
+      value.negative?
+    end
+
+    def update_negative_sign
+      value.update_negative_sign
+    end
+
+    def float_to_display
+      value.float_to_display
     end
 
     def to_html(options = {})

@@ -33,4 +33,4 @@ module Unitsml
   end
 end
 
-Unitsml.register.register_model(Unitsml::Unitsdb::Prefixes, id: :unitsdb_prefixes)
+Unitsml.register_model(Unitsml::Unitsdb::Prefixes, id: :unitsdb_prefixes)

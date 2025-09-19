@@ -19,7 +19,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "Unitsml example contains prefix and units" do
-    let(:exp) { "unitsml(mm*s^-2)" }
+    let(:exp) { "unitsml(mm*s^((-2)))" }
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::FontStyle::Normal.new(
@@ -32,10 +32,16 @@ RSpec.describe Unitsml::Parser do
             Plurimath::Math::Symbols::Symbol.new("s"),
             "normal"
           ),
-          Plurimath::Math::Formula.new([
-            Plurimath::Math::Symbols::Minus.new,
-            Plurimath::Math::Number.new("2")
-          ])
+          Plurimath::Math::Function::Fenced.new(
+            Plurimath::Math::Symbols::Paren::Lround.new,
+            [
+              Plurimath::Math::Formula.new([
+                Plurimath::Math::Symbols::Minus.new,
+                Plurimath::Math::Number.new("2"),
+              ]),
+            ],
+            Plurimath::Math::Symbols::Paren::Rround.new,
+          ),
         )
       ])
     end
@@ -107,7 +113,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "Unitsml example crashing in plurimath/plurimath#343" do
-    let(:exp) { "unitsml(kg^(-1)*m^(-3)*s^4*A^2)" }
+    let(:exp) { "unitsml(kg^((-1))*m^((-3))*s^4*A^2)" }
     let(:expected_value) do
       Plurimath::Math::Formula.new(
         [
@@ -116,10 +122,16 @@ RSpec.describe Unitsml::Parser do
               Plurimath::Math::Symbols::Symbol.new("kg"),
               "normal",
             ),
-            Plurimath::Math::Formula.new([
-              Plurimath::Math::Symbols::Minus.new,
-              Plurimath::Math::Number.new("1"),
-            ])
+            Plurimath::Math::Function::Fenced.new(
+              Plurimath::Math::Symbols::Paren::Lround.new,
+              [
+                Plurimath::Math::Formula.new([
+                  Plurimath::Math::Symbols::Minus.new,
+                  Plurimath::Math::Number.new("1"),
+                ]),
+              ],
+              Plurimath::Math::Symbols::Paren::Rround.new,
+            ),
           ),
           Plurimath::Math::Symbols::Cdot.new,
           Plurimath::Math::Function::Power.new(
@@ -127,10 +139,16 @@ RSpec.describe Unitsml::Parser do
               Plurimath::Math::Symbols::Symbol.new("m"),
               "normal",
             ),
-            Plurimath::Math::Formula.new([
-              Plurimath::Math::Symbols::Minus.new,
-              Plurimath::Math::Number.new("3"),
-            ])
+            Plurimath::Math::Function::Fenced.new(
+              Plurimath::Math::Symbols::Paren::Lround.new,
+              [
+                Plurimath::Math::Formula.new([
+                  Plurimath::Math::Symbols::Minus.new,
+                  Plurimath::Math::Number.new("3"),
+                ]),
+              ],
+              Plurimath::Math::Symbols::Paren::Rround.new,
+            ),
           ),
           Plurimath::Math::Symbols::Cdot.new,
           Plurimath::Math::Function::Power.new(
@@ -158,7 +176,7 @@ RSpec.describe Unitsml::Parser do
   end
 
   context "Unitsml example contains unit only wrapped in parentheses with default explicit_parenthesis: true" do
-    let(:exp) { "unitsml(((((g)))))" }
+    let(:exp) { "unitsml(((((g^((((3)))))))))" }
     let(:expected_value) do
       Plurimath::Math::Formula.new([
         Plurimath::Math::Function::Fenced.new(
@@ -167,9 +185,24 @@ RSpec.describe Unitsml::Parser do
             Plurimath::Math::Function::Fenced.new(
               Plurimath::Math::Symbols::Paren::Lround.new,
               [
-                Plurimath::Math::Function::FontStyle::Normal.new(
-                  Plurimath::Math::Symbols::Symbol.new("g"),
-                  "normal",
+                Plurimath::Math::Function::Power.new(
+                  Plurimath::Math::Function::FontStyle::Normal.new(
+                    Plurimath::Math::Symbols::Symbol.new("g"),
+                    "normal",
+                  ),
+                  Plurimath::Math::Function::Fenced.new(
+                    Plurimath::Math::Symbols::Paren::Lround.new,
+                    [
+                      Plurimath::Math::Function::Fenced.new(
+                        Plurimath::Math::Symbols::Paren::Lround.new,
+                        [
+                          Plurimath::Math::Number.new("3"),
+                        ],
+                        Plurimath::Math::Symbols::Paren::Rround.new,
+                      ),
+                    ],
+                    Plurimath::Math::Symbols::Paren::Rround.new,
+                  ),
                 ),
               ],
               Plurimath::Math::Symbols::Paren::Rround.new,
@@ -235,7 +268,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     context "implicit extender example #2 from issue#53" do
-      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
+      let(:exp) { "unitsml(J kg^((-1)) * K^(((-1))))" }
       let(:expected_value) do
         Plurimath::Math::Formula.new([
           Plurimath::Math::Function::FontStyle::Normal.new(
@@ -248,10 +281,16 @@ RSpec.describe Unitsml::Parser do
               Plurimath::Math::Symbols::Symbol.new("kg"),
               "normal",
             ),
-            Plurimath::Math::Formula.new([
-              Plurimath::Math::Symbols::Minus.new,
-              Plurimath::Math::Number.new("1"),
-            ])
+            Plurimath::Math::Function::Fenced.new(
+              Plurimath::Math::Symbols::Paren::Lround.new,
+              [
+                Plurimath::Math::Formula.new([
+                  Plurimath::Math::Symbols::Minus.new,
+                  Plurimath::Math::Number.new("1"),
+                ]),
+              ],
+              Plurimath::Math::Symbols::Paren::Rround.new,
+            ),
           ),
           Plurimath::Math::Symbols::Cdot.new,
           Plurimath::Math::Function::Power.new(
@@ -259,10 +298,16 @@ RSpec.describe Unitsml::Parser do
               Plurimath::Math::Symbols::Symbol.new("K"),
               "normal",
             ),
-            Plurimath::Math::Formula.new([
-              Plurimath::Math::Symbols::Minus.new,
-              Plurimath::Math::Number.new("1"),
-            ]),
+            Plurimath::Math::Function::Fenced.new(
+              Plurimath::Math::Symbols::Paren::Lround.new,
+              [
+                Plurimath::Math::Formula.new([
+                  Plurimath::Math::Symbols::Minus.new,
+                  Plurimath::Math::Number.new("1"),
+                ]),
+              ],
+              Plurimath::Math::Symbols::Paren::Rround.new,
+            ),
           )
         ])
       end
@@ -678,7 +723,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     context "implicit extender example #15" do
-      let(:exp) { "unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+      let(:exp) { "unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L^((12))))" }
       let(:expected_value) do
         Plurimath::Math::Formula.new([
           Plurimath::Math::Function::FontStyle::SansSerif.new(
@@ -708,9 +753,18 @@ RSpec.describe Unitsml::Parser do
                 ],
                 Plurimath::Math::Symbols::Paren::Rround.new,
               ),
-              Plurimath::Math::Function::FontStyle::SansSerif.new(
-                Plurimath::Math::Symbols::Symbol.new("L"),
-                "sans-serif",
+              Plurimath::Math::Function::Power.new(
+                Plurimath::Math::Function::FontStyle::SansSerif.new(
+                  Plurimath::Math::Symbols::Symbol.new("L"),
+                  "sans-serif",
+                ),
+                Plurimath::Math::Function::Fenced.new(
+                  Plurimath::Math::Symbols::Paren::Lround.new,
+                  [
+                    Plurimath::Math::Number.new("12"),
+                  ],
+                  Plurimath::Math::Symbols::Paren::Rround.new,
+                ),
               ),
             ],
             Plurimath::Math::Symbols::Paren::Rround.new,

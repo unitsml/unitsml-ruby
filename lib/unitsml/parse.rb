@@ -8,7 +8,7 @@ module Unitsml
     include IntermediateExpRules
 
     rule(:sqrt)  { str("sqrt") }
-    rule(:power) { str("^") >> slashed_number_int_exp }
+    rule(:power) { str("^") >> slashed_number_int_exp.as(:power_numerator) }
     rule(:hyphen) { str("-") }
     rule(:number) { hyphen.maybe >> match(/[0-9]/).repeat(1) }
     rule(:spaces) { match(/\s/).repeat(1) }

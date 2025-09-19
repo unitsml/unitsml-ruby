@@ -12,4 +12,4 @@ module Unitsml
   end
 end
 
-Unitsml.register.register_model(Unitsml::Unitsdb::Quantities, id: :unitsdb_quantities)
+Unitsml.register_model(Unitsml::Unitsdb::Quantities, id: :unitsdb_quantities)
