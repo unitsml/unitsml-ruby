@@ -36,6 +36,27 @@ module Unitsml
       { method_name: :mrow, value: fenced }
     end
 
+    # A bridge method to check if the Number instance's value is negative.
+    def negative?
+      value.negative?
+    end
+
+    def to_i_value
+      value.to_i_value
+    end
+
+    def display_exp
+      value.display_exp
+    end
+
+    def inverse_negative
+      value.inverse_negative
+    end
+
+    def to_f
+      value.to_f
+    end
+
     def to_html(options = {})
       fenced_conversion_for(lang: :html, options: options)
     end

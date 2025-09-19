@@ -31,4 +31,4 @@ module Unitsml
   end
 end
 
-Unitsml.register.register_model(Unitsml::Unitsdb::Dimensions, id: :unitsdb_dimensions)
+Unitsml.register_model(Unitsml::Unitsdb::Dimensions, id: :unitsdb_dimensions)

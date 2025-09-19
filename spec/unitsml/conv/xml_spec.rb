@@ -10,18 +10,28 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(mm*s^-2)" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm.s-2" dimensionURL="#NISTd28">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm.s-2" dimensionURL="#D_LT-2">
           <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
           <UnitName xml:lang="en">mm*s^-2</UnitName>
           <UnitSymbol type="HTML">mm&#x22c5;s<sup>&#x2212;2</sup></UnitSymbol>
-          <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi mathvariant='normal'>mm</mi><mo>&#x22c5;</mo><msup><mrow><mi mathvariant='normal'>s</mi></mrow><mrow><mo>&#x2212;</mo><mn>2</mn></mrow></msup></math>
-        </UnitSymbol>
+          <UnitSymbol type="MathMl">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi mathvariant='normal'>mm</mi>
+              <mo>&#x22c5;</mo>
+              <msup>
+                <mi mathvariant='normal'>s</mi>
+                <mrow>
+                  <mo>&#x2212;</mo>
+                  <mn>2</mn>
+                </mrow>
+              </msup>
+            </math>
+          </UnitSymbol>
           <RootUnits>
             <EnumeratedRootUnit unit="metre" prefix="m"/>
             <EnumeratedRootUnit unit="second" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
-
 
         <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="-3" xml:id="NISTp10_-3">
           <PrefixName xml:lang="en">milli</PrefixName>
@@ -31,8 +41,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixSymbol type="HTML">m</PrefixSymbol>
         </Prefix>
 
-
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd28">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LT-2">
           <Length symbol="L" powerNumerator="1"/>
           <Time symbol="T" powerNumerator="-2"/>
         </Dimension>
@@ -279,12 +288,8 @@ RSpec.describe Unitsml::Parser do
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">Hz</mi>
-                </mrow>
-                <mrow>
-                  <mn>0.5</mn>
-                </mrow>
+                <mi mathvariant="normal">Hz</mi>
+                <mn>0.5</mn>
               </msup>
             </math>
           </UnitSymbol>
@@ -367,7 +372,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(kg*s^-2)" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#NISTd37">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#D_MT-2">
           <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
           <UnitName xml:lang="en">kg*s^-2</UnitName>
           <UnitSymbol type="HTML">kg&#x22c5;s<sup>&#x2212;2</sup></UnitSymbol>
@@ -376,9 +381,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">kg</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">s</mi>
-                </mrow>
+                <mi mathvariant="normal">s</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -400,7 +403,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd37">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_MT-2">
           <Mass symbol="M" powerNumerator="1"/>
           <Time symbol="T" powerNumerator="-2"/>
         </Dimension>
@@ -566,12 +569,8 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">A</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">C</mi>
-                </mrow>
-                <mrow>
-                  <mn>3</mn>
-                </mrow>
+                <mi mathvariant="normal">C</mi>
+                <mn>3</mn>
               </msup>
             </math>
           </UnitSymbol>
@@ -606,12 +605,8 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">A</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">C</mi>
-                </mrow>
-                <mrow>
-                  <mn>3</mn>
-                </mrow>
+                <mi mathvariant="normal">C</mi>
+                <mn>3</mn>
               </msup>
             </math>
           </UnitSymbol>
@@ -646,9 +641,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">J</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">kg</mi>
-                </mrow>
+                <mi mathvariant="normal">kg</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>1</mn>
@@ -656,9 +649,7 @@ RSpec.describe Unitsml::Parser do
               </msup>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">K</mi>
-                </mrow>
+                <mi mathvariant="normal">K</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>1</mn>
@@ -712,9 +703,7 @@ RSpec.describe Unitsml::Parser do
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">kg</mi>
-                </mrow>
+                <mi mathvariant="normal">kg</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -750,7 +739,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(kg*s^-2)" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#NISTd37">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#D_MT-2">
           <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
           <UnitName xml:lang="en">kg*s^-2</UnitName>
           <UnitSymbol type="HTML">kg&#x22c5;s<sup>&#x2212;2</sup></UnitSymbol>
@@ -759,9 +748,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">kg</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">s</mi>
-                </mrow>
+                <mi mathvariant="normal">s</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -783,7 +770,7 @@ RSpec.describe Unitsml::Parser do
           <PrefixSymbol type="HTML">k</PrefixSymbol>
         </Prefix>
 
-        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd37">
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_MT-2">
           <Mass symbol="M" powerNumerator="1"/>
           <Time symbol="T" powerNumerator="-2"/>
         </Dimension>
@@ -808,9 +795,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">mW</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">cm</mi>
-                </mrow>
+                <mi mathvariant="normal">cm</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -891,21 +876,13 @@ RSpec.describe Unitsml::Parser do
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">Hz</mi>
-                </mrow>
-                <mrow>
-                  <mn>10</mn>
-                </mrow>
+                <mi mathvariant="normal">Hz</mi>
+                <mn>10</mn>
               </msup>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">d</mi>
-                </mrow>
-                <mrow>
-                  <mn>100</mn>
-                </mrow>
+                <mi mathvariant="normal">d</mi>
+                <mn>100</mn>
               </msup>
             </math>
           </UnitSymbol>
@@ -948,12 +925,8 @@ RSpec.describe Unitsml::Parser do
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">mm</mi>
-                </mrow>
-                <mrow>
-                  <mn>0.5</mn>
-                </mrow>
+                <mi mathvariant="normal">mm</mi>
+                <mn>0.5</mn>
               </msup>
             </math>
           </UnitSymbol>
@@ -994,9 +967,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">GHz</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">V</mi>
-                </mrow>
+                <mi mathvariant="normal">V</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>1</mn>
@@ -1036,16 +1007,14 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(m^(-2))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#NISTd96">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">m</mi>
-                </mrow>
+                <mi mathvariant="normal">m</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -1056,6 +1025,10 @@ RSpec.describe Unitsml::Parser do
         </Unit>
 
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd96">
+          <Length symbol="L" powerNumerator="-2"/>
+        </Dimension>
+
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
           <Length symbol="L" powerNumerator="-2"/>
         </Dimension>
 
@@ -1085,9 +1058,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">sr</mi>
               <mo>&#x22c5;</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">m</mi>
-                </mrow>
+                <mi mathvariant="normal">m</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -1167,9 +1138,7 @@ RSpec.describe Unitsml::Parser do
             <mi mathvariant="normal">m</mi>
             <mo rspace="thickmathspace">&#x2062;</mo>
             <msup>
-              <mrow>
-                <mi mathvariant="normal">kg</mi>
-              </mrow>
+              <mi mathvariant="normal">kg</mi>
               <mrow>
                 <mo>&#x2212;</mo>
                 <mn>2</mn>
@@ -1207,9 +1176,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">m</mi>
               <mo>⁢</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">kg</mi>
-                </mrow>
+                <mi mathvariant="normal">kg</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -1247,9 +1214,7 @@ RSpec.describe Unitsml::Parser do
               <mi mathvariant="normal">m</mi>
               <mo>X</mo>
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">kg</mi>
-                </mrow>
+                <mi mathvariant="normal">kg</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -1293,7 +1258,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml((((m^-2))))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#NISTd96">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">(m<sup>&#x2212;2</sup>)</UnitSymbol>
@@ -1302,9 +1267,7 @@ RSpec.describe Unitsml::Parser do
               <mrow>
                 <mo>(</mo>
                 <msup>
-                  <mrow>
-                    <mi mathvariant="normal">m</mi>
-                  </mrow>
+                  <mi mathvariant="normal">m</mi>
                   <mrow>
                     <mo>&#x2212;</mo>
                     <mn>2</mn>
@@ -1317,6 +1280,10 @@ RSpec.describe Unitsml::Parser do
         </Unit>
 
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd96">
+          <Length symbol="L" powerNumerator="-2"/>
+        </Dimension>
+
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
           <Length symbol="L" powerNumerator="-2"/>
         </Dimension>
 
@@ -1351,16 +1318,14 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml((m^-2))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#NISTd96">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
             <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
               <msup>
-                <mrow>
-                  <mi mathvariant="normal">m</mi>
-                </mrow>
+                <mi mathvariant="normal">m</mi>
                 <mrow>
                   <mo>&#x2212;</mo>
                   <mn>2</mn>
@@ -1371,6 +1336,10 @@ RSpec.describe Unitsml::Parser do
         </Unit>
 
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd96">
+          <Length symbol="L" powerNumerator="-2"/>
+        </Dimension>
+
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L-2">
           <Length symbol="L" powerNumerator="-2"/>
         </Dimension>
 

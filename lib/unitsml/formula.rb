@@ -92,7 +92,7 @@ module Unitsml
         elsif term.is_a?(Sqrt)
           if term.value.is_a?(Dimension)
             sqrt_term = term.value.dup
-            sqrt_term.power_numerator = "0.5"
+            sqrt_term.power_numerator = Number.new("0.5")
             dimensions << sqrt_term
           elsif term.value.is_a?(Fenced)
             dimensions.concat(Array(term.value.dimensions_extraction))
@@ -149,7 +149,7 @@ module Unitsml
     end
 
     def sort_dims(values)
-      dims_hash = Utility::Dim2D
+      dims_hash = Utility::DIM2D
       values.sort do |first, second|
         dims_hash.dig(first.dimension_name, :order) <=> dims_hash.dig(second.dimension_name, :order)
       end

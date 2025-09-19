@@ -14,6 +14,21 @@ module Unitsml
   def register
     @register ||= Lutaml::Model::GlobalRegister.lookup(REGISTER_ID)
   end
+
+  def register_model(klass, id:)
+    register.register_model(klass, id: id)
+  end
+
+  def get_class_from_register(class_name)
+    register.get_class(class_name)
+  end
+
+  def register_type_substitution(from:, to:)
+    register.register_global_type_substitution(
+      from_type: from,
+      to_type: to,
+    )
+  end
 end
 
 Lutaml::Model::GlobalRegister.register(
@@ -25,6 +40,7 @@ require "unitsml/error"
 require "unitsml/sqrt"
 require "unitsml/unit"
 require "unitsml/parse"
+require "unitsml/number"
 require "unitsml/parser"
 require "unitsml/prefix"
 require "unitsml/fenced"
@@ -51,11 +67,7 @@ require "unitsml/unitsdb/dimension_quantity"
   ::Unitsdb::PrefixReference => Unitsml::Unitsdb::PrefixReference,
   ::Unitsdb::DimensionDetails => Unitsml::Unitsdb::DimensionQuantity,
 }.each do |key, value|
-  Unitsml.register
-    .register_global_type_substitution(
-      from_type: key,
-      to_type: value,
-    )
+  Unitsml.register_type_substitution(from: key, to: value)
 end
 
 Lutaml::Model::Config.xml_adapter_type = RUBY_ENGINE == "opal" ? :oga : :ox
