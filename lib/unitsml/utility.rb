@@ -80,7 +80,7 @@ module Unitsml
         "D_" + dims.map do |d|
           (U2D.dig(d[:unit], :symbol) || DIM2D.dig(d[:id], :symbol)) +
             (to_i_value(d[:exponent]) == 1 ? "" : float_to_display(d[:exponent]))
-        end.join
+        end.join("")
       end
 
       def to_i_value(object)
@@ -271,12 +271,13 @@ module Unitsml
         text = text&.gsub(/[()]/, "")
         unit = unit_instance(text)
 
-        result = if unit
-                   unit.nist_id&.gsub(/'/, "_")
-                 else
-                   text&.gsub(/\*/, ".")&.gsub(/\^/, "")
-                 end
-        result&.insert(0, "U_")
+        format_unit_id(unit, text)&.insert(0, "U_")
+      end
+
+      def format_unit_id(unit, text)
+        return unit.nist_id&.gsub(/'/, "_") if unit
+
+        text&.gsub(/\*/, ".")&.gsub(/\^/, "")
       end
 
       def dimension_components(dims)
