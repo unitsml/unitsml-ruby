@@ -35,7 +35,7 @@ module Unitsml
     end
 
     def to_unicode(options)
-      extender = options[:multiplier] || (symbol == "*" ? "·" : symbol)
+      extender = options[:multiplier] || symbol == "*" ? "·" : symbol
       multiplier(extender)
     end
 
