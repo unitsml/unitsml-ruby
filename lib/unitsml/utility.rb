@@ -120,13 +120,22 @@ module Unitsml
           if m.empty? || m[-1][:unit]&.unit_name != k[:unit]&.unit_name
             m << k
           else
-            m[-1][:unit]&.power_numerator = Number.new((k[:unit]&.power_numerator&.to_f || 1) + (m[-1][:unit]&.power_numerator&.to_f || 1))
+            m[-1][:unit]&.power_numerator = Number.new(numerator_value(k, m))
             m[-1] = {
               prefix: combine_prefixes(prefix_object(m[-1][:prefix]), prefix_object(k[:prefix])),
               unit: m[-1][:unit],
             }
           end
         end
+      end
+
+      def numerator_value(unit_hash, unit_array)
+        unit_numerator_float(unit_hash) +
+          unit_numerator_float(unit_array[-1])
+      end
+
+      def unit_numerator_float(object_hash)
+        object_hash[:unit]&.power_numerator&.to_f || 1
       end
 
       def prefix_object(prefix)

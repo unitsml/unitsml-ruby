@@ -7,9 +7,5 @@ module Unitsml
     def to_f
       value.to_f
     end
-
-    def raw_value
-      value.raw_value
-    end
   end
 end
