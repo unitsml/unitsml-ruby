@@ -35,7 +35,7 @@ module Unitsml
     end
 
     def to_unicode(options)
-      extender = options[:multiplier] || symbol == "*" ? "·" : symbol
+      extender = options[:multiplier] || unicode_extender
       multiplier(extender)
     end
 
@@ -56,6 +56,10 @@ module Unitsml
       return "&#xa0;" if html
 
       unicode ? "&#x2062;" : " "
+    end
+
+    def unicode_extender
+      symbol == "*" ? "·" : symbol
     end
   end
 end

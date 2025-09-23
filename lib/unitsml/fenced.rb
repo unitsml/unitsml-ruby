@@ -50,6 +50,10 @@ module Unitsml
       value.float_to_display
     end
 
+    def raw_value
+      value.raw_value
+    end
+
     def to_html(options = {})
       fenced_conversion_for(lang: :html, options: options)
     end
