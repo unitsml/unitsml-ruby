@@ -7,7 +7,7 @@ gemspec
 
 gem "canon"
 gem "lutaml-model", "~> 0.8.0", github: "lutaml/lutaml-model", branch: "main"
-gem "mml"
+gem "mml", github: "plurimath/mml", branch: "main"
 gem "oga"
 gem "ox"
 gem "plurimath", github: "plurimath/plurimath", branch: "rt-lutaml-080"

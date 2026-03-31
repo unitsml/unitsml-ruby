@@ -37,7 +37,7 @@ module Unitsml
     def to_mathml(options)
       value = unit_symbols&.mathml
       tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
-      value = ::Mml::V4.const_get(tag_name.capitalize).from_xml(value)
+      value = ::Mml::V4.const_get(tag_name.capitalize).from_xml(value, register: :mml_v4)
       value.value = "#{prefix.to_mathml(options)}#{value.value}" if prefix
       if power_numerator
         value = msup_tag(
@@ -127,7 +127,7 @@ module Unitsml
     end
 
     def msup_tag(value, options)
-      msup = ::Mml::V4::Msup.new
+      msup = ::Mml::V4::Msup.new(lutaml_register: :mml_v4)
       msup.ordered = true
       msup.element_order = []
       [value, power_numerator.to_mathml(options)].flatten.each do |record|
