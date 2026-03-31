@@ -7,7 +7,7 @@ module Unitsml
   extend self
 
   autoload :Dimension, "unitsml/dimension"
-  autoload :Error, "unitsml/error"
+  autoload :Errors, "unitsml/errors"
   autoload :Extender, "unitsml/extender"
   autoload :Fenced, "unitsml/fenced"
   autoload :FencedNumeric, "unitsml/fenced_numeric"

@@ -659,9 +659,9 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mo>(</mo>
               <mi mathvariant="normal">kg</mi>
-              <mo>)</mo>
-              <mi mathvariant="normal">K</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>)</mo>
             </mrow>
           </math>
         MATHML
@@ -777,9 +777,9 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mo>(</mo>
               <mi mathvariant="normal">mol</mi>
-              <mo>)</mo>
-              <mi mathvariant="normal">K</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>)</mo>
             </mrow>
             <mi mathvariant="normal">J</mi>
           </math>
@@ -799,9 +799,9 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mo>(</mo>
               <mi mathvariant="normal">mol</mi>
-              <mo>)</mo>
-              <mi mathvariant="normal">K</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>)</mo>
             </mrow>
             <mi mathvariant="normal">J</mi>
           </math>
@@ -821,9 +821,9 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mo>(</mo>
               <mi mathvariant="normal">mol</mi>
-              <mo>)</mo>
-              <mi mathvariant="normal">K</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>)</mo>
             </mrow>
             <mrow>
               <mo>(</mo>
@@ -847,16 +847,16 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mo>(</mo>
               <mi mathvariant="normal">mol</mi>
-              <mo>)</mo>
-              <mi mathvariant="normal">K</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>)</mo>
             </mrow>
             <mrow>
               <mo>(</mo>
               <mi mathvariant="normal">J</mi>
-              <mo>)</mo>
-              <mi mathvariant="normal">K</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="normal">K</mi>
+              <mo>)</mo>
             </mrow>
           </math>
         MATHML
@@ -955,9 +955,9 @@ RSpec.describe Unitsml::Parser do
             <mrow>
               <mo>(</mo>
               <mi mathvariant="sans-serif">Θ</mi>
-              <mo>)</mo>
-              <mi mathvariant="sans-serif">L</mi>
               <mo>&#x22c5;</mo>
+              <mi mathvariant="sans-serif">L</mi>
+              <mo>)</mo>
             </mrow>
           </math>
         MATHML

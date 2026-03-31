@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "mml"
-require "htmlentities"
+require 'mml'
+require 'htmlentities'
 
 module Unitsml
   class Formula
@@ -19,25 +19,25 @@ module Unitsml
       @norm_text = norm_text
     end
 
-    def ==(object)
-      self.class == object.class &&
-        value == object&.value &&
-        explicit_value == object&.explicit_value &&
-        root == object.root
+    def ==(other)
+      self.class == other.class &&
+        value == other&.value &&
+        explicit_value == other&.explicit_value &&
+        root == other.root
     end
 
     def to_mathml(options = {})
       if root
         options = update_options(options)
         nullify_mml_models if plurimath_available?
-        math = ::Mml::Math.new(display: "block")
+        math = ::Mml::Math.new(display: 'block')
         math.ordered = true
         math.element_order ||= []
         value.each { |instance| process_value(math, instance.to_mathml(options)) }
-        generated_math = math.to_xml.gsub(/&amp;(.*?)(?=<\/)/, '&\1')
+        generated_math = math.to_xml.gsub(%r{&amp;(.*?)(?=</)}, '&\1')
         reset_mml_models if plurimath_available?
 
-        generated_math
+        generated_math.force_encoding('UTF-8')
       else
         value.map { |obj| obj.to_mathml(options) }
       end
@@ -86,19 +86,20 @@ module Unitsml
 
     def extract_dimensions(formula)
       formula.each_with_object([]) do |term, dimensions|
-        if term.is_a?(Dimension)
+        case term
+        when Dimension
           dimensions << term
-        elsif term.is_a?(Sqrt)
+        when Sqrt
           if term.value.is_a?(Dimension)
             sqrt_term = term.value.dup
-            sqrt_term.power_numerator = Number.new("0.5")
+            sqrt_term.power_numerator = Number.new('0.5')
             dimensions << sqrt_term
           elsif term.value.is_a?(Fenced)
             dimensions.concat(Array(term.value.dimensions_extraction))
           end
-        elsif term.is_a?(Formula)
+        when Formula
           dimensions.concat(extract_dimensions(term.value))
-        elsif term.is_a?(Fenced)
+        when Fenced
           dimensions.concat(Array(term.dimensions_extraction))
         end
       end
@@ -123,20 +124,20 @@ module Unitsml
 
     def units(options)
       all_units = extract_units(value)
-      norm_text = all_units.map(&:xml_postprocess_name).join("*")
+      norm_text = all_units.map(&:xml_postprocess_name).join('*')
       dims = Utility.units2dimensions(extract_units(value))
       [
         Utility.unit(all_units, self, dims, norm_text, explicit_value&.dig(:name), options),
         Utility.prefixes(all_units, options),
         *unique_dimensions(dims, norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text, explicit_value&.dig(:quantity))
       ].join
     end
 
     def unique_dimensions(dims, norm_text)
       [
         Utility.dimension(norm_text),
-        Utility.dimension_components(dims),
+        Utility.dimension_components(dims)
       ].uniq
     end
 
@@ -155,20 +156,20 @@ module Unitsml
     end
 
     def prefixes(options)
-      norm_text = @norm_text&.split("-")&.first
-      prefix_object = Unit.new("", prefix: Prefix.new(norm_text))
+      norm_text = @norm_text&.split('-')&.first
+      prefix_object = Unit.new('', prefix: Prefix.new(norm_text))
       [
         Utility.prefixes([prefix_object], options),
         Utility.dimension(norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text, explicit_value&.dig(:quantity))
       ].join
     end
 
     def ensure_plurimath_defined!
       return if plurimath_available?
 
-      require "plurimath"
-    rescue LoadError => e
+      require 'plurimath'
+    rescue LoadError
       raise Errors::PlurimathLoadError
     end
 
@@ -177,7 +178,7 @@ module Unitsml
       method_value = math_instance.public_send(:"#{method_name}_value") || []
       method_value += Array(child_hash[:value])
       math_instance.public_send(:"#{method_name}_value=", method_value)
-      math_instance.element_order << Lutaml::Xml::Element.new(method_name.to_s, "")
+      math_instance.element_order << Lutaml::Xml::Element.new('Element', method_name.to_s)
     end
 
     def plurimath_available?
