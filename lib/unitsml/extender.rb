@@ -18,7 +18,7 @@ module Unitsml
       extender = multiplier(options[:multiplier] || "⋅", unicode: true)
       {
         method_name: :mo,
-        value: ::Mml::Mo.new(value: extender, rspace: rspace),
+        value: ::Mml::V4::Mo.new(value: extender, rspace: rspace),
       }
     end
 

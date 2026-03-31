@@ -29,11 +29,11 @@ module Unitsml
       mathml = value.to_mathml(options)
       return mathml unless options[:explicit_parenthesis]
 
-      fenced = ::Mml::Mrow.new(mo_value: [::Mml::Mo.new(value: open_paren)])
+      fenced = ::Mml::V4::Mrow.new(mo_value: [::Mml::V4::Mo.new(value: open_paren)])
       fenced.ordered = true
       fenced.element_order ||= [xml_order_element("mo")]
       [mathml].flatten.each { |record| add_math_element(fenced, record) }
-      fenced.mo_value << ::Mml::Mo.new(value: close_paren)
+      fenced.mo_value << ::Mml::V4::Mo.new(value: close_paren)
       fenced.element_order << xml_order_element("mo")
       { method_name: :mrow, value: fenced }
     end
