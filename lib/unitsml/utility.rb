@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require "unitsml/model/unit"
-require "unitsml/model/prefix"
-require "unitsml/model/quantity"
-require "unitsml/model/dimension"
 
 module Unitsml
   module Utility

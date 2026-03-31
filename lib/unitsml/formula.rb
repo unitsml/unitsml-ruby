@@ -2,7 +2,6 @@
 
 require "mml"
 require "htmlentities"
-require "unitsml/utility"
 
 module Unitsml
   class Formula
@@ -31,7 +30,7 @@ module Unitsml
       if root
         options = update_options(options)
         nullify_mml_models if plurimath_available?
-        math = ::Mml::MathWithNamespace.new(display: "block")
+        math = ::Mml::Math.new(display: "block")
         math.ordered = true
         math.element_order ||= []
         value.each { |instance| process_value(math, instance.to_mathml(options)) }
@@ -178,7 +177,7 @@ module Unitsml
       method_value = math_instance.public_send(:"#{method_name}_value") || []
       method_value += Array(child_hash[:value])
       math_instance.public_send(:"#{method_name}_value=", method_value)
-      math_instance.element_order << Lutaml::Model::Xml::Element.new("Element", method_name.to_s)
+      math_instance.element_order << Lutaml::Xml::Element.new(method_name.to_s, "")
     end
 
     def plurimath_available?

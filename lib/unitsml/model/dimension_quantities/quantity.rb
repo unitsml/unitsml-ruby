@@ -8,6 +8,8 @@ module Unitsml
         attribute :power_numerator, :string
 
         xml do
+          namespace ::Unitsml::Namespace
+
           map_attribute :symbol, to: :symbol
           map_attribute :powerNumerator, to: :power_numerator
         end

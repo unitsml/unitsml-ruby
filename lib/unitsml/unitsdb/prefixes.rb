@@ -33,4 +33,3 @@ module Unitsml
   end
 end
 
-Unitsml.register_model(Unitsml::Unitsdb::Prefixes, id: :unitsdb_prefixes)

@@ -11,7 +11,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm.s-2" dimensionURL="#D_LT-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">mm*s^-2</UnitName>
           <UnitSymbol type="HTML">mm&#x22c5;s<sup>(&#x2212;2)</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -53,7 +53,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -62,7 +62,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_um" dimensionURL="#NISTd1">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">micro meter</UnitName>
           <UnitSymbol type="HTML">&micro;m</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -74,7 +74,6 @@ RSpec.describe Unitsml::Parser do
           </RootUnits>
         </Unit>
 
-
         <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="-6" xml:id="NISTp10_-6">
           <PrefixName xml:lang="en">micro</PrefixName>
           <PrefixSymbol type="ASCII">u</PrefixSymbol>
@@ -83,7 +82,6 @@ RSpec.describe Unitsml::Parser do
           <PrefixSymbol type="HTML">&micro;</PrefixSymbol>
         </Prefix>
 
-
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd1">
           <Length symbol="L" powerNumerator="1"/>
         </Dimension>
@@ -91,7 +89,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -100,7 +98,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu5" dimensionURL="#NISTd5">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">kelvin</UnitName>
           <UnitSymbol type="HTML">&#176;K</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -116,7 +114,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -125,13 +123,13 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu147">
-          <UnitSystem name="not_SI" type="not_SI" xml:lang="en-US"/>
+          <UnitSystem name="not_SI" type="not_SI" xml:lang="en"/>
           <UnitName xml:lang="en">arcminute</UnitName>
           <UnitSymbol type="HTML">&#8242;</UnitSymbol>
           <UnitSymbol type="MathMl"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mi mathvariant='normal'>&#8242;</mi>
-        </math>
-        </UnitSymbol>
+            <mi mathvariant='normal'>&#8242;</mi>
+          </math>
+          </UnitSymbol>
         </Unit>
 
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTd9">
@@ -139,14 +137,14 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq9" quantityType="base" dimensionURL="#NISTd9">
-          <QuantityName xml:lang="en-US">plane angle</QuantityName>
-          <QuantityName xml:lang="en-US">angle</QuantityName>
+          <QuantityName xml:lang="en">plane angle</QuantityName>
+          <QuantityName xml:lang="en">angle</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -155,7 +153,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu9" dimensionURL="#D_L0">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">radian</UnitName>
           <UnitSymbol type="HTML">rad</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -176,7 +174,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -185,7 +183,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu31" dimensionURL="#NISTd101">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">hertz</UnitName>
           <UnitSymbol type="HTML">Hz</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -204,13 +202,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq45" quantityType="base" dimensionURL="#NISTd24">
-          <QuantityName xml:lang="en-US">frequency</QuantityName>
+          <QuantityName xml:lang="en">frequency</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -219,7 +217,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu2" dimensionURL="#NISTd2">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">custom kilogram</UnitName>
           <UnitSymbol type="HTML">kg</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -245,13 +243,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq2" quantityType="base" dimensionURL="#NISTd2">
-          <QuantityName xml:lang="en-US">mass</QuantityName>
+          <QuantityName xml:lang="en">mass</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -260,7 +258,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1" dimensionURL="#NISTd1">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">metre</UnitName>
           <UnitSymbol type="HTML">m</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -277,7 +275,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -286,7 +284,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_Hz0.5" dimensionURL="#D_T-0.5">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">Hz^0.5</UnitName>
           <UnitSymbol type="HTML">Hz<sup>0.5</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -306,7 +304,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -315,7 +313,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu27" dimensionURL="#NISTd2">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">gram</UnitName>
           <UnitSymbol type="HTML">g</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -330,13 +328,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq2" quantityType="base" dimensionURL="#NISTd2">
-          <QuantityName xml:lang="en-US">mass</QuantityName>
+          <QuantityName xml:lang="en">mass</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -345,7 +343,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu284">
-          <UnitSystem name="not_SI" type="not_SI" xml:lang="en-US"/>
+          <UnitSystem name="not_SI" type="not_SI" xml:lang="en"/>
           <UnitName xml:lang="en">horsepower</UnitName>
           <UnitSymbol type="HTML">hp</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -362,13 +360,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq20" quantityType="base" dimensionURL="#NISTd16">
-          <QuantityName xml:lang="en-US">power</QuantityName>
+          <QuantityName xml:lang="en">power</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -377,7 +375,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#D_MT-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">kg*s^-2</UnitName>
           <UnitSymbol type="HTML">kg&#x22c5;s<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -415,7 +413,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -424,7 +422,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu362">
-          <UnitSystem name="not_SI" type="not_SI" xml:lang="en-US"/>
+          <UnitSystem name="not_SI" type="not_SI" xml:lang="en"/>
           <UnitName xml:lang="en">millibar</UnitName>
           <UnitSymbol type="HTML">mbar</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -454,7 +452,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -475,14 +473,14 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq3" quantityType="base" dimensionURL="#NISTd3">
-          <QuantityName xml:lang="en-US">time</QuantityName>
-          <QuantityName xml:lang="en-US">duration</QuantityName>
+          <QuantityName xml:lang="en">time</QuantityName>
+          <QuantityName xml:lang="en">duration</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -503,14 +501,14 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq3" quantityType="base" dimensionURL="#NISTd3">
-          <QuantityName xml:lang="en-US">time</QuantityName>
-          <QuantityName xml:lang="en-US">duration</QuantityName>
+          <QuantityName xml:lang="en">time</QuantityName>
+          <QuantityName xml:lang="en">duration</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -529,7 +527,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -550,13 +548,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq2" quantityType="base" dimensionURL="#NISTd2">
-          <QuantityName xml:lang="en-US">mass</QuantityName>
+          <QuantityName xml:lang="en">mass</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -565,7 +563,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_A.C3" dimensionURL="#D_M3I4">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">A*C^3</UnitName>
           <UnitSymbol type="HTML">A&#x22c5;C<sup>3</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -592,7 +590,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -601,7 +599,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_A.C3" dimensionURL="#D_M3I4">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">A*C^3</UnitName>
           <UnitSymbol type="HTML">A&#x22c5;C<sup>3</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -628,7 +626,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -637,7 +635,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu13.u27p10_3e-1/1.u5e-1/1" dimensionURL="#D_L2M0T-2Theta-1">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">joule per kilogram kelvin</UnitName>
           <UnitSymbol type="HTML">J&#x22c5;kg<sup>&#x2212;1</sup>&#x22c5;K<sup>&#x2212;1</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -692,7 +690,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -701,7 +699,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg-2" dimensionURL="#D_M-2">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">kg^-2</UnitName>
           <UnitSymbol type="HTML">kg<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -735,7 +733,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -744,7 +742,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#D_MT-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">kg*s^-2</UnitName>
           <UnitSymbol type="HTML">kg&#x22c5;s<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -782,7 +780,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -791,7 +789,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mW.cm-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">mW*cm^-2</UnitName>
           <UnitSymbol type="HTML">mW&#x22c5;cm<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -832,7 +830,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -848,7 +846,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -864,7 +862,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -873,8 +871,8 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_Hz10.darcy100">
-          <UnitSystem name="not_SI" type="not_SI" xml:lang="en-US"/>
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="not_SI" type="not_SI" xml:lang="en"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">Hz^10*darcy^100</UnitName>
           <UnitSymbol type="HTML">Hz<sup>10</sup>&#x22c5;d<sup>100</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -899,7 +897,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -914,7 +912,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -923,7 +921,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm0.5" dimensionURL="#D_L0.5">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">mm^0.5</UnitName>
           <UnitSymbol type="HTML">mm<sup>0.5</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -954,7 +952,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -963,7 +961,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_GHz.V-1" dimensionURL="#D_L-2M-1T2I">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">GHz*V^-1</UnitName>
           <UnitSymbol type="HTML">GHz&#x22c5;V<sup>&#x2212;1</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1003,7 +1001,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1012,7 +1010,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1037,13 +1035,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq190" quantityType="base" dimensionURL="#NISTd96">
-          <QuantityName xml:lang="en-US" xmlns="https://schema.unitsml.org/unitsml/1.0">fluence</QuantityName>
+          <QuantityName xml:lang="en">fluence</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1052,7 +1050,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_cd.sr.m-2" dimensionURL="#D_L-2J">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">cd*sr*m^-2</UnitName>
           <UnitSymbol type="HTML">cd&#x22c5;sr&#x22c5;m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1085,7 +1083,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1094,7 +1092,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mOhm" dimensionURL="#D_L2MT4I2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">mOhm</UnitName>
           <UnitSymbol type="HTML">m&#8486;</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1125,7 +1123,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1134,7 +1132,7 @@ RSpec.describe Unitsml::Parser do
     let(:space_expected_value) do
       <<~XML
       <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
-        <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+        <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
         <UnitName xml:lang="en">m*kg^-2</UnitName>
         <UnitSymbol type="HTML">m&#xa0;kg<sup>&#x2212;2</sup></UnitSymbol>
         <UnitSymbol type="MathMl">
@@ -1172,7 +1170,7 @@ RSpec.describe Unitsml::Parser do
     let(:nospace_expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">m*kg^-2</UnitName>
           <UnitSymbol type="HTML">m⁢kg<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1210,7 +1208,7 @@ RSpec.describe Unitsml::Parser do
     let(:custom_expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
-          <UnitSystem name="SI" type="SI_derived" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">m*kg^-2</UnitName>
           <UnitSymbol type="HTML">mXkg<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1246,15 +1244,15 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "matches Unitsml to MathML converted string with :space multiplier argument" do
-      expect(formula.to_xml(multiplier: :space)).to be_equivalent_to(space_expected_value)
+      expect(formula.to_xml(multiplier: :space)).to be_xml_equivalent_to(space_expected_value)
     end
 
     it "matches Unitsml to MathML converted string with :nospace multiplier argument" do
-      expect(formula.to_xml(multiplier: :nospace)).to be_equivalent_to(nospace_expected_value)
+      expect(formula.to_xml(multiplier: :nospace)).to be_xml_equivalent_to(nospace_expected_value)
     end
 
     it "matches Unitsml to MathML converted string with custom multiplier argument" do
-      expect(formula.to_xml(multiplier: "X")).to be_equivalent_to(custom_expected_value)
+      expect(formula.to_xml(multiplier: "X")).to be_xml_equivalent_to(custom_expected_value)
     end
   end
 
@@ -1263,7 +1261,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">(m<sup>&#x2212;2</sup>)</UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1292,13 +1290,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq190" quantityType="base" dimensionURL="#NISTd96">
-          <QuantityName xml:lang="en-US" xmlns="https://schema.unitsml.org/unitsml/1.0">fluence</QuantityName>
+          <QuantityName xml:lang="en">fluence</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1314,7 +1312,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml).to be_equivalent_to(expected_value)
+      expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1323,7 +1321,7 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
-          <UnitSystem name="SI" type="SI_base" xml:lang="en-US"/>
+          <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
           <UnitSymbol type="MathMl">
@@ -1348,13 +1346,13 @@ RSpec.describe Unitsml::Parser do
         </Dimension>
 
         <Quantity xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="NISTq190" quantityType="base" dimensionURL="#NISTd96">
-          <QuantityName xml:lang="en-US" xmlns="https://schema.unitsml.org/unitsml/1.0">fluence</QuantityName>
+          <QuantityName xml:lang="en">fluence</QuantityName>
         </Quantity>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml(explicit_parenthesis: false)).to be_equivalent_to(expected_value)
+      expect(formula.to_xml(explicit_parenthesis: false)).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -1363,13 +1361,13 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       <<~XML
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_Theta0.5">
-          <ThermodynamicTemperature symbol="Theta" powerNumerator="0.5" xmlns="https://schema.unitsml.org/unitsml/1.0"/>
+          <ThermodynamicTemperature symbol="Theta" powerNumerator="0.5"/>
         </Dimension>
       XML
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(formula.to_xml(explicit_parenthesis: false)).to be_equivalent_to(expected_value)
+      expect(formula.to_xml(explicit_parenthesis: false)).to be_xml_equivalent_to(expected_value)
     end
   end
 end

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Unitsml
-  class Error < StandardError
+  module Errors
+    autoload :BaseError, "unitsml/errors/base_error"
+    autoload :PlurimathLoadError, "unitsml/errors/plurimath_load_error"
   end
 end
-
-require_relative "errors/plurimath_load_error"

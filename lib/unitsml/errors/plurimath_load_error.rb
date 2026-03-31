@@ -2,7 +2,7 @@
 
 module Unitsml
   module Errors
-    class PlurimathLoadError < Unitsml::Error
+    class PlurimathLoadError < Unitsml::Errors::BaseError
       def to_s
         <<~MESSAGE
           [unitsml] Error: Failed to require 'plurimath'.

@@ -82,7 +82,7 @@ module Unitsml
     end
 
     def xml_order_element(tag_name)
-      Lutaml::Model::Xml::Element.new("Element", tag_name)
+      Lutaml::Xml::Element.new(tag_name, "")
     end
 
     def fenced_conversion_for(lang:, options:)

@@ -134,7 +134,7 @@ module Unitsml
       [value, power_numerator.to_mathml(options)].flatten.each do |record|
         values = msup.public_send("#{record[:method_name]}_value") || []
         values += [record[:value]]
-        msup.element_order << Lutaml::Model::Xml::Element.new("Element", record[:method_name].to_s)
+        msup.element_order << Lutaml::Xml::Element.new(record[:method_name].to_s, "")
         msup.public_send("#{record[:method_name]}_value=", values)
       end
       msup
