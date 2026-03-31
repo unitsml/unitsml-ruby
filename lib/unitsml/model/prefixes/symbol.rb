@@ -2,13 +2,14 @@
 
 module Unitsml
   module Model
-    class Prefixes
+    module Prefixes
       class Symbol < Lutaml::Model::Serializable
         attribute :type, :string
         attribute :content, :string
 
         xml do
-          root "PrefixSymbol"
+          element "PrefixSymbol"
+          namespace ::Unitsml::Namespace
 
           map_attribute :type, to: :type
           map_content to: :content

@@ -1,10 +1,31 @@
 # frozen_string_literal: true
 
 require "lutaml/model"
+require "unitsdb"
+
 module Unitsml
   extend self
 
-  UNITSML_NS = "https://schema.unitsml.org/unitsml/1.0"
+  autoload :Dimension, "unitsml/dimension"
+  autoload :Error, "unitsml/error"
+  autoload :Extender, "unitsml/extender"
+  autoload :Fenced, "unitsml/fenced"
+  autoload :FencedNumeric, "unitsml/fenced_numeric"
+  autoload :Formula, "unitsml/formula"
+  autoload :IntermediateExpRules, "unitsml/intermediate_exp_rules"
+  autoload :Model, "unitsml/model"
+  autoload :Namespace, "unitsml/namespace"
+  autoload :Number, "unitsml/number"
+  autoload :Parse, "unitsml/parse"
+  autoload :Parser, "unitsml/parser"
+  autoload :Prefix, "unitsml/prefix"
+  autoload :Sqrt, "unitsml/sqrt"
+  autoload :Transform, "unitsml/transform"
+  autoload :Unit, "unitsml/unit"
+  autoload :Unitsdb, "unitsml/unitsdb"
+  autoload :Utility, "unitsml/utility"
+  autoload :VERSION, "unitsml/version"
+
   REGISTER_ID = :unitsml_ruby
 
   def parse(string)
@@ -35,31 +56,6 @@ Lutaml::Model::GlobalRegister.register(
   Lutaml::Model::Register.new(Unitsml::REGISTER_ID),
 )
 
-require "unitsdb"
-require "unitsml/error"
-require "unitsml/sqrt"
-require "unitsml/unit"
-require "unitsml/parse"
-require "unitsml/fenced_numeric"
-require "unitsml/number"
-require "unitsml/parser"
-require "unitsml/prefix"
-require "unitsml/fenced"
-require "unitsml/formula"
-require "unitsml/version"
-require "unitsml/unitsdb"
-require "unitsml/extender"
-require "unitsml/dimension"
-require "unitsml/transform"
-require "unitsml/unitsdb/unit"
-require "unitsml/unitsdb/units"
-require "unitsml/unitsdb/prefixes"
-require "unitsml/unitsdb/dimension"
-require "unitsml/unitsdb/dimensions"
-require "unitsml/unitsdb/quantities"
-require "unitsml/unitsdb/prefix_reference"
-require "unitsml/unitsdb/dimension_quantity"
-
 {
   ::Unitsdb::Unit => Unitsml::Unitsdb::Unit,
   ::Unitsdb::Units => Unitsml::Unitsdb::Units,
@@ -71,4 +67,14 @@ require "unitsml/unitsdb/dimension_quantity"
   Unitsml.register_type_substitution(from: key, to: value)
 end
 
-Lutaml::Model::Config.xml_adapter_type = RUBY_ENGINE == "opal" ? :oga : :ox
+[
+  [Unitsml::Unitsdb::Dimensions, :unitsdb_dimensions],
+  [Unitsml::Unitsdb::Prefixes, :unitsdb_prefixes],
+  [Unitsml::Unitsdb::Quantities, :unitsdb_quantities],
+  [Unitsml::Unitsdb::Units, :unitsdb_units],
+].each { |klass, id| Unitsml.register_model(klass, id: id) }
+
+Lutaml::Model::Config.configure do |config|
+  config.xml_adapter_type = RUBY_ENGINE == "opal" ? :oga : :ox
+end
+

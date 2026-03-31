@@ -30,7 +30,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -45,7 +45,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -60,7 +60,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -75,7 +75,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -90,7 +90,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -105,7 +105,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -120,7 +120,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -135,7 +135,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -153,7 +153,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -168,7 +168,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -183,7 +183,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -205,8 +205,9 @@ RSpec.describe Unitsml::Parser do
         </math>
       MATHML
     end
+
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -221,7 +222,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -236,7 +237,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -251,7 +252,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -266,7 +267,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -281,7 +282,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -301,7 +302,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -321,7 +322,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -352,7 +353,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -373,7 +374,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -396,7 +397,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -419,7 +420,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -449,7 +450,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -477,7 +478,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -500,7 +501,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -515,7 +516,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "returns parslet tree of parsed Unitsml string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -553,15 +554,15 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "matches Unitsml to MathML converted string with custom multiplier argument" do
-      expect(formula.to_mathml(multiplier: "X")).to be_equivalent_to(expected_value)
+      expect(formula.to_mathml(multiplier: "X")).to be_xml_equivalent_to(expected_value)
     end
 
     it "matches Unitsml to MathML converted string with :space multiplier argument" do
-      expect(formula.to_mathml(multiplier: :space)).to be_equivalent_to(space_expected_value)
+      expect(formula.to_mathml(multiplier: :space)).to be_xml_equivalent_to(space_expected_value)
     end
 
     it "matches Unitsml to MathML converted string with :nospace multiplier argument" do
-      expect(formula.to_mathml(multiplier: :nospace)).to be_equivalent_to(nospace_expected_value)
+      expect(formula.to_mathml(multiplier: :nospace)).to be_xml_equivalent_to(nospace_expected_value)
     end
   end
 
@@ -604,7 +605,7 @@ RSpec.describe Unitsml::Parser do
       MATHML
     end
     it "matches MathML string" do
-      expect(mathml).to be_equivalent_to(expected_value)
+      expect(mathml).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -626,7 +627,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "matches Unitsml to MathML converted string with custom multiplier argument" do
-      expect(formula.to_mathml(multiplier: "X")).to be_equivalent_to(expected_value)
+      expect(formula.to_mathml(multiplier: "X")).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -644,7 +645,7 @@ RSpec.describe Unitsml::Parser do
     end
 
     it "matches Unitsml to MathML converted string with custom multiplier argument" do
-      expect(formula.to_mathml(multiplier: "X", explicit_parenthesis: false)).to be_equivalent_to(expected_value)
+      expect(formula.to_mathml(multiplier: "X", explicit_parenthesis: false)).to be_xml_equivalent_to(expected_value)
     end
   end
 
@@ -667,7 +668,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -702,7 +703,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -733,7 +734,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -764,7 +765,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -786,7 +787,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -808,7 +809,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -834,7 +835,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -862,7 +863,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -884,7 +885,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -904,7 +905,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -924,7 +925,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -941,7 +942,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -963,7 +964,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -997,7 +998,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
 
@@ -1027,7 +1028,7 @@ RSpec.describe Unitsml::Parser do
       end
 
       it "matches the UnitsML to MathML converted value" do
-        expect(mathml).to be_equivalent_to(expected_value)
+        expect(mathml).to be_xml_equivalent_to(expected_value)
       end
     end
   end

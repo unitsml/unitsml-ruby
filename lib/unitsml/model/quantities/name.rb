@@ -4,13 +4,14 @@ module Unitsml
   module Model
     module Quantities
       class Name < Lutaml::Model::Serializable
-        attribute :lang, :string, default: -> { "en-US" }
+        attribute :lang, :xml_lang, default: -> { "en" }
         attribute :content, :string
 
         xml do
-          root "QuantityName"
+          element "QuantityName"
+          namespace ::Unitsml::Namespace
 
-          map_attribute :lang, to: :lang, namespace: nil, prefix: "xml", render_default: true
+          map_attribute :lang, to: :lang, render_default: true
           map_content to: :content
         end
       end

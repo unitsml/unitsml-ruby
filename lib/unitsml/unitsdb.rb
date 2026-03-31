@@ -2,6 +2,15 @@
 
 module Unitsml
   module Unitsdb
+    autoload :Unit, "#{__dir__}/unitsdb/unit"
+    autoload :Units, "#{__dir__}/unitsdb/units"
+    autoload :Prefixes, "#{__dir__}/unitsdb/prefixes"
+    autoload :Dimension, "#{__dir__}/unitsdb/dimension"
+    autoload :Dimensions, "#{__dir__}/unitsdb/dimensions"
+    autoload :Quantities, "#{__dir__}/unitsdb/quantities"
+    autoload :PrefixReference, "#{__dir__}/unitsdb/prefix_reference"
+    autoload :DimensionQuantity, "#{__dir__}/unitsdb/dimension_quantity"
+
     class << self
       def load_file(file_name)
         @@hash ||= {}

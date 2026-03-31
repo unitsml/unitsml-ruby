@@ -1,8 +1,10 @@
 require "bundler/setup"
-require "unitsml"
-require "rspec/matchers"
-require "equivalent-xml/rspec_matchers"
-require "byebug"
+require_relative "../lib/unitsml"
+require "canon"
+
+Lutaml::Model::Config.configure do |config|
+  config.xml_adapter_type = :nokogiri
+end
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

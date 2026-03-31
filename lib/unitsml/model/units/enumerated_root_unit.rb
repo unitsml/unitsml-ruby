@@ -9,6 +9,7 @@ module Unitsml
         attribute :power_numerator, :string
 
         xml do
+          namespace ::Unitsml::Namespace
           map_attribute :unit, to: :unit
           map_attribute :prefix, to: :prefix
           map_attribute :powerNumerator, to: :power_numerator
