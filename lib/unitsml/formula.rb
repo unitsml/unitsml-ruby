@@ -30,7 +30,7 @@ module Unitsml
       if root
         options = update_options(options)
         nullify_mml_models if plurimath_available?
-        math = ::Mml::Math.new(display: 'block')
+        math = ::Mml::V4::Math.new(display: 'block')
         math.ordered = true
         math.element_order ||= []
         value.each { |instance| process_value(math, instance.to_mathml(options)) }
@@ -192,7 +192,7 @@ module Unitsml
     end
 
     def reset_mml_models
-      ::Mml::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
+      ::Mml::V4::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
     end
 
     def process_value(math, mathml_instances)

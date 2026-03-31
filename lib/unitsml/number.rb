@@ -19,7 +19,7 @@ module Unitsml
     def to_mathml(_options)
       matched_value = value&.match(/-?(.+)/)
       mn_value = matched_value ? matched_value[1] : value
-      mn_tag = ::Mml::Mn.new(value: mn_value)
+      mn_tag = ::Mml::V4::Mn.new(value: mn_value)
       value.start_with?("-") ? mrow_hash(mn_tag) : mn_hash(mn_tag)
     end
 
@@ -62,8 +62,8 @@ module Unitsml
     def mrow_hash(mn_tag)
       {
         method_name: :mrow,
-        value: ::Mml::Mrow.new(
-          mo_value: [::Mml::Mo.new(value: "&#x2212;")],
+        value: ::Mml::V4::Mrow.new(
+          mo_value: [::Mml::V4::Mo.new(value: "&#x2212;")],
           mn_value: [mn_tag],
         ),
       }
