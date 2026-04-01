@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Unitsml
   module FencedNumeric
     def to_i

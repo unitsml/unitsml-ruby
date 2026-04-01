@@ -1,9 +1,13 @@
+# frozen_string_literal: true
+
 module Unitsml
   module IntermediateExpRules
     include Parslet
 
     # Rules for slashed number
-    rule(:slashed_number_int_exp) { slashed_number | (opening_paren >> slashed_number_named_int_exp.as(:int_exp) >> closing_paren) }
+    rule(:slashed_number_int_exp) do
+      slashed_number | (opening_paren >> slashed_number_named_int_exp.as(:int_exp) >> closing_paren)
+    end
     rule(:slashed_number_named_int_exp) do
       (opening_paren.as(:open_paren) >> slashed_number_int_exp >> closing_paren.as(:close_paren)) |
         slashed_number_int_exp
@@ -14,7 +18,9 @@ module Unitsml
 
     rule(:extended_prefixed_units) { extender >> spaces? >> prefixes_units_int_exp.as(:sequence) }
 
-    rule(:int_exp_prefixes_units) { opening_paren >> spaces? >> named_int_exp_prefixes_units.as(:int_exp) >> spaces? >> closing_paren }
+    rule(:int_exp_prefixes_units) do
+      opening_paren >> spaces? >> named_int_exp_prefixes_units.as(:int_exp) >> spaces? >> closing_paren
+    end
 
     rule(:implicit_extended) do
       prefixes_units.as(:first_set) >> spaces.as(:extender) >> prefixes_units.as(:second_set) |
@@ -51,7 +57,9 @@ module Unitsml
         dimension_rules
     end
 
-    rule(:int_exp_dimension_rules) { opening_paren >> dimension_rules_named_exp.as(:int_exp) >> closing_paren >> extended_dimension_rules.maybe }
+    rule(:int_exp_dimension_rules) do
+      opening_paren >> dimension_rules_named_exp.as(:int_exp) >> closing_paren >> extended_dimension_rules.maybe
+    end
 
     rule(:extended_dimension_rules) { spaces? >> extender >> spaces? >> dimension_rules_int_exp.as(:sequence) }
     rule(:dimension_rules_named_exp) do

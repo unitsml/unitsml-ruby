@@ -5,10 +5,10 @@ module Unitsml
     module Units
       class Name < Lutaml::Model::Serializable
         attribute :name, :string
-        attribute :lang, :xml_lang, default: -> { "en" }
+        attribute :lang, :xml_lang, default: -> { 'en' }
 
         xml do
-          element "UnitName"
+          element 'UnitName'
           namespace ::Unitsml::Namespace
 
           map_content to: :name

@@ -1,1360 +1,1361 @@
-require "spec_helper"
+# frozen_string_literal: true
+
+require 'spec_helper'
 
 RSpec.describe Unitsml::Parser do
-
   subject(:formula) { described_class.new(exp).parse }
 
-  context "contains Unitsml #1 example" do
-    let(:exp) { "unitsml(K/(kg*m))" }
+  context 'contains Unitsml #1 example' do
+    let(:exp) { 'unitsml(K/(kg*m))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("K"),
-          Unitsml::Extender.new("/"),
+          Unitsml::Unit.new('K'),
+          Unitsml::Extender.new('/'),
           Unitsml::Formula.new([
-            Unitsml::Unit.new(
-              "g",
-              Unitsml::Number.new("-1"),
-              prefix: Unitsml::Prefix.new("k"),
-            ),
-            Unitsml::Extender.new("*"),
-            Unitsml::Unit.new(
-              "m",
-              Unitsml::Number.new("-1"),
-            ),
-          ])
+                                 Unitsml::Unit.new(
+                                   'g',
+                                   Unitsml::Number.new('-1'),
+                                   prefix: Unitsml::Prefix.new('k')
+                                 ),
+                                 Unitsml::Extender.new('*'),
+                                 Unitsml::Unit.new(
+                                   'm',
+                                   Unitsml::Number.new('-1')
+                                 )
+                               ])
         ],
         explicit_value: nil,
-        norm_text: "K/(kg*m)",
-        orig_text: "K/(kg*m)",
-        root: true,
+        norm_text: 'K/(kg*m)',
+        orig_text: 'K/(kg*m)',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #2 example" do
-    let(:exp) { "unitsml(m, quantity: NISTq103)" }
+  context 'contains Unitsml #2 example' do
+    let(:exp) { 'unitsml(m, quantity: NISTq103)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m"),
+          Unitsml::Unit.new('m')
         ],
-        explicit_value: { quantity: "NISTq103" },
-        norm_text: "m",
-        orig_text: "m, quantity: NISTq103",
-        root: true,
+        explicit_value: { quantity: 'NISTq103' },
+        norm_text: 'm',
+        orig_text: 'm, quantity: NISTq103',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #3 example" do
-    let(:exp) { "unitsml(cal_th/cm^2, name: langley)" }
+  context 'contains Unitsml #3 example' do
+    let(:exp) { 'unitsml(cal_th/cm^2, name: langley)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("cal_th"),
-          Unitsml::Extender.new("/"),
+          Unitsml::Unit.new('cal_th'),
+          Unitsml::Extender.new('/'),
           Unitsml::Unit.new(
-            "m",
-            Unitsml::Number.new("-2"),
-            prefix: Unitsml::Prefix.new("c"),
-          ),
+            'm',
+            Unitsml::Number.new('-2'),
+            prefix: Unitsml::Prefix.new('c')
+          )
         ],
-        explicit_value: { name: "langley" },
-        norm_text: "cal_th/cm^2",
-        orig_text: "cal_th/cm^2, name: langley",
-        root: true,
+        explicit_value: { name: 'langley' },
+        norm_text: 'cal_th/cm^2',
+        orig_text: 'cal_th/cm^2, name: langley',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #4 example" do
-    let(:exp) { "unitsml(m, symbol: La)" }
+  context 'contains Unitsml #4 example' do
+    let(:exp) { 'unitsml(m, symbol: La)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m"),
+          Unitsml::Unit.new('m')
         ],
-        explicit_value: { symbol: "La" },
-        norm_text: "m",
-        orig_text: "m, symbol: La",
-        root: true,
+        explicit_value: { symbol: 'La' },
+        norm_text: 'm',
+        orig_text: 'm, symbol: La',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #5 example" do
-    let(:exp) { "unitsml(cm*s^-2, symbol: cm cdot s^-2)" }
+  context 'contains Unitsml #5 example' do
+    let(:exp) { 'unitsml(cm*s^-2, symbol: cm cdot s^-2)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("c")),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('c')),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "s",
-            Unitsml::Number.new("-2"),
-          ),
+            's',
+            Unitsml::Number.new('-2')
+          )
         ],
-        explicit_value: { symbol: "cm cdot s^-2" },
+        explicit_value: { symbol: 'cm cdot s^-2' },
         root: true,
-        orig_text: "cm*s^-2, symbol: cm cdot s^-2",
-        norm_text: "cm*s^-2"
+        orig_text: 'cm*s^-2, symbol: cm cdot s^-2',
+        norm_text: 'cm*s^-2'
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #6 example" do
-    let(:exp) { "unitsml(cm*s^-2, multiplier: xx)" }
+  context 'contains Unitsml #6 example' do
+    let(:exp) { 'unitsml(cm*s^-2, multiplier: xx)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("c")),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('c')),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "s",
-            Unitsml::Number.new("-2"),
-          ),
+            's',
+            Unitsml::Number.new('-2')
+          )
         ],
-        explicit_value: { multiplier: "xx" },
-        norm_text: "cm*s^-2",
-        orig_text: "cm*s^-2, multiplier: xx",
-        root: true,
+        explicit_value: { multiplier: 'xx' },
+        norm_text: 'cm*s^-2',
+        orig_text: 'cm*s^-2, multiplier: xx',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #7 example" do
-    let(:exp) { "unitsml(mm*s^-2)" }
+  context 'contains Unitsml #7 example' do
+    let(:exp) { 'unitsml(mm*s^-2)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m')),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "s",
-            Unitsml::Number.new("-2"),
-          ),
+            's',
+            Unitsml::Number.new('-2')
+          )
         ],
         root: true,
-        orig_text: "mm*s^-2",
-        norm_text: "mm*s^-2",
+        orig_text: 'mm*s^-2',
+        norm_text: 'mm*s^-2'
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #8 example" do
-    let(:exp) { "unitsml(um)" }
+  context 'contains Unitsml #8 example' do
+    let(:exp) { 'unitsml(um)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("u")),
+          Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('u'))
         ],
-        norm_text: "um",
-        orig_text: "um",
-        root: true,
+        norm_text: 'um',
+        orig_text: 'um',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #9 example" do
-    let(:exp) { "unitsml(degK)" }
+  context 'contains Unitsml #9 example' do
+    let(:exp) { 'unitsml(degK)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("degK"),
+          Unitsml::Unit.new('degK')
         ],
-        norm_text: "degK",
-        orig_text: "degK",
-        root: true,
+        norm_text: 'degK',
+        orig_text: 'degK',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #10 example" do
-    let(:exp) { "unitsml(prime)" }
+  context 'contains Unitsml #10 example' do
+    let(:exp) { 'unitsml(prime)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("prime"),
+          Unitsml::Unit.new('prime')
         ],
-        norm_text: "prime",
-        orig_text: "prime",
-        root: true,
+        norm_text: 'prime',
+        orig_text: 'prime',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #11 example" do
-    let(:exp) { "unitsml(rad)" }
+  context 'contains Unitsml #11 example' do
+    let(:exp) { 'unitsml(rad)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("rad"),
+          Unitsml::Unit.new('rad')
         ],
-        norm_text: "rad",
-        orig_text: "rad",
-        root: true,
+        norm_text: 'rad',
+        orig_text: 'rad',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #12 example" do
-    let(:exp) { "unitsml(Hz)" }
+  context 'contains Unitsml #12 example' do
+    let(:exp) { 'unitsml(Hz)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("Hz"),
+          Unitsml::Unit.new('Hz')
         ],
-        norm_text: "Hz",
-        orig_text: "Hz",
-        root: true,
+        norm_text: 'Hz',
+        orig_text: 'Hz',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #13 example" do
-    let(:exp) { "unitsml(kg)" }
+  context 'contains Unitsml #13 example' do
+    let(:exp) { 'unitsml(kg)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("g", prefix: Unitsml::Prefix.new("k")),
+          Unitsml::Unit.new('g', prefix: Unitsml::Prefix.new('k'))
         ],
-        norm_text: "kg",
-        orig_text: "kg",
-        root: true,
+        norm_text: 'kg',
+        orig_text: 'kg',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #14 example" do
-    let(:exp) { "unitsml(m)" }
+  context 'contains Unitsml #14 example' do
+    let(:exp) { 'unitsml(m)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("m"),
+          Unitsml::Unit.new('m')
         ],
-        norm_text: "m",
-        orig_text: "m",
-        root: true,
+        norm_text: 'm',
+        orig_text: 'm',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #15 example" do
-    let(:exp) { "unitsml(sqrt(Hz))" }
+  context 'contains Unitsml #15 example' do
+    let(:exp) { 'unitsml(sqrt(Hz))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Sqrt.new(
             Unitsml::Unit.new(
-              "Hz",
-              Unitsml::Number.new("0.5"),
-            ),
-          ),
+              'Hz',
+              Unitsml::Number.new('0.5')
+            )
+          )
         ],
-        norm_text: "sqrt(Hz)",
-        orig_text: "sqrt(Hz)",
-        root: true,
+        norm_text: 'sqrt(Hz)',
+        orig_text: 'sqrt(Hz)',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #16 example" do
-    let(:exp) { "unitsml(g)" }
+  context 'contains Unitsml #16 example' do
+    let(:exp) { 'unitsml(g)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("g"),
+          Unitsml::Unit.new('g')
         ],
-        norm_text: "g",
-        orig_text: "g",
-        root: true,
+        norm_text: 'g',
+        orig_text: 'g',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #17 example" do
-    let(:exp) { "unitsml(hp)" }
+  context 'contains Unitsml #17 example' do
+    let(:exp) { 'unitsml(hp)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("hp"),
+          Unitsml::Unit.new('hp')
         ],
-        norm_text: "hp",
-        orig_text: "hp",
-        root: true,
+        norm_text: 'hp',
+        orig_text: 'hp',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #18 example" do
-    let(:exp) { "unitsml(kg*s^-2)" }
+  context 'contains Unitsml #18 example' do
+    let(:exp) { 'unitsml(kg*s^-2)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("g", prefix: Unitsml::Prefix.new("k")),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('g', prefix: Unitsml::Prefix.new('k')),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "s",
-            Unitsml::Number.new("-2"),
-          ),
+            's',
+            Unitsml::Number.new('-2')
+          )
         ],
-        norm_text: "kg*s^-2",
-        orig_text: "kg*s^-2",
-        root: true,
+        norm_text: 'kg*s^-2',
+        orig_text: 'kg*s^-2',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #19 example" do
-    let(:exp) { "unitsml(mbar)" }
+  context 'contains Unitsml #19 example' do
+    let(:exp) { 'unitsml(mbar)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("bar", prefix: Unitsml::Prefix.new("m"))
+          Unitsml::Unit.new('bar', prefix: Unitsml::Prefix.new('m'))
         ],
-        norm_text: "mbar",
-        orig_text: "mbar",
-        root: true,
+        norm_text: 'mbar',
+        orig_text: 'mbar',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #20 example" do
-    let(:exp) { "unitsml(p-)" }
+  context 'contains Unitsml #20 example' do
+    let(:exp) { 'unitsml(p-)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Prefix.new("p", true)
+          Unitsml::Prefix.new('p', true)
         ],
-        norm_text: "p-",
-        orig_text: "p-",
-        root: true,
+        norm_text: 'p-',
+        orig_text: 'p-',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #21 example" do
-    let(:exp) { "unitsml(h-)" }
+  context 'contains Unitsml #21 example' do
+    let(:exp) { 'unitsml(h-)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Prefix.new("h", true)
+          Unitsml::Prefix.new('h', true)
         ],
-        norm_text: "h-",
-        orig_text: "h-",
-        root: true,
+        norm_text: 'h-',
+        orig_text: 'h-',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #22 example" do
-    let(:exp) { "unitsml(da-)" }
+  context 'contains Unitsml #22 example' do
+    let(:exp) { 'unitsml(da-)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Prefix.new("da", true)
+          Unitsml::Prefix.new('da', true)
         ],
-        norm_text: "da-",
-        orig_text: "da-",
-        root: true,
+        norm_text: 'da-',
+        orig_text: 'da-',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #23 example" do
-    let(:exp) { "unitsml(u-)" }
+  context 'contains Unitsml #23 example' do
+    let(:exp) { 'unitsml(u-)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Prefix.new("u", true)
+          Unitsml::Prefix.new('u', true)
         ],
-        norm_text: "u-",
-        orig_text: "u-",
-        root: true,
+        norm_text: 'u-',
+        orig_text: 'u-',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #24 example" do
-    let(:exp) { "unitsml(A*C^3)" }
+  context 'contains Unitsml #24 example' do
+    let(:exp) { 'unitsml(A*C^3)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("A"),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('A'),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "C",
-            Unitsml::Number.new("3"),
-          ),
+            'C',
+            Unitsml::Number.new('3')
+          )
         ],
-        norm_text: "A*C^3",
-        orig_text: "A*C^3",
-        root: true,
+        norm_text: 'A*C^3',
+        orig_text: 'A*C^3',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #25 example" do
-    let(:exp) { "unitsml(A/C^-3)" }
+  context 'contains Unitsml #25 example' do
+    let(:exp) { 'unitsml(A/C^-3)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("A"),
-          Unitsml::Extender.new("/"),
+          Unitsml::Unit.new('A'),
+          Unitsml::Extender.new('/'),
           Unitsml::Unit.new(
-            "C",
-            Unitsml::Number.new("3"),
-          ),
+            'C',
+            Unitsml::Number.new('3')
+          )
         ],
-        norm_text: "A/C^-3",
-        orig_text: "A/C^-3",
-        root: true,
+        norm_text: 'A/C^-3',
+        orig_text: 'A/C^-3',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #26 example" do
-    let(:exp) { "unitsml(J/kg*K)" }
+  context 'contains Unitsml #26 example' do
+    let(:exp) { 'unitsml(J/kg*K)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("J"),
-          Unitsml::Extender.new("/"),
+          Unitsml::Unit.new('J'),
+          Unitsml::Extender.new('/'),
           Unitsml::Formula.new([
-            Unitsml::Unit.new(
-              "g",
-              Unitsml::Number.new("-1"),
-              prefix: Unitsml::Prefix.new("k"),
-            ),
-            Unitsml::Extender.new("*"),
-            Unitsml::Unit.new(
-              "K",
-              Unitsml::Number.new("-1"),
-            ),
-          ])
+                                 Unitsml::Unit.new(
+                                   'g',
+                                   Unitsml::Number.new('-1'),
+                                   prefix: Unitsml::Prefix.new('k')
+                                 ),
+                                 Unitsml::Extender.new('*'),
+                                 Unitsml::Unit.new(
+                                   'K',
+                                   Unitsml::Number.new('-1')
+                                 )
+                               ])
         ],
-        norm_text: "J/kg*K",
-        orig_text: "J/kg*K",
-        root: true,
+        norm_text: 'J/kg*K',
+        orig_text: 'J/kg*K',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #27 example" do
-    let(:exp) { "unitsml(kg^-2)" }
+  context 'contains Unitsml #27 example' do
+    let(:exp) { 'unitsml(kg^-2)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Unit.new(
-            "g",
-            Unitsml::Number.new("-2"),
-            prefix: Unitsml::Prefix.new("k"),
-          ),
+            'g',
+            Unitsml::Number.new('-2'),
+            prefix: Unitsml::Prefix.new('k')
+          )
         ],
-        norm_text: "kg^-2",
-        orig_text: "kg^-2",
-        root: true,
+        norm_text: 'kg^-2',
+        orig_text: 'kg^-2',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #28 example" do
-    let(:exp) { "unitsml(mW*cm^(-2))" }
+  context 'contains Unitsml #28 example' do
+    let(:exp) { 'unitsml(mW*cm^(-2))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("W", prefix: Unitsml::Prefix.new("m")),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('W', prefix: Unitsml::Prefix.new('m')),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "m",
-            Unitsml::Number.new("-2"),
-            prefix: Unitsml::Prefix.new("c"),
-          ),
+            'm',
+            Unitsml::Number.new('-2'),
+            prefix: Unitsml::Prefix.new('c')
+          )
         ],
-        norm_text: "mW*cm(-2)",
-        orig_text: "mW*cm(-2)",
-        root: true,
+        norm_text: 'mW*cm(-2)',
+        orig_text: 'mW*cm(-2)',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #29 example" do
-    let(:exp) { "unitsml(dim_Theta*dim_L^2)" }
+  context 'contains Unitsml #29 example' do
+    let(:exp) { 'unitsml(dim_Theta*dim_L^2)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Dimension.new("dim_Theta"),
-          Unitsml::Extender.new("*"),
+          Unitsml::Dimension.new('dim_Theta'),
+          Unitsml::Extender.new('*'),
           Unitsml::Dimension.new(
-            "dim_L",
-            Unitsml::Number.new("2"),
-          ),
+            'dim_L',
+            Unitsml::Number.new('2')
+          )
         ],
-        norm_text: "dim_Theta*dim_L^2",
-        orig_text: "dim_Theta*dim_L^2",
-        root: true,
+        norm_text: 'dim_Theta*dim_L^2',
+        orig_text: 'dim_Theta*dim_L^2',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #30 example" do
-    let(:exp) { "unitsml(dim_Theta^10*dim_L^2)" }
+  context 'contains Unitsml #30 example' do
+    let(:exp) { 'unitsml(dim_Theta^10*dim_L^2)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Dimension.new(
-            "dim_Theta",
-            Unitsml::Number.new("10"),
+            'dim_Theta',
+            Unitsml::Number.new('10')
           ),
-          Unitsml::Extender.new("*"),
+          Unitsml::Extender.new('*'),
           Unitsml::Dimension.new(
-            "dim_L",
-            Unitsml::Number.new("2"),
-          ),
+            'dim_L',
+            Unitsml::Number.new('2')
+          )
         ],
-        norm_text: "dim_Theta^10*dim_L^2",
-        orig_text: "dim_Theta^10*dim_L^2",
-        root: true,
+        norm_text: 'dim_Theta^10*dim_L^2',
+        orig_text: 'dim_Theta^10*dim_L^2',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #31 example" do
-    let(:exp) { "unitsml(Hz^10*darcy^-100)" }
+  context 'contains Unitsml #31 example' do
+    let(:exp) { 'unitsml(Hz^10*darcy^-100)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Unit.new(
-            "Hz",
-            Unitsml::Number.new("10"),
+            'Hz',
+            Unitsml::Number.new('10')
           ),
-          Unitsml::Extender.new("*"),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "darcy",
-            Unitsml::Number.new("-100"),
-          ),
+            'darcy',
+            Unitsml::Number.new('-100')
+          )
         ],
-        norm_text: "Hz^10*darcy^-100",
-        orig_text: "Hz^10*darcy^-100",
-        root: true,
+        norm_text: 'Hz^10*darcy^-100',
+        orig_text: 'Hz^10*darcy^-100',
+        root: true
       )
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #32 example from metanorma/bipm-si-brochure#245" do
-    let(:exp) { "unitsml(W*m^(−2))" }
+  context 'contains Unitsml #32 example from metanorma/bipm-si-brochure#245' do
+    let(:exp) { 'unitsml(W*m^(−2))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("W"),
-          Unitsml::Extender.new("*"),
+          Unitsml::Unit.new('W'),
+          Unitsml::Extender.new('*'),
           Unitsml::Unit.new(
-            "m",
-            Unitsml::Number.new("-2"),
-          ),
+            'm',
+            Unitsml::Number.new('-2')
+          )
         ],
-        norm_text: "W*m^(-2)",
-        orig_text: "W*m^(-2)",
-        root: true,
+        norm_text: 'W*m^(-2)',
+        orig_text: 'W*m^(-2)',
+        root: true
       )
     end
 
-    it "returns Unitsml::Formula of parsed Unitsml string" do
+    it 'returns Unitsml::Formula of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #33 example" do
-    let(:exp) { "unitsml(((mm*mm)))" }
+  context 'contains Unitsml #33 example' do
+    let(:exp) { 'unitsml(((mm*mm)))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Fenced.new(
-            "(",
+            '(',
             Unitsml::Formula.new([
-              Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-              Unitsml::Extender.new("*"),
-              Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-            ]),
-            ")",
-          ),
+                                   Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m')),
+                                   Unitsml::Extender.new('*'),
+                                   Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m'))
+                                 ]),
+            ')'
+          )
         ],
-        norm_text: "((mm*mm))",
-        orig_text: "((mm*mm))",
-        root: true,
+        norm_text: '((mm*mm))',
+        orig_text: '((mm*mm))',
+        root: true
       )
     end
 
-    it "returns Unitsml::Formula of parsed Unitsml string" do
+    it 'returns Unitsml::Formula of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #34 example" do
-    let(:exp) { "((mm*mm))*mm" }
+  context 'contains Unitsml #34 example' do
+    let(:exp) { '((mm*mm))*mm' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Fenced.new(
-            "(",
+            '(',
             Unitsml::Formula.new([
-              Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-              Unitsml::Extender.new("*"),
-              Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-            ]),
-            ")",
+                                   Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m')),
+                                   Unitsml::Extender.new('*'),
+                                   Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m'))
+                                 ]),
+            ')'
           ),
-          Unitsml::Extender.new("*"),
-          Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
+          Unitsml::Extender.new('*'),
+          Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m'))
         ],
-        norm_text: "((mm*mm))*mm",
-        orig_text: "((mm*mm))*mm",
-        root: true,
+        norm_text: '((mm*mm))*mm',
+        orig_text: '((mm*mm))*mm',
+        root: true
       )
     end
 
-    it "returns Unitsml::Formula of parsed Unitsml string" do
+    it 'returns Unitsml::Formula of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #35 example" do
-    let(:exp) { "(mm*mm)*(((mm*m)))" }
+  context 'contains Unitsml #35 example' do
+    let(:exp) { '(mm*mm)*(((mm*m)))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Formula.new([
-            Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-            Unitsml::Extender.new("*"),
-            Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-          ]),
-          Unitsml::Extender.new("*"),
+                                 Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m')),
+                                 Unitsml::Extender.new('*'),
+                                 Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m'))
+                               ]),
+          Unitsml::Extender.new('*'),
           Unitsml::Fenced.new(
-            "(",
+            '(',
             Unitsml::Formula.new(
               [
-                Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-                Unitsml::Extender.new("*"),
-                Unitsml::Unit.new("m"),
+                Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m')),
+                Unitsml::Extender.new('*'),
+                Unitsml::Unit.new('m')
               ]
             ),
-            ")",
-          ),
+            ')'
+          )
         ],
-        norm_text: "(mm*mm)*(mm*m)",
-        orig_text: "(mm*mm)*(mm*m)",
-        root: true,
+        norm_text: '(mm*mm)*(mm*m)',
+        orig_text: '(mm*mm)*(mm*m)',
+        root: true
       )
     end
 
-    it "returns Unitsml::Formula of parsed Unitsml string" do
+    it 'returns Unitsml::Formula of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #36 example" do
-    let(:exp) { "((dim_Theta))*dim_N*(dim_J*dim_Theta)" }
+  context 'contains Unitsml #36 example' do
+    let(:exp) { '((dim_Theta))*dim_N*(dim_J*dim_Theta)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Fenced.new(
-            "(",
-            Unitsml::Dimension.new("dim_Theta"),
-            ")",
+            '(',
+            Unitsml::Dimension.new('dim_Theta'),
+            ')'
           ),
-          Unitsml::Extender.new("*"),
+          Unitsml::Extender.new('*'),
           Unitsml::Formula.new([
-            Unitsml::Dimension.new("dim_N"),
-            Unitsml::Extender.new("*"),
-            Unitsml::Formula.new([
-              Unitsml::Dimension.new("dim_J"),
-              Unitsml::Extender.new("*"),
-              Unitsml::Dimension.new("dim_Theta"),
-            ]),
-          ])
+                                 Unitsml::Dimension.new('dim_N'),
+                                 Unitsml::Extender.new('*'),
+                                 Unitsml::Formula.new([
+                                                        Unitsml::Dimension.new('dim_J'),
+                                                        Unitsml::Extender.new('*'),
+                                                        Unitsml::Dimension.new('dim_Theta')
+                                                      ])
+                               ])
         ],
-        norm_text: "((dim_Theta))*dim_N*(dim_J*dim_Theta)",
-        orig_text: "((dim_Theta))*dim_N*(dim_J*dim_Theta)",
-        root: true,
+        norm_text: '((dim_Theta))*dim_N*(dim_J*dim_Theta)',
+        orig_text: '((dim_Theta))*dim_N*(dim_J*dim_Theta)',
+        root: true
       )
     end
 
-    it "returns Unitsml::Formula of parsed Unitsml string" do
+    it 'returns Unitsml::Formula of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #37 example" do
-    let(:exp) { "((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)" }
+  context 'contains Unitsml #37 example' do
+    let(:exp) { '((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
           Unitsml::Fenced.new(
-            "(",
+            '(',
             Unitsml::Dimension.new(
-              "dim_Theta",
-              Unitsml::Number.new("12"),
+              'dim_Theta',
+              Unitsml::Number.new('12')
             ),
-            ")",
+            ')'
           ),
-          Unitsml::Extender.new("*"),
+          Unitsml::Extender.new('*'),
           Unitsml::Formula.new([
-            Unitsml::Dimension.new(
-              "dim_N",
-              Unitsml::Number.new("12"),
-            ),
-            Unitsml::Extender.new("*"),
-            Unitsml::Formula.new([
-              Unitsml::Dimension.new(
-                "dim_J",
-                Unitsml::Number.new("10"),
-              ),
-              Unitsml::Extender.new("*"),
-              Unitsml::Dimension.new(
-                "dim_Theta",
-                Unitsml::Number.new("10"),
-              ),
-            ]),
-          ])
+                                 Unitsml::Dimension.new(
+                                   'dim_N',
+                                   Unitsml::Number.new('12')
+                                 ),
+                                 Unitsml::Extender.new('*'),
+                                 Unitsml::Formula.new([
+                                                        Unitsml::Dimension.new(
+                                                          'dim_J',
+                                                          Unitsml::Number.new('10')
+                                                        ),
+                                                        Unitsml::Extender.new('*'),
+                                                        Unitsml::Dimension.new(
+                                                          'dim_Theta',
+                                                          Unitsml::Number.new('10')
+                                                        )
+                                                      ])
+                               ])
         ],
-        norm_text: "((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)",
-        orig_text: "((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)",
-        root: true,
+        norm_text: '((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)',
+        orig_text: '((dim_Theta^12))*dim_N^12*(dim_J^10*dim_Theta^10)',
+        root: true
       )
     end
 
-    it "returns Unitsml::Formula of parsed Unitsml string" do
+    it 'returns Unitsml::Formula of parsed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  context "contains Unitsml #38 example from unitsml/unitsml-ruby#43" do
-    let(:exp) { "unitsml(J/((A*m)))" }
+  context 'contains Unitsml #38 example from unitsml/unitsml-ruby#43' do
+    let(:exp) { 'unitsml(J/((A*m)))' }
     let(:expected_value) do
       Unitsml::Formula.new(
         [
-          Unitsml::Unit.new("J"),
-          Unitsml::Extender.new("/"),
+          Unitsml::Unit.new('J'),
+          Unitsml::Extender.new('/'),
           Unitsml::Fenced.new(
-            "(",
+            '(',
             Unitsml::Formula.new([
-              Unitsml::Unit.new(
-                "A",
-                Unitsml::Number.new("-1"),
-              ),
-              Unitsml::Extender.new("*"),
-              Unitsml::Unit.new(
-                "m",
-                Unitsml::Number.new("-1"),
-              ),
-            ]),
-            ")",
-          ),
+                                   Unitsml::Unit.new(
+                                     'A',
+                                     Unitsml::Number.new('-1')
+                                   ),
+                                   Unitsml::Extender.new('*'),
+                                   Unitsml::Unit.new(
+                                     'm',
+                                     Unitsml::Number.new('-1')
+                                   )
+                                 ]),
+            ')'
+          )
         ],
-        norm_text: "J/((A*m))",
-        orig_text: "J/((A*m))",
-        root: true,
+        norm_text: 'J/((A*m))',
+        orig_text: 'J/((A*m))',
+        root: true
       )
     end
 
-    it "matches Unitsml::Formula of processed Unitsml string" do
+    it 'matches Unitsml::Formula of processed Unitsml string' do
       expect(formula).to eq(expected_value)
     end
   end
 
-  describe "implicit extender" do
-    context "implicit extender example #1 from issue#53" do
-      let(:exp) { "unitsml(J(kg*K))" }
+  describe 'implicit extender' do
+    context 'implicit extender example #1 from issue#53' do
+      let(:exp) { 'unitsml(J(kg*K))' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
-            Unitsml::Unit.new("J"),
+            Unitsml::Unit.new('J'),
             Unitsml::Fenced.new(
-              "(",
+              '(',
               Unitsml::Formula.new(
                 [
                   Unitsml::Unit.new(
-                    "g",
-                    prefix: Unitsml::Prefix.new("k"),
+                    'g',
+                    prefix: Unitsml::Prefix.new('k')
                   ),
-                  Unitsml::Extender.new("*"),
-                  Unitsml::Unit.new("K"),
-                ],
+                  Unitsml::Extender.new('*'),
+                  Unitsml::Unit.new('K')
+                ]
               ),
-              ")",
+              ')'
             )
           ],
-          norm_text: "J(kg*K)",
-          orig_text: "J(kg*K)",
-          root: true,
+          norm_text: 'J(kg*K)',
+          orig_text: 'J(kg*K)',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #2 from issue#53" do
-      let(:exp) { "unitsml(J kg^-1 * K^-1)" }
+    context 'implicit extender example #2 from issue#53' do
+      let(:exp) { 'unitsml(J kg^-1 * K^-1)' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
             Unitsml::Formula.new(
               [
-                Unitsml::Unit.new("J"),
-                Unitsml::Extender.new(" "),
+                Unitsml::Unit.new('J'),
+                Unitsml::Extender.new(' '),
                 Unitsml::Unit.new(
-                  "g",
-                  Unitsml::Number.new("-1"),
-                  prefix: Unitsml::Prefix.new("k"),
-                ),
-              ],
+                  'g',
+                  Unitsml::Number.new('-1'),
+                  prefix: Unitsml::Prefix.new('k')
+                )
+              ]
             ),
-            Unitsml::Extender.new("*"),
+            Unitsml::Extender.new('*'),
             Unitsml::Unit.new(
-              "K",
-              Unitsml::Number.new("-1"),
-            ),
-          ],
-          norm_text: "J kg^-1 * K^-1",
-          orig_text: "J kg^-1 * K^-1",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #3 from issue#53" do
-      let(:exp) { "unitsml(J/mol * K)" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Unit.new("J"),
-            Unitsml::Extender.new("/"),
-            Unitsml::Formula.new(
-              [
-                Unitsml::Unit.new(
-                  "mol",
-                  Unitsml::Number.new("-1"),
-                ),
-                Unitsml::Extender.new("*"),
-                Unitsml::Unit.new(
-                  "K",
-                  Unitsml::Number.new("-1"),
-                ),
-              ],
-            ),
-          ],
-          norm_text: "J/mol * K",
-          orig_text: "J/mol * K",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #4 from issue#53" do
-      let(:exp) { "unitsml(J/(mol * K))" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Unit.new("J"),
-            Unitsml::Extender.new("/"),
-            Unitsml::Formula.new(
-              [
-                Unitsml::Unit.new(
-                  "mol",
-                  Unitsml::Number.new("-1"),
-                ),
-                Unitsml::Extender.new("*"),
-                Unitsml::Unit.new(
-                  "K",
-                  Unitsml::Number.new("-1"),
-                ),
-              ],
-            ),
-          ],
-          norm_text: "J/(mol * K)",
-          orig_text: "J/(mol * K)",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #5" do
-      let(:exp) { "unitsml((mol * K)J)" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Fenced.new(
-              "(",
-              Unitsml::Formula.new(
-                [
-                  Unitsml::Unit.new("mol"),
-                  Unitsml::Extender.new("*"),
-                  Unitsml::Unit.new("K"),
-                ],
-              ),
-              ")",
-            ),
-            Unitsml::Unit.new("J"),
-          ],
-          norm_text: "(mol * K)J",
-          orig_text: "(mol * K)J",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #6" do
-      let(:exp) { "unitsml((mol * K) J)" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Fenced.new(
-              "(",
-              Unitsml::Formula.new(
-                [
-                  Unitsml::Unit.new("mol"),
-                  Unitsml::Extender.new("*"),
-                  Unitsml::Unit.new("K"),
-                ],
-              ),
-              ")",
-            ),
-            Unitsml::Unit.new("J"),
-          ],
-          norm_text: "(mol * K) J",
-          orig_text: "(mol * K) J",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #7" do
-      let(:exp) { "unitsml((mol * K)(J))" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Fenced.new(
-              "(",
-              Unitsml::Formula.new(
-                [
-                  Unitsml::Unit.new("mol"),
-                  Unitsml::Extender.new("*"),
-                  Unitsml::Unit.new("K"),
-                ],
-              ),
-              ")",
-            ),
-            Unitsml::Fenced.new(
-              "(",
-              Unitsml::Unit.new("J"),
-              ")",
+              'K',
+              Unitsml::Number.new('-1')
             )
           ],
-          orig_text: "(mol * K)(J)",
-          norm_text: "(mol * K)(J)",
-          root: true,
+          norm_text: 'J kg^-1 * K^-1',
+          orig_text: 'J kg^-1 * K^-1',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #8" do
-      let(:exp) { "unitsml((mol * K)(J*K))" }
+    context 'implicit extender example #3 from issue#53' do
+      let(:exp) { 'unitsml(J/mol * K)' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Unit.new('J'),
+            Unitsml::Extender.new('/'),
+            Unitsml::Formula.new(
+              [
+                Unitsml::Unit.new(
+                  'mol',
+                  Unitsml::Number.new('-1')
+                ),
+                Unitsml::Extender.new('*'),
+                Unitsml::Unit.new(
+                  'K',
+                  Unitsml::Number.new('-1')
+                )
+              ]
+            )
+          ],
+          norm_text: 'J/mol * K',
+          orig_text: 'J/mol * K',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #4 from issue#53' do
+      let(:exp) { 'unitsml(J/(mol * K))' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Unit.new('J'),
+            Unitsml::Extender.new('/'),
+            Unitsml::Formula.new(
+              [
+                Unitsml::Unit.new(
+                  'mol',
+                  Unitsml::Number.new('-1')
+                ),
+                Unitsml::Extender.new('*'),
+                Unitsml::Unit.new(
+                  'K',
+                  Unitsml::Number.new('-1')
+                )
+              ]
+            )
+          ],
+          norm_text: 'J/(mol * K)',
+          orig_text: 'J/(mol * K)',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #5' do
+      let(:exp) { 'unitsml((mol * K)J)' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
             Unitsml::Fenced.new(
-              "(",
+              '(',
               Unitsml::Formula.new(
                 [
-                  Unitsml::Unit.new("mol"),
-                  Unitsml::Extender.new("*"),
-                  Unitsml::Unit.new("K"),
-                ],
+                  Unitsml::Unit.new('mol'),
+                  Unitsml::Extender.new('*'),
+                  Unitsml::Unit.new('K')
+                ]
               ),
-              ")",
+              ')'
             ),
-            Unitsml::Fenced.new(
-              "(",
-              Unitsml::Formula.new(
-                [
-                  Unitsml::Unit.new("J"),
-                  Unitsml::Extender.new("*"),
-                  Unitsml::Unit.new("K"),
-                ],
-              ),
-              ")",
-            ),
+            Unitsml::Unit.new('J')
           ],
-          orig_text: "(mol * K)(J*K)",
-          norm_text: "(mol * K)(J*K)",
-          root: true,
+          norm_text: '(mol * K)J',
+          orig_text: '(mol * K)J',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #9" do
-      let(:exp) { "unitsml(E_erlang(mm)*kg)" }
+    context 'implicit extender example #6' do
+      let(:exp) { 'unitsml((mol * K) J)' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Fenced.new(
+              '(',
+              Unitsml::Formula.new(
+                [
+                  Unitsml::Unit.new('mol'),
+                  Unitsml::Extender.new('*'),
+                  Unitsml::Unit.new('K')
+                ]
+              ),
+              ')'
+            ),
+            Unitsml::Unit.new('J')
+          ],
+          norm_text: '(mol * K) J',
+          orig_text: '(mol * K) J',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #7' do
+      let(:exp) { 'unitsml((mol * K)(J))' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Fenced.new(
+              '(',
+              Unitsml::Formula.new(
+                [
+                  Unitsml::Unit.new('mol'),
+                  Unitsml::Extender.new('*'),
+                  Unitsml::Unit.new('K')
+                ]
+              ),
+              ')'
+            ),
+            Unitsml::Fenced.new(
+              '(',
+              Unitsml::Unit.new('J'),
+              ')'
+            )
+          ],
+          orig_text: '(mol * K)(J)',
+          norm_text: '(mol * K)(J)',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #8' do
+      let(:exp) { 'unitsml((mol * K)(J*K))' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Fenced.new(
+              '(',
+              Unitsml::Formula.new(
+                [
+                  Unitsml::Unit.new('mol'),
+                  Unitsml::Extender.new('*'),
+                  Unitsml::Unit.new('K')
+                ]
+              ),
+              ')'
+            ),
+            Unitsml::Fenced.new(
+              '(',
+              Unitsml::Formula.new(
+                [
+                  Unitsml::Unit.new('J'),
+                  Unitsml::Extender.new('*'),
+                  Unitsml::Unit.new('K')
+                ]
+              ),
+              ')'
+            )
+          ],
+          orig_text: '(mol * K)(J*K)',
+          norm_text: '(mol * K)(J*K)',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #9' do
+      let(:exp) { 'unitsml(E_erlang(mm)*kg)' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
             Unitsml::Formula.new(
               [
-                Unitsml::Unit.new("E_erlang"),
+                Unitsml::Unit.new('E_erlang'),
                 Unitsml::Fenced.new(
-                  "(",
-                  Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("m")),
-                  ")",
-                ),
-              ],
+                  '(',
+                  Unitsml::Unit.new('m', prefix: Unitsml::Prefix.new('m')),
+                  ')'
+                )
+              ]
             ),
-            Unitsml::Extender.new("*"),
-            Unitsml::Unit.new("g", prefix: Unitsml::Prefix.new("k")),
+            Unitsml::Extender.new('*'),
+            Unitsml::Unit.new('g', prefix: Unitsml::Prefix.new('k'))
           ],
-          orig_text: "E_erlang(mm)*kg",
-          norm_text: "E_erlang(mm)*kg",
-          root: true,
+          orig_text: 'E_erlang(mm)*kg',
+          norm_text: 'E_erlang(mm)*kg',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #10" do
-      let(:exp) { "unitsml(dim_Theta(dim_phi))" }
+    context 'implicit extender example #10' do
+      let(:exp) { 'unitsml(dim_Theta(dim_phi))' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
-            Unitsml::Dimension.new("dim_Theta"),
+            Unitsml::Dimension.new('dim_Theta'),
             Unitsml::Fenced.new(
-              "(",
-              Unitsml::Dimension.new("dim_phi"),
-              ")",
+              '(',
+              Unitsml::Dimension.new('dim_phi'),
+              ')'
+            )
+          ],
+          orig_text: 'dim_Theta(dim_phi)',
+          norm_text: 'dim_Theta(dim_phi)',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #11' do
+      let(:exp) { 'unitsml((dim_Theta)dim_L)' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Fenced.new(
+              '(',
+              Unitsml::Dimension.new('dim_Theta'),
+              ')'
             ),
+            Unitsml::Dimension.new('dim_L')
           ],
-          orig_text: "dim_Theta(dim_phi)",
-          norm_text: "dim_Theta(dim_phi)",
-          root: true,
+          orig_text: 'dim_Theta(dim_L)',
+          norm_text: 'dim_Theta(dim_L)',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #11" do
-      let(:exp) { "unitsml((dim_Theta)dim_L)" }
+    context 'implicit extender example #12' do
+      let(:exp) { 'unitsml(dim_Theta dim_L)' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
+            Unitsml::Dimension.new('dim_Theta'),
+            Unitsml::Extender.new(' '),
+            Unitsml::Dimension.new('dim_L')
+          ],
+          orig_text: 'dim_Theta dim_L',
+          norm_text: 'dim_Theta dim_L',
+          root: true
+        )
+      end
+
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
+        expect(formula).to eq(expected_value)
+      end
+    end
+
+    context 'implicit extender example #13' do
+      let(:exp) { 'unitsml(dim_phi (dim_Theta dim_L))' }
+      let(:expected_value) do
+        Unitsml::Formula.new(
+          [
+            Unitsml::Dimension.new('dim_phi'),
             Unitsml::Fenced.new(
-              "(",
-              Unitsml::Dimension.new("dim_Theta"),
-              ")",
-            ),
-            Unitsml::Dimension.new("dim_L"),
-          ],
-          orig_text: "dim_Theta(dim_L)",
-          norm_text: "dim_Theta(dim_L)",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #12" do
-      let(:exp) { "unitsml(dim_Theta dim_L)" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Dimension.new("dim_Theta"),
-            Unitsml::Extender.new(" "),
-            Unitsml::Dimension.new("dim_L"),
-          ],
-          orig_text: "dim_Theta dim_L",
-          norm_text: "dim_Theta dim_L",
-          root: true,
-        )
-      end
-
-      it "returns Unitsml::Formula of parsed Unitsml string" do
-        expect(formula).to eq(expected_value)
-      end
-    end
-
-    context "implicit extender example #13" do
-      let(:exp) { "unitsml(dim_phi (dim_Theta dim_L))" }
-      let(:expected_value) do
-        Unitsml::Formula.new(
-          [
-            Unitsml::Dimension.new("dim_phi"),
-            Unitsml::Fenced.new(
-              "(",
+              '(',
               Unitsml::Formula.new(
                 [
-                  Unitsml::Dimension.new("dim_Theta"),
-                  Unitsml::Extender.new(" "),
-                  Unitsml::Dimension.new("dim_L"),
-                ],
+                  Unitsml::Dimension.new('dim_Theta'),
+                  Unitsml::Extender.new(' '),
+                  Unitsml::Dimension.new('dim_L')
+                ]
               ),
-              ")",
-            ),
+              ')'
+            )
           ],
-          orig_text: "dim_phi (dim_Theta dim_L)",
-          norm_text: "dim_phi (dim_Theta dim_L)",
-          root: true,
+          orig_text: 'dim_phi (dim_Theta dim_L)',
+          norm_text: 'dim_phi (dim_Theta dim_L)',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #14" do
-      let(:exp) { "unitsml((dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+    context 'implicit extender example #14' do
+      let(:exp) { 'unitsml((dim_phi(dim_I)) ((dim_Theta) dim_L))' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
             Unitsml::Fenced.new(
-              "(",
+              '(',
               Unitsml::Formula.new(
                 [
-                  Unitsml::Dimension.new("dim_phi"),
+                  Unitsml::Dimension.new('dim_phi'),
                   Unitsml::Fenced.new(
-                    "(",
-                    Unitsml::Dimension.new("dim_I"),
-                    ")",
-                  ),
-                ],
+                    '(',
+                    Unitsml::Dimension.new('dim_I'),
+                    ')'
+                  )
+                ]
               ),
-              ")",
+              ')'
             ),
             Unitsml::Fenced.new(
-              "(",
+              '(',
               Unitsml::Formula.new(
                 [
                   Unitsml::Fenced.new(
-                    "(",
-                    Unitsml::Dimension.new("dim_Theta"),
-                    ")",
+                    '(',
+                    Unitsml::Dimension.new('dim_Theta'),
+                    ')'
                   ),
-                  Unitsml::Dimension.new("dim_L"),
-                ],
+                  Unitsml::Dimension.new('dim_L')
+                ]
               ),
-              ")",
-            ),
+              ')'
+            )
           ],
-          orig_text: "(dim_phi(dim_I)) ((dim_Theta) dim_L)",
-          norm_text: "(dim_phi(dim_I)) ((dim_Theta) dim_L)",
-          root: true,
+          orig_text: '(dim_phi(dim_I)) ((dim_Theta) dim_L)',
+          norm_text: '(dim_phi(dim_I)) ((dim_Theta) dim_L)',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end
 
-    context "implicit extender example #15" do
-      let(:exp) { "unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L))" }
+    context 'implicit extender example #15' do
+      let(:exp) { 'unitsml(sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L))' }
       let(:expected_value) do
         Unitsml::Formula.new(
           [
             Unitsml::Sqrt.new(
               Unitsml::Formula.new(
                 [
-                  Unitsml::Dimension.new("dim_phi"),
+                  Unitsml::Dimension.new('dim_phi'),
                   Unitsml::Fenced.new(
-                    "(",
-                    Unitsml::Dimension.new("dim_I"),
-                    ")",
-                  ),
-                ],
-              ),
+                    '(',
+                    Unitsml::Dimension.new('dim_I'),
+                    ')'
+                  )
+                ]
+              )
             ),
             Unitsml::Fenced.new(
-              "(",
+              '(',
               Unitsml::Formula.new(
                 [
                   Unitsml::Fenced.new(
-                    "(",
-                    Unitsml::Dimension.new("dim_Theta"),
-                    ")",
+                    '(',
+                    Unitsml::Dimension.new('dim_Theta'),
+                    ')'
                   ),
-                  Unitsml::Dimension.new("dim_L"),
-                ],
+                  Unitsml::Dimension.new('dim_L')
+                ]
               ),
-            ")",
-            ),
+              ')'
+            )
           ],
-          orig_text: "sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L)",
-          norm_text: "sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L)",
-          root: true,
+          orig_text: 'sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L)',
+          norm_text: 'sqrt(dim_phi(dim_I)) ((dim_Theta) dim_L)',
+          root: true
         )
       end
 
-      it "returns Unitsml::Formula of parsed Unitsml string" do
+      it 'returns Unitsml::Formula of parsed Unitsml string' do
         expect(formula).to eq(expected_value)
       end
     end

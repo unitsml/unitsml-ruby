@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-
 module Unitsml
   module Model
     class Dimension < Lutaml::Model::Serializable
@@ -16,7 +15,7 @@ module Unitsml
 
       xml do
         namespace ::Unitsml::Namespace
-        element "Dimension"
+        element 'Dimension'
 
         map_attribute :id, to: :id
         map_element :Length, to: :length

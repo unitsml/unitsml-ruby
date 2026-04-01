@@ -56,13 +56,13 @@ module Unitsml
       end
 
       def set_vector
-        @vector ||= Utility::DIMS_VECTOR.map do |h|
+        @set_vector ||= Utility::DIMS_VECTOR.map do |h|
           public_send(Utility.underscore(h))&.power
-        end.join(":")
+        end.join(':')
       end
 
       def id
-        identifiers.find { |id| id.type == "nist" }&.id
+        identifiers.find { |id| id.type == 'nist' }&.id
       end
 
       private

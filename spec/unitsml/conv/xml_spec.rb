@@ -1,13 +1,14 @@
-require "spec_helper"
+# frozen_string_literal: true
+
+require 'spec_helper'
 
 RSpec.describe Unitsml::Parser do
-
   before(:all) { Lutaml::Model::Config.xml_adapter_type = :ox }
 
   subject(:formula) { described_class.new(exp).parse }
 
-  context "contains Unitsml #1 example" do
-    let(:exp) { "unitsml(mm*s^((-2)))" }
+  context 'contains Unitsml #1 example' do
+    let(:exp) { 'unitsml(mm*s^((-2)))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm.s-2" dimensionURL="#D_LT-2">
@@ -52,13 +53,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #2 example" do
-    let(:exp) { "unitsml(um, name: micro meter)" }
+  context 'contains Unitsml #2 example' do
+    let(:exp) { 'unitsml(um, name: micro meter)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_um" dimensionURL="#NISTd1">
@@ -88,13 +89,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #3 example" do
-    let(:exp) { "unitsml(degK)" }
+  context 'contains Unitsml #3 example' do
+    let(:exp) { 'unitsml(degK)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu5" dimensionURL="#NISTd5">
@@ -113,13 +114,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #4 example" do
-    let(:exp) { "unitsml(prime)" }
+  context 'contains Unitsml #4 example' do
+    let(:exp) { 'unitsml(prime)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu147">
@@ -143,13 +144,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #5 example" do
-    let(:exp) { "unitsml(rad)" }
+  context 'contains Unitsml #5 example' do
+    let(:exp) { 'unitsml(rad)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu9" dimensionURL="#D_L0">
@@ -173,13 +174,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #6 example" do
-    let(:exp) { "unitsml(Hz)" }
+  context 'contains Unitsml #6 example' do
+    let(:exp) { 'unitsml(Hz)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu31" dimensionURL="#NISTd101">
@@ -207,13 +208,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #7 example" do
-    let(:exp) { "unitsml(kg, name: custom kilogram)" }
+  context 'contains Unitsml #7 example' do
+    let(:exp) { 'unitsml(kg, name: custom kilogram)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu2" dimensionURL="#NISTd2">
@@ -248,13 +249,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #8 example" do
-    let(:exp) { "unitsml(m)" }
+  context 'contains Unitsml #8 example' do
+    let(:exp) { 'unitsml(m)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1" dimensionURL="#NISTd1">
@@ -274,13 +275,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #9 example" do
-    let(:exp) { "unitsml(sqrt(Hz))" }
+  context 'contains Unitsml #9 example' do
+    let(:exp) { 'unitsml(sqrt(Hz))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_Hz0.5" dimensionURL="#D_T-0.5">
@@ -303,13 +304,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #10 example" do
-    let(:exp) { "unitsml(g)" }
+  context 'contains Unitsml #10 example' do
+    let(:exp) { 'unitsml(g)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu27" dimensionURL="#NISTd2">
@@ -333,13 +334,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #11 example" do
-    let(:exp) { "unitsml(hp)" }
+  context 'contains Unitsml #11 example' do
+    let(:exp) { 'unitsml(hp)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu284">
@@ -365,13 +366,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #12 example" do
-    let(:exp) { "unitsml(kg*s^-2)" }
+  context 'contains Unitsml #12 example' do
+    let(:exp) { 'unitsml(kg*s^-2)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#D_MT-2">
@@ -412,13 +413,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #13 example" do
-    let(:exp) { "unitsml(mbar)" }
+  context 'contains Unitsml #13 example' do
+    let(:exp) { 'unitsml(mbar)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu362">
@@ -451,13 +452,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #14 example" do
-    let(:exp) { "unitsml(d-)" }
+  context 'contains Unitsml #14 example' do
+    let(:exp) { 'unitsml(d-)' }
     let(:expected_value) do
       <<~XML
         <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="-1" xml:id="NISTp10_-1">
@@ -479,13 +480,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #15 example" do
-    let(:exp) { "unitsml(h-)" }
+  context 'contains Unitsml #15 example' do
+    let(:exp) { 'unitsml(h-)' }
     let(:expected_value) do
       <<~XML
         <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="2" xml:id="NISTp10_2">
@@ -507,13 +508,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #16 example" do
-    let(:exp) { "unitsml(da-)" }
+  context 'contains Unitsml #16 example' do
+    let(:exp) { 'unitsml(da-)' }
     let(:expected_value) do
       <<~XML
         <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="1" xml:id="NISTp10_1">
@@ -526,13 +527,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #17 example" do
-    let(:exp) { "unitsml(u-)" }
+  context 'contains Unitsml #17 example' do
+    let(:exp) { 'unitsml(u-)' }
     let(:expected_value) do
       <<~XML
         <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="-6" xml:id="NISTp10_-6">
@@ -553,13 +554,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #18 example" do
-    let(:exp) { "unitsml(A*C^3)" }
+  context 'contains Unitsml #18 example' do
+    let(:exp) { 'unitsml(A*C^3)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_A.C3" dimensionURL="#D_M3I4">
@@ -589,13 +590,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #19 example" do
-    let(:exp) { "unitsml(A/C^-3)" }
+  context 'contains Unitsml #19 example' do
+    let(:exp) { 'unitsml(A/C^-3)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_A.C3" dimensionURL="#D_M3I4">
@@ -625,13 +626,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #20 example" do
-    let(:exp) { "unitsml(J/kg*K)" }
+  context 'contains Unitsml #20 example' do
+    let(:exp) { 'unitsml(J/kg*K)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu13.u27p10_3e-1/1.u5e-1/1" dimensionURL="#D_L2M0T-2Theta-1">
@@ -689,13 +690,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #21 example" do
-    let(:exp) { "unitsml(kg^-2)" }
+  context 'contains Unitsml #21 example' do
+    let(:exp) { 'unitsml(kg^-2)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg-2" dimensionURL="#D_M-2">
@@ -732,13 +733,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #22 example" do
-    let(:exp) { "unitsml(kg*s^-2)" }
+  context 'contains Unitsml #22 example' do
+    let(:exp) { 'unitsml(kg*s^-2)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_kg.s-2" dimensionURL="#D_MT-2">
@@ -779,13 +780,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #23 example" do
-    let(:exp) { "unitsml(mW*cm^(-2))" }
+  context 'contains Unitsml #23 example' do
+    let(:exp) { 'unitsml(mW*cm^(-2))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mW.cm-2">
@@ -829,13 +830,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #24 example" do
-    let(:exp) { "unitsml(dim_Theta*dim_L^((2)))" }
+  context 'contains Unitsml #24 example' do
+    let(:exp) { 'unitsml(dim_Theta*dim_L^((2)))' }
     let(:expected_value) do
       <<~XML
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L2Theta">
@@ -845,13 +846,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #25 example" do
-    let(:exp) { "unitsml(dim_Theta^10*dim_L^2)" }
+  context 'contains Unitsml #25 example' do
+    let(:exp) { 'unitsml(dim_Theta^10*dim_L^2)' }
     let(:expected_value) do
       <<~XML
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L2Theta10">
@@ -861,13 +862,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #26 example" do
-    let(:exp) { "unitsml(Hz^10*darcy^100)" }
+  context 'contains Unitsml #26 example' do
+    let(:exp) { 'unitsml(Hz^10*darcy^100)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_Hz10.darcy100">
@@ -896,13 +897,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #27 example" do
-    let(:exp) { "unitsml(sqrt(dim_Theta))" }
+  context 'contains Unitsml #27 example' do
+    let(:exp) { 'unitsml(sqrt(dim_Theta))' }
     let(:expected_value) do
       <<~XML
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_Theta0.5">
@@ -911,13 +912,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #28 example" do
-    let(:exp) { "unitsml(sqrt(mm))" }
+  context 'contains Unitsml #28 example' do
+    let(:exp) { 'unitsml(sqrt(mm))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mm0.5" dimensionURL="#D_L0.5">
@@ -951,13 +952,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #29 example" do
-    let(:exp) { "unitsml(GHz//V)" }
+  context 'contains Unitsml #29 example' do
+    let(:exp) { 'unitsml(GHz//V)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_GHz.V-1" dimensionURL="#D_L-2M-1T2I">
@@ -1000,13 +1001,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #30 example" do
-    let(:exp) { "unitsml(m^(-2))" }
+  context 'contains Unitsml #30 example' do
+    let(:exp) { 'unitsml(m^(-2))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
@@ -1040,13 +1041,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #31 example" do
-    let(:exp) { "unitsml(cd*sr*m^(-2),symbol:cd cdot sr cdot m^(-2))" }
+  context 'contains Unitsml #31 example' do
+    let(:exp) { 'unitsml(cd*sr*m^(-2),symbol:cd cdot sr cdot m^(-2))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_cd.sr.m-2" dimensionURL="#D_L-2J">
@@ -1082,13 +1083,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #32 example" do
-    let(:exp) { "unitsml(mOhm)" }
+  context 'contains Unitsml #32 example' do
+    let(:exp) { 'unitsml(mOhm)' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_mOhm" dimensionURL="#D_L2MT4I2">
@@ -1122,48 +1123,48 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #33 example from plurimath/plurimath#321" do
-    let(:exp) { "unitsml(m*kg^-2)" }
+  context 'contains Unitsml #33 example from plurimath/plurimath#321' do
+    let(:exp) { 'unitsml(m*kg^-2)' }
     let(:space_expected_value) do
       <<~XML
-      <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
-        <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
-        <UnitName xml:lang="en">m*kg^-2</UnitName>
-        <UnitSymbol type="HTML">m&#xa0;kg<sup>&#x2212;2</sup></UnitSymbol>
-        <UnitSymbol type="MathMl">
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mi mathvariant="normal">m</mi>
-            <mo rspace="thickmathspace">&#x2062;</mo>
-            <msup>
-              <mi mathvariant="normal">kg</mi>
-              <mrow>
-                <mo>&#x2212;</mo>
-                <mn>2</mn>
-              </mrow>
-            </msup>
-          </math>
-        </UnitSymbol>
-        <RootUnits>
-          <EnumeratedRootUnit unit="metre"/>
-          <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
-        </RootUnits>
-      </Unit>
-      <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="3" xml:id="NISTp10_3">
-        <PrefixName xml:lang="en">kilo</PrefixName>
-        <PrefixSymbol type="ASCII">k</PrefixSymbol>
-        <PrefixSymbol type="unicode">k</PrefixSymbol>
-        <PrefixSymbol type="LaTeX">k</PrefixSymbol>
-        <PrefixSymbol type="HTML">k</PrefixSymbol>
-      </Prefix>
-      <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
-        <Length symbol="L" powerNumerator="1"/>
-        <Mass symbol="M" powerNumerator="-2"/>
-      </Dimension>
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" dimensionURL="#D_LM-2" xml:id="U_m.kg-2">
+          <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
+          <UnitName xml:lang="en">m*kg^-2</UnitName>
+          <UnitSymbol type="HTML">m&#xa0;kg<sup>&#x2212;2</sup></UnitSymbol>
+          <UnitSymbol type="MathMl">
+            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+              <mi mathvariant="normal">m</mi>
+              <mo rspace="thickmathspace">&#x2062;</mo>
+              <msup>
+                <mi mathvariant="normal">kg</mi>
+                <mrow>
+                  <mo>&#x2212;</mo>
+                  <mn>2</mn>
+                </mrow>
+              </msup>
+            </math>
+          </UnitSymbol>
+          <RootUnits>
+            <EnumeratedRootUnit unit="metre"/>
+            <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
+          </RootUnits>
+        </Unit>
+        <Prefix xmlns="https://schema.unitsml.org/unitsml/1.0" prefixBase="10" prefixPower="3" xml:id="NISTp10_3">
+          <PrefixName xml:lang="en">kilo</PrefixName>
+          <PrefixSymbol type="ASCII">k</PrefixSymbol>
+          <PrefixSymbol type="unicode">k</PrefixSymbol>
+          <PrefixSymbol type="LaTeX">k</PrefixSymbol>
+          <PrefixSymbol type="HTML">k</PrefixSymbol>
+        </Prefix>
+        <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_LM-2">
+          <Length symbol="L" powerNumerator="1"/>
+          <Mass symbol="M" powerNumerator="-2"/>
+        </Dimension>
       XML
     end
 
@@ -1243,21 +1244,21 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "matches Unitsml to MathML converted string with :space multiplier argument" do
+    it 'matches Unitsml to MathML converted string with :space multiplier argument' do
       expect(formula.to_xml(multiplier: :space)).to be_xml_equivalent_to(space_expected_value)
     end
 
-    it "matches Unitsml to MathML converted string with :nospace multiplier argument" do
+    it 'matches Unitsml to MathML converted string with :nospace multiplier argument' do
       expect(formula.to_xml(multiplier: :nospace)).to be_xml_equivalent_to(nospace_expected_value)
     end
 
-    it "matches Unitsml to MathML converted string with custom multiplier argument" do
-      expect(formula.to_xml(multiplier: "X")).to be_xml_equivalent_to(custom_expected_value)
+    it 'matches Unitsml to MathML converted string with custom multiplier argument' do
+      expect(formula.to_xml(multiplier: 'X')).to be_xml_equivalent_to(custom_expected_value)
     end
   end
 
-  context "contains Unitsml #34 example" do
-    let(:exp) { "unitsml((((m^-2))))" }
+  context 'contains Unitsml #34 example' do
+    let(:exp) { 'unitsml((((m^-2))))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
@@ -1295,13 +1296,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #35 example" do
-    let(:exp) { "unitsml((dim_Theta^10)*dim_L^2)" }
+  context 'contains Unitsml #35 example' do
+    let(:exp) { 'unitsml((dim_Theta^10)*dim_L^2)' }
     let(:expected_value) do
       <<~XML
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_L2Theta10">
@@ -1311,13 +1312,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #36 example" do
-    let(:exp) { "unitsml((m^((-2))))" }
+  context 'contains Unitsml #36 example' do
+    let(:exp) { 'unitsml((m^((-2))))' }
     let(:expected_value) do
       <<~XML
         <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
@@ -1351,13 +1352,13 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml(explicit_parenthesis: false)).to be_xml_equivalent_to(expected_value)
     end
   end
 
-  context "contains Unitsml #37 example" do
-    let(:exp) { "unitsml(sqrt((dim_Theta)))" }
+  context 'contains Unitsml #37 example' do
+    let(:exp) { 'unitsml(sqrt((dim_Theta)))' }
     let(:expected_value) do
       <<~XML
         <Dimension xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="D_Theta0.5">
@@ -1366,7 +1367,7 @@ RSpec.describe Unitsml::Parser do
       XML
     end
 
-    it "returns parslet tree of parsed Unitsml string" do
+    it 'returns parslet tree of parsed Unitsml string' do
       expect(formula.to_xml(explicit_parenthesis: false)).to be_xml_equivalent_to(expected_value)
     end
   end

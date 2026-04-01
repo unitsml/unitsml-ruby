@@ -14,11 +14,11 @@ module Unitsml
       @power_numerator = power_numerator
     end
 
-    def ==(object)
-      self.class == object.class &&
-        prefix == object&.prefix &&
-        unit_name == object&.unit_name &&
-        power_numerator == object&.power_numerator
+    def ==(other)
+      self.class == other.class &&
+        prefix == other&.prefix &&
+        unit_name == other&.unit_name &&
+        power_numerator == other&.power_numerator
     end
 
     def unit_instance
@@ -41,7 +41,7 @@ module Unitsml
       if power_numerator
         value = msup_tag(
           { method_name: tag_name, value: value },
-          options,
+          options
         )
         tag_name = :msup
       end
@@ -64,9 +64,7 @@ module Unitsml
 
     def to_html(options)
       value = unit_symbols&.html
-      if power_numerator
-        value = "#{value}<sup>#{power_numerator.to_html(options)}</sup>"
-      end
+      value = "#{value}<sup>#{power_numerator.to_html(options)}</sup>" if power_numerator
       value = "#{prefix.to_html(options)}#{value}" if prefix
       value
     end
@@ -79,7 +77,7 @@ module Unitsml
     end
 
     def enumerated_name
-      unit_instance.names.find { |name| name.lang == "en" }&.value
+      unit_instance.names.find { |name| name.lang == 'en' }&.value
     end
 
     def prefix_name
@@ -110,7 +108,7 @@ module Unitsml
       if power_numerator
         power_numerator.update_negative_sign
       else
-        @power_numerator = Number.new("-1")
+        @power_numerator = Number.new('-1')
       end
     end
 
@@ -120,7 +118,7 @@ module Unitsml
       return unless power_numerator
 
       exp = power_numerator.raw_value
-      "^#{exp}" if exp != "1"
+      "^#{exp}" if exp != '1'
     end
 
     def system_reference
@@ -134,7 +132,7 @@ module Unitsml
       [value, power_numerator.to_mathml(options)].flatten.each do |record|
         values = msup.public_send("#{record[:method_name]}_value") || []
         values += [record[:value]]
-        msup.element_order << Lutaml::Xml::Element.new("Element", record[:method_name].to_s)
+        msup.element_order << Lutaml::Xml::Element.new('Element', record[:method_name].to_s)
         msup.public_send("#{record[:method_name]}_value=", values)
       end
       msup

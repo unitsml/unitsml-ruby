@@ -8,7 +8,7 @@ module Unitsml
         attribute :content, :string
 
         xml do
-          element "UnitSymbol"
+          element 'UnitSymbol'
           namespace ::Unitsml::Namespace
 
           map_attribute :type, to: :type
