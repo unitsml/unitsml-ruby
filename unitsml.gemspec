@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'lib/unitsml/version'
 
 Gem::Specification.new do |spec|
@@ -28,8 +30,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib', 'unitsdb/**/*.yaml']
 
   spec.add_dependency 'htmlentities'
+  spec.add_dependency 'lutaml-model', '~> 0.8.0'
   spec.add_dependency 'mml'
   spec.add_dependency 'parslet'
   spec.add_dependency 'unitsdb', '~> 2.0'
-  spec.add_dependency 'lutaml-model', '~> 0.8.0'
 end

@@ -2,7 +2,7 @@
 
 module Unitsml
   module Errors
-    autoload :BaseError, "unitsml/errors/base_error"
-    autoload :PlurimathLoadError, "unitsml/errors/plurimath_load_error"
+    autoload :BaseError, 'unitsml/errors/base_error'
+    autoload :PlurimathLoadError, 'unitsml/errors/plurimath_load_error'
   end
 end

@@ -9,10 +9,10 @@ module Unitsml
       @only_instance = only_instance
     end
 
-    def ==(object)
-      self.class == object.class &&
-        prefix_name == object&.prefix_name &&
-        only_instance == object&.only_instance
+    def ==(other)
+      self.class == other.class &&
+        prefix_name == other&.prefix_name &&
+        only_instance == other&.only_instance
     end
 
     def prefix_instance
@@ -20,11 +20,11 @@ module Unitsml
     end
 
     def id
-      @id ||= prefix_instance.identifiers.find { |prefix| prefix.type == "nist" }&.id
+      @id ||= prefix_instance.identifiers.find { |prefix| prefix.type == 'nist' }&.id
     end
 
     def name
-      @name ||= prefix_instance.names.find { |name| name.lang == "en" }.value
+      @name ||= prefix_instance.names.find { |name| name.lang == 'en' }.value
     end
 
     def prefix_symbols
@@ -35,11 +35,11 @@ module Unitsml
       symbol = Utility.string_to_html_entity(
         Utility.html_entity_to_unicode(
           prefix_symbols.html
-        ),
+        )
       )
       return symbol unless only_instance
 
-      { method_name: :mi, value: ::Mml::V4::Mi.new(value: symbol)}
+      { method_name: :mi, value: ::Mml::V4::Mi.new(value: symbol) }
     end
 
     def to_latex(_)
@@ -59,7 +59,7 @@ module Unitsml
     end
 
     def symbolid
-      prefix_symbols.ascii if prefix_symbols
+      prefix_symbols&.ascii
     end
 
     def base

@@ -8,9 +8,9 @@ module Unitsml
       @value = value
     end
 
-    def ==(object)
-      self.class == object.class &&
-        value == object&.value
+    def ==(other)
+      self.class == other.class &&
+        value == other&.value
     end
 
     def to_asciimath(options)

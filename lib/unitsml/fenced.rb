@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Unitsml
   class Fenced
     include FencedNumeric
@@ -10,11 +12,11 @@ module Unitsml
       @close_paren = close_paren
     end
 
-    def ==(object)
-      self.class == object.class &&
-        open_paren == object&.open_paren &&
-        value == object&.value &&
-        close_paren == object&.close_paren
+    def ==(other)
+      self.class == other.class &&
+        open_paren == other&.open_paren &&
+        value == other&.value &&
+        close_paren == other&.close_paren
     end
 
     def to_asciimath(options = {})
@@ -31,10 +33,10 @@ module Unitsml
 
       fenced = ::Mml::V4::Mrow.new(mo_value: [::Mml::V4::Mo.new(value: open_paren)])
       fenced.ordered = true
-      fenced.element_order ||= [xml_order_element("mo")]
+      fenced.element_order ||= [xml_order_element('mo')]
       [mathml].flatten.each { |record| add_math_element(fenced, record) }
       fenced.mo_value << ::Mml::V4::Mo.new(value: close_paren)
-      fenced.element_order << xml_order_element("mo")
+      fenced.element_order << xml_order_element('mo')
       { method_name: :mrow, value: fenced }
     end
 
@@ -82,7 +84,7 @@ module Unitsml
     end
 
     def xml_order_element(tag_name)
-      Lutaml::Xml::Element.new("Element", tag_name)
+      Lutaml::Xml::Element.new('Element', tag_name)
     end
 
     def fenced_conversion_for(lang:, options:)

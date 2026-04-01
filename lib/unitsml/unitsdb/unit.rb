@@ -10,11 +10,11 @@ module Unitsml
       end
 
       def en_name
-        names.find { |name| name.lang == "en" }&.value
+        names.find { |name| name.lang == 'en' }&.value
       end
 
       def nist_id
-        identifiers.find { |id| id.type == "nist" }&.id
+        identifiers.find { |id| id.type == 'nist' }&.id
       end
     end
   end

@@ -46,7 +46,7 @@ module Unitsml
 
       def valid_path(file_name)
         File.expand_path(
-          File.join(__dir__, "..", "..","unitsdb", "#{file_name}.yaml")
+          File.join(__dir__, '..', '..', 'unitsdb', "#{file_name}.yaml")
         )
       end
     end

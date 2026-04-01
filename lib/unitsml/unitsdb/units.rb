@@ -13,7 +13,7 @@ module Unitsml
 
       def filtered
         @filtered ||= symbols_ids.reject do |unit|
-          ((/\*|\^|\/|^1$/).match?(unit) || find_by_symbol_id(unit).prefixed)
+          %r{\*|\^|/|^1$}.match?(unit) || find_by_symbol_id(unit).prefixed
         end
       end
 
@@ -26,7 +26,7 @@ module Unitsml
       end
 
       def symbols_hash
-        @symbol_ids_hash ||= units.each_with_object({}) do |unit, object|
+        @symbols_hash ||= units.each_with_object({}) do |unit, object|
           unit.symbols&.each { |unit_sym| object[unit_sym.id] = unit }
         end
       end
@@ -43,4 +43,3 @@ module Unitsml
     end
   end
 end
-

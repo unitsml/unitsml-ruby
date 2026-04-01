@@ -9,10 +9,10 @@ module Unitsml
       @power_numerator = power_numerator
     end
 
-    def ==(object)
-      self.class == object.class &&
-        dimension_name == object&.dimension_name &&
-        power_numerator == object&.power_numerator
+    def ==(other)
+      self.class == other.class &&
+        dimension_name == other&.dimension_name &&
+        power_numerator == other&.power_numerator
     end
 
     def dim_instance
@@ -61,7 +61,7 @@ module Unitsml
     def to_xml(_)
       attributes = {
         symbol: dim_instance.processed_symbol,
-        power_numerator: power_numerator&.raw_value || 1,
+        power_numerator: power_numerator&.raw_value || 1
       }
       Model::DimensionQuantities.const_get(modelize(element_name)).new(attributes)
     end
@@ -71,7 +71,7 @@ module Unitsml
     end
 
     def modelize(value)
-      value&.split("_")&.map(&:capitalize)&.join
+      value&.split('_')&.map(&:capitalize)&.join
     end
 
     private
@@ -95,7 +95,7 @@ module Unitsml
     def msup_tag(value, options)
       mathml = power_numerator.to_mathml(options)
       msup = ::Mml::V4::Msup.new(
-        mrow_value: [::Mml::V4::Mrow.new(mi_value: [value])],
+        mrow_value: [::Mml::V4::Mrow.new(mi_value: [value])]
       )
       [mathml].flatten.each do |record|
         record_values = msup.public_send("#{record[:method_name]}_value") || []
