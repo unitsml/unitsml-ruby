@@ -3,7 +3,7 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in unitsml.gemspec
 gemspec
 
-gem "lutaml-model", "~> 0.8.0"
+gem "lutaml-model", "~> 0.8.0", github: "lutaml/lutaml-model", branch: "main"
 
 gem "canon"
 gem "oga"
