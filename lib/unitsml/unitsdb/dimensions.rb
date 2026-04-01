@@ -4,8 +4,8 @@ module Unitsml
   module Unitsdb
     class Dimensions < ::Unitsdb::Dimensions
       def find_by_vector(vector)
-        @vectored ||= dimensions.each(&:set_vector)
-        find(:vector, vector)
+        dimensions.each(&:set_vector)
+        dimensions.find { |dim| dim.set_vector == vector }
       end
 
       def find_by_id(d_id)
