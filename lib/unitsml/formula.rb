@@ -145,7 +145,7 @@ module Unitsml
       dim_id = dims.map(&:generate_id).join
       attributes = { id: "D_#{dim_id}" }
       dims.each { |dim| attributes.merge!(dim.xml_instances_hash(options)) }
-      Model::Dimension.new(attributes).to_xml
+      Model::Dimension.new(attributes).to_xml.force_encoding('UTF-8')
     end
 
     def sort_dims(values)
