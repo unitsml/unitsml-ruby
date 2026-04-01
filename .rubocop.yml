@@ -1,1 +1,18 @@
-inherit_from: .rubocop_todo.yml
+inherit_from:
+  - https://raw.githubusercontent.com/riboseinc/oss-guides/main/ci/rubocop.yml
+  - .rubocop_todo.yml
+
+inherit_mode:
+  merge:
+    - Exclude
+
+plugins:
+  - rubocop-rspec
+  - rubocop-performance
+  - rubocop-rake
+
+AllCops:
+  TargetRubyVersion: 3.0
+  Exclude:
+    - 'unitsdb/**/*'
+    - 'vendor/**/*'

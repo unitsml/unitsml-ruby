@@ -204,7 +204,7 @@ module Unitsml
 
         dim_attrs = { id: dim_id }
         dimid2dimensions(dim_id)&.compact&.each { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(dim_attrs).to_xml
+        Model::Dimension.new(dim_attrs).to_xml.force_encoding('UTF-8')
       end
 
       def dimension1(dim, dims_hash)
@@ -252,7 +252,7 @@ module Unitsml
               content: prefix&.public_send(method_name, options)
             )
           end
-          Model::Prefix.new(prefix_attrs).to_xml.gsub('&amp;', '&')
+          Model::Prefix.new(prefix_attrs).to_xml.force_encoding('UTF-8').gsub('&amp;', '&')
         end.join("\n")
       end
 
@@ -287,7 +287,7 @@ module Unitsml
 
         dim_attrs = { id: dim_id(dims) }
         dims.map { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(dim_attrs).to_xml
+        Model::Dimension.new(dim_attrs).to_xml.force_encoding('UTF-8')
       end
 
       def quantity(normtext, instance)
@@ -310,7 +310,7 @@ module Unitsml
           id: id,
           name: quantity_name(id),
           dimension_url: url
-        ).to_xml
+        ).to_xml.force_encoding('UTF-8')
       end
 
       def quantity_name(id)
