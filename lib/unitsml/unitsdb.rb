@@ -12,42 +12,31 @@ module Unitsml
     autoload :DimensionQuantity, "#{__dir__}/unitsdb/dimension_quantity"
 
     class << self
-      def load_file(file_name)
-        @@hash ||= {}
-        @@hash[file_name] ||= File.read(valid_path(file_name))
-      end
-
       def units
-        @@units_file ||= Unitsml.get_class_from_register(:unitsdb_units).from_yaml(load_file(:units))
+        Units.new(units: ::Unitsdb.database.units)
       end
 
       def prefixes
-        @@prefixes ||= Unitsml.get_class_from_register(:unitsdb_prefixes).from_yaml(load_file(:prefixes))
+        Prefixes.new(prefixes: ::Unitsdb.database.prefixes)
       end
 
       def dimensions
-        @@dim_file ||= Unitsml.get_class_from_register(:unitsdb_dimensions).from_yaml(load_file(:dimensions))
+        Dimensions.new(dimensions: ::Unitsdb.database.dimensions)
       end
 
       def quantities
-        @@quantities ||= Unitsml.get_class_from_register(:unitsdb_quantities).from_yaml(load_file(:quantities))
+        Quantities.new(quantities: ::Unitsdb.database.quantities)
       end
 
       def prefixes_array
-        @@prefixes_array ||= prefixes.ascii_symbols.sort_by(&:length)
+        @prefixes_array ||= prefixes.ascii_symbols.sort_by(&:length)
       end
 
       def prefixes_by_size(size)
-        @@sized_prefixes ||= {}
-        return @@sized_prefixes[size] if @@sized_prefixes.key?(size)
+        @sized_prefixes ||= {}
+        return @sized_prefixes[size] if @sized_prefixes.key?(size)
 
-        @@sized_prefixes[size] = prefixes_array.select { |p| p.size == size }
-      end
-
-      def valid_path(file_name)
-        File.expand_path(
-          File.join(__dir__, '..', '..', 'unitsdb', "#{file_name}.yaml")
-        )
+        @sized_prefixes[size] = prefixes_array.select { |p| p.size == size }
       end
     end
   end

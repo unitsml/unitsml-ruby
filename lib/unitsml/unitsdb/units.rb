@@ -3,6 +3,10 @@
 module Unitsml
   module Unitsdb
     class Units < ::Unitsdb::Units
+      def units=(value)
+        super(value.map { |u| Unit.new(u.to_hash) })
+      end
+
       def find_by_id(u_id)
         find(u_id, :id, :identifiers)
       end
