@@ -9,10 +9,10 @@ module Unitsml
                   :vector
 
       def initialize(attrs)
-        super
         @parsables = {}
         @processed_keys = []
         @parsable = false
+        super
       end
 
       def length=(value)
