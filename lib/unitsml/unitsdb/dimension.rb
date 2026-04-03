@@ -48,7 +48,9 @@ module Unitsml
       end
 
       def dim_symbols
-        processed_keys.map { |vec| public_send(vec)&.dim_symbols&.map(&:id) }.flatten.compact
+        processed_keys.map do |vec|
+          public_send(vec)&.dim_symbols&.map(&:id)
+        end.flatten.compact
       end
 
       def processed_symbol
@@ -58,11 +60,11 @@ module Unitsml
       def set_vector
         @set_vector ||= Utility::DIMS_VECTOR.map do |h|
           public_send(Utility.underscore(h))&.power
-        end.join(':')
+        end.join(":")
       end
 
       def id
-        identifiers.find { |id| id.type == 'nist' }&.id
+        identifiers.find { |id| id.type == "nist" }&.id
       end
 
       private

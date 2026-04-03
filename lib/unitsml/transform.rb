@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'parslet'
+require "parslet"
 module Unitsml
   class Transform < Parslet::Transform
     rule(sqrt: simple(:sqrt)) { Sqrt.new(sqrt) }
@@ -24,7 +24,7 @@ module Unitsml
     rule(first_int_exp_set: simple(:first_set),
          second_int_exp_set: simple(:second_set)) do
       Formula.new(
-        [Utility.set_to_fence(first_set), Utility.set_to_fence(second_set)]
+        [Utility.set_to_fence(first_set), Utility.set_to_fence(second_set)],
       )
     end
 
@@ -33,8 +33,8 @@ module Unitsml
       Formula.new(
         [
           first_set,
-          second_set
-        ]
+          second_set,
+        ],
       )
     end
 
@@ -43,8 +43,8 @@ module Unitsml
       Formula.new(
         [
           first_set,
-          Utility.set_to_fence(second_set)
-        ]
+          Utility.set_to_fence(second_set),
+        ],
       )
     end
 
@@ -76,8 +76,8 @@ module Unitsml
         [
           first_set,
           Extender.new(extender.to_s),
-          second_set
-        ]
+          second_set,
+        ],
       )
     end
 
@@ -88,8 +88,8 @@ module Unitsml
         [
           implicit_extended,
           Extender.new(extender.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -100,8 +100,8 @@ module Unitsml
         [
           int_exp,
           Extender.new(extender.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -112,8 +112,8 @@ module Unitsml
         [
           Unit.new(unit.to_s),
           Extender.new(extender.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -124,8 +124,8 @@ module Unitsml
         [
           Dimension.new(dimension.to_s),
           Extender.new(extender.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -135,7 +135,7 @@ module Unitsml
       Fenced.new(
         open_paren.to_s,
         int_exp,
-        close_paren.to_s
+        close_paren.to_s,
       )
     end
 
@@ -145,7 +145,7 @@ module Unitsml
       Fenced.new(
         open_paren.to_s,
         Number.new(integer.to_s),
-        close_paren.to_s
+        close_paren.to_s,
       )
     end
 
@@ -157,8 +157,8 @@ module Unitsml
         [
           Unit.new(unit.to_s, power_numerator),
           Extender.new(ext.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -170,8 +170,8 @@ module Unitsml
         [
           Dimension.new(dimension.to_s, power_numerator),
           Extender.new(ext.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -183,8 +183,8 @@ module Unitsml
         [
           Unit.new(unit.to_s, prefix: Prefix.new(prefix.to_s)),
           Extender.new(ext.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
 
@@ -197,8 +197,8 @@ module Unitsml
         [
           Unit.new(unit.to_s, power_numerator, prefix: Prefix.new(prefix.to_s)),
           Extender.new(ext.to_s),
-          sequence
-        ]
+          sequence,
+        ],
       )
     end
   end

@@ -4,11 +4,11 @@ module Unitsml
   module Model
     module Prefixes
       class Name < Lutaml::Model::Serializable
-        attribute :lang, :xml_lang, default: -> { 'en' }
+        attribute :lang, :xml_lang, default: -> { "en" }
         attribute :content, :string
 
         xml do
-          element 'PrefixName'
+          element "PrefixName"
           namespace ::Unitsml::Namespace
 
           map_attribute :lang, to: :lang, render_default: true

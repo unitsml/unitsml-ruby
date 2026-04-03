@@ -8,7 +8,7 @@ module Unitsml
       @regexp = /(quantity|name|symbol|multiplier):\s*/
       @text = extract_equation(text)
       @orig_text = @text
-      @text = @text.gsub('−', '-')
+      @text = @text.gsub("−", "-")
       post_extras
     end
 
@@ -21,10 +21,10 @@ module Unitsml
         explicit_value: @extras_hash,
         root: true,
         orig_text: @orig_text,
-        norm_text: text
+        norm_text: text,
       )
       update_units_exponents(formula.value, false)
-      formula.value.first.only_instance = true if text.end_with?('-')
+      formula.value.first.only_instance = true if text.end_with?("-")
       formula
     end
 
@@ -33,7 +33,7 @@ module Unitsml
         if object.is_a?(Sqrt)
           object = object.value
           if object.respond_to?(:power_numerator)
-            object.power_numerator = Number.new('0.5')
+            object.power_numerator = Number.new("0.5")
           else
             update_units_exponents([object], inverse, true)
           end
@@ -41,12 +41,12 @@ module Unitsml
 
         case object
         when Unit
-          next object.power_numerator = Number.new('0.5') if sqrt
+          next object.power_numerator = Number.new("0.5") if sqrt
           next unless inverse
 
           inverse ? object.inverse_power_numerator : object.power_numerator
-        when Dimension then object.power_numerator = Number.new('0.5') if sqrt
-        when Extender then inverse = !inverse if ['/', '//'].any?(object.symbol)
+        when Dimension then object.power_numerator = Number.new("0.5") if sqrt
+        when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
         when Formula then update_units_exponents(object.value, inverse)
         when Fenced then update_units_exponents([object.value], inverse, sqrt)
         end
@@ -57,7 +57,7 @@ module Unitsml
       return nil unless @regexp.match?(text)
 
       @extras_hash = {}
-      texts_array = text&.split(',')&.map(&:strip)
+      texts_array = text&.split(",")&.map(&:strip)
       @text = texts_array&.shift
       texts_array&.map { |text| parse_extras(text) }
     end
@@ -65,16 +65,16 @@ module Unitsml
     def parse_extras(text)
       return nil unless @regexp.match?(text)
 
-      key, _, value = text&.partition(':')
+      key, _, value = text&.partition(":")
       @extras_hash[key&.to_sym] ||= value&.strip
     end
 
     private
 
     def extract_equation(text)
-      return text unless text&.start_with?('unitsml(')
+      return text unless text&.start_with?("unitsml(")
 
-      text.delete_prefix('unitsml(').delete_suffix(')')
+      text.delete_prefix("unitsml(").delete_suffix(")")
     end
   end
 end

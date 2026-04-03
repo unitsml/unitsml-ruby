@@ -7,7 +7,7 @@ module Unitsml
         attribute :enumerated_root_unit, EnumeratedRootUnit, collection: true
 
         xml do
-          element 'RootUnits'
+          element "RootUnits"
           namespace ::Unitsml::Namespace
 
           map_element :EnumeratedRootUnit, to: :enumerated_root_unit

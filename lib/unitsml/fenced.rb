@@ -33,10 +33,10 @@ module Unitsml
 
       fenced = ::Mml::V4::Mrow.new(mo_value: [::Mml::V4::Mo.new(value: open_paren)])
       fenced.ordered = true
-      fenced.element_order ||= [xml_order_element('mo')]
+      fenced.element_order ||= [xml_order_element("mo")]
       [mathml].flatten.each { |record| add_math_element(fenced, record) }
       fenced.mo_value << ::Mml::V4::Mo.new(value: close_paren)
-      fenced.element_order << xml_order_element('mo')
+      fenced.element_order << xml_order_element("mo")
       { method_name: :mrow, value: fenced }
     end
 
@@ -84,7 +84,7 @@ module Unitsml
     end
 
     def xml_order_element(tag_name)
-      Lutaml::Xml::Element.new('Element', tag_name)
+      Lutaml::Xml::Element.new("Element", tag_name)
     end
 
     def fenced_conversion_for(lang:, options:)

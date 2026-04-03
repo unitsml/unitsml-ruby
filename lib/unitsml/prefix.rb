@@ -20,11 +20,13 @@ module Unitsml
     end
 
     def id
-      @id ||= prefix_instance.identifiers.find { |prefix| prefix.type == 'nist' }&.id
+      @id ||= prefix_instance.identifiers.find do |prefix|
+        prefix.type == "nist"
+      end&.id
     end
 
     def name
-      @name ||= prefix_instance.names.find { |name| name.lang == 'en' }.value
+      @name ||= prefix_instance.names.find { |name| name.lang == "en" }.value
     end
 
     def prefix_symbols
@@ -34,8 +36,8 @@ module Unitsml
     def to_mathml(_)
       symbol = Utility.string_to_html_entity(
         Utility.html_entity_to_unicode(
-          prefix_symbols.html
-        )
+          prefix_symbols.html,
+        ),
       )
       return symbol unless only_instance
 
