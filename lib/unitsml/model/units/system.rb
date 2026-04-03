@@ -6,10 +6,10 @@ module Unitsml
       class System < Lutaml::Model::Serializable
         attribute :name, :string
         attribute :type, :string
-        attribute :lang, :xml_lang, default: -> { 'en' }
+        attribute :lang, :xml_lang, default: -> { "en" }
 
         xml do
-          element 'UnitSystem'
+          element "UnitSystem"
           namespace ::Unitsml::Namespace
 
           map_attribute :name, to: :name

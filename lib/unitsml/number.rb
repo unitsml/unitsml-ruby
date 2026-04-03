@@ -20,11 +20,11 @@ module Unitsml
       matched_value = value&.match(/-?(.+)/)
       mn_value = matched_value ? matched_value[1] : value
       mn_tag = ::Mml::V4::Mn.new(value: mn_value)
-      value.start_with?('-') ? mrow_hash(mn_tag) : mn_hash(mn_tag)
+      value.start_with?("-") ? mrow_hash(mn_tag) : mn_hash(mn_tag)
     end
 
     def to_html(_options)
-      value.sub('-', '&#x2212;')
+      value.sub("-", "&#x2212;")
     end
 
     def to_latex(_options)
@@ -40,21 +40,21 @@ module Unitsml
     end
 
     def negative?
-      value.start_with?('-')
+      value.start_with?("-")
     end
 
     def update_negative_sign
       self.value = if negative?
-                     value.delete_prefix('-')
+                     value.delete_prefix("-")
                    else
-                     ['-', value].join
+                     ["-", value].join
                    end
     end
 
     def float_to_display
-      return '' if value.nil?
+      return "" if value.nil?
 
-      value.to_f.round(1).to_s.sub(/\.0$/, '')
+      value.to_f.round(1).to_s.sub(/\.0$/, "")
     end
 
     private
@@ -63,16 +63,16 @@ module Unitsml
       {
         method_name: :mrow,
         value: ::Mml::V4::Mrow.new(
-          mo_value: [::Mml::V4::Mo.new(value: '&#x2212;')],
-          mn_value: [mn_tag]
-        )
+          mo_value: [::Mml::V4::Mo.new(value: "&#x2212;")],
+          mn_value: [mn_tag],
+        ),
       }
     end
 
     def mn_hash(mn_tag)
       {
         method_name: :mn,
-        value: mn_tag
+        value: mn_tag,
       }
     end
   end

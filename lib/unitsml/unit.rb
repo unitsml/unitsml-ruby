@@ -4,7 +4,8 @@ module Unitsml
   class Unit
     attr_accessor :unit_name, :power_numerator, :prefix
 
-    SI_UNIT_SYSTEM = %w[si_base si_derived_special si_derived_non_special].freeze
+    SI_UNIT_SYSTEM = %w[si_base si_derived_special
+                        si_derived_non_special].freeze
 
     def initialize(unit_name,
                    power_numerator = nil,
@@ -41,7 +42,7 @@ module Unitsml
       if power_numerator
         value = msup_tag(
           { method_name: tag_name, value: value },
-          options
+          options,
         )
         tag_name = :msup
       end
@@ -77,7 +78,7 @@ module Unitsml
     end
 
     def enumerated_name
-      unit_instance.names.find { |name| name.lang == 'en' }&.value
+      unit_instance.names.find { |name| name.lang == "en" }&.value
     end
 
     def prefix_name
@@ -108,7 +109,7 @@ module Unitsml
       if power_numerator
         power_numerator.update_negative_sign
       else
-        @power_numerator = Number.new('-1')
+        @power_numerator = Number.new("-1")
       end
     end
 
@@ -118,7 +119,7 @@ module Unitsml
       return unless power_numerator
 
       exp = power_numerator.raw_value
-      "^#{exp}" if exp != '1'
+      "^#{exp}" if exp != "1"
     end
 
     def system_reference
@@ -132,7 +133,8 @@ module Unitsml
       [value, power_numerator.to_mathml(options)].flatten.each do |record|
         values = msup.public_send("#{record[:method_name]}_value") || []
         values += [record[:value]]
-        msup.element_order << Lutaml::Xml::Element.new('Element', record[:method_name].to_s)
+        msup.element_order << Lutaml::Xml::Element.new("Element",
+                                                       record[:method_name].to_s)
         msup.public_send("#{record[:method_name]}_value=", values)
       end
       msup

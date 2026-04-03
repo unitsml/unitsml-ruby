@@ -8,7 +8,7 @@ module Unitsml
         attribute :content, :string
 
         xml do
-          element 'PrefixSymbol'
+          element "PrefixSymbol"
           namespace ::Unitsml::Namespace
 
           map_attribute :type, to: :type

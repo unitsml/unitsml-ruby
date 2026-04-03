@@ -12,7 +12,7 @@ module Unitsml
 
       xml do
         namespace ::Unitsml::Namespace
-        element 'Unit'
+        element "Unit"
 
         map_attribute :dimensionURL, to: :dimension_url
         map_attribute :id, to: :id

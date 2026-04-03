@@ -8,11 +8,13 @@ module Unitsml
         attribute :content, :string
 
         xml do
-          element 'UnitSymbol'
+          element "UnitSymbol"
           namespace ::Unitsml::Namespace
 
           map_attribute :type, to: :type
-          map_content to: :content, with: { from: :content_from_xml, to: :content_to_xml }
+          map_content to: :content,
+                      with: { from: :content_from_xml,
+                              to: :content_to_xml }
         end
 
         # Not reading any XML for now.

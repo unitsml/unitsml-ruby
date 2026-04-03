@@ -11,7 +11,7 @@ module Unitsml
 
       xml do
         namespace ::Unitsml::Namespace
-        element 'Prefix'
+        element "Prefix"
 
         map_attribute :prefixBase, to: :prefix_base
         map_attribute :prefixPower, to: :prefix_power

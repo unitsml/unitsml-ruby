@@ -4,29 +4,29 @@ module Unitsml
   module Utility
     # Unit to dimension
     U2D = {
-      'm' => { dimension: 'Length', order: 1, symbol: 'L' },
-      'g' => { dimension: 'Mass', order: 2, symbol: 'M' },
-      'kg' => { dimension: 'Mass', order: 2, symbol: 'M' },
-      's' => { dimension: 'Time', order: 3, symbol: 'T' },
-      'A' => { dimension: 'ElectricCurrent', order: 4, symbol: 'I' },
-      'K' => { dimension: 'ThermodynamicTemperature', order: 5,
-               symbol: 'Theta' },
-      'degK' => { dimension: 'ThermodynamicTemperature', order: 5,
-                  symbol: 'Theta' },
-      'mol' => { dimension: 'AmountOfSubstance', order: 6, symbol: 'N' },
-      'cd' => { dimension: 'LuminousIntensity', order: 7, symbol: 'J' },
-      'deg' => { dimension: 'PlaneAngle', order: 8, symbol: 'phi' }
+      "m" => { dimension: "Length", order: 1, symbol: "L" },
+      "g" => { dimension: "Mass", order: 2, symbol: "M" },
+      "kg" => { dimension: "Mass", order: 2, symbol: "M" },
+      "s" => { dimension: "Time", order: 3, symbol: "T" },
+      "A" => { dimension: "ElectricCurrent", order: 4, symbol: "I" },
+      "K" => { dimension: "ThermodynamicTemperature", order: 5,
+               symbol: "Theta" },
+      "degK" => { dimension: "ThermodynamicTemperature", order: 5,
+                  symbol: "Theta" },
+      "mol" => { dimension: "AmountOfSubstance", order: 6, symbol: "N" },
+      "cd" => { dimension: "LuminousIntensity", order: 7, symbol: "J" },
+      "deg" => { dimension: "PlaneAngle", order: 8, symbol: "phi" },
     }.freeze
     # Dimesion for dim_(dimesion) input
     DIM2D = {
-      'dim_L' => U2D['m'],
-      'dim_M' => U2D['g'],
-      'dim_T' => U2D['s'],
-      'dim_I' => U2D['A'],
-      'dim_Theta' => U2D['K'],
-      'dim_N' => U2D['mol'],
-      'dim_J' => U2D['cd'],
-      'dim_phi' => U2D['deg']
+      "dim_L" => U2D["m"],
+      "dim_M" => U2D["g"],
+      "dim_T" => U2D["s"],
+      "dim_I" => U2D["A"],
+      "dim_Theta" => U2D["K"],
+      "dim_N" => U2D["mol"],
+      "dim_J" => U2D["cd"],
+      "dim_phi" => U2D["deg"],
     }.freeze
     DIMS_VECTOR = %w[
       ThermodynamicTemperature
@@ -39,7 +39,7 @@ module Unitsml
       Time
     ].freeze
 
-    UNKNOWN = 'unknown'
+    UNKNOWN = "unknown"
 
     class << self
       def unit_instance(unit)
@@ -52,7 +52,9 @@ module Unitsml
 
       def units2dimensions(units)
         norm = decompose_units_list(units)
-        return if norm.any? { |u| u.nil? || u[:unit]&.unknown_name? || u[:prefix] == UNKNOWN }
+        return if norm.any? do |u|
+          u.nil? || u[:unit]&.unknown_name? || u[:prefix] == UNKNOWN
+        end
 
         norm.map do |u|
           unit_name = u[:unit].unit_name
@@ -60,7 +62,7 @@ module Unitsml
             dimension: U2D[unit_name][:dimension],
             unit: unit_name,
             exponent: u[:unit].power_numerator || 1,
-            symbol: U2D[unit_name][:symbol]
+            symbol: U2D[unit_name][:symbol],
           }
         end.sort { |a, b| U2D[a[:unit]][:order] <=> U2D[b[:unit]][:order] }
       end
@@ -68,14 +70,16 @@ module Unitsml
       def dim_id(dims)
         return nil if dims.nil? || dims.empty?
 
-        dim_hash = dims.each_with_object({}) { |h, m| m[h[:dimension]] = h }
-        dims_vector = DIMS_VECTOR.map { |h| dim_hash.dig(h, :exponent) }.join(':')
+        dim_hash = dims.to_h { |h| [h[:dimension], h] }
+        dims_vector = DIMS_VECTOR.map do |h|
+          dim_hash.dig(h, :exponent)
+        end.join(":")
         id = Unitsdb.dimensions.find_by_vector(dims_vector)&.id and return id.to_s
 
-        'D_' + dims.map do |d|
+        "D_" + dims.map do |d|
           (U2D.dig(d[:unit], :symbol) || DIM2D.dig(d[:id], :symbol)) +
-            (to_i_value(d[:exponent]) == 1 ? '' : float_to_display(d[:exponent]))
-        end.join('')
+            (to_i_value(d[:exponent]) == 1 ? "" : float_to_display(d[:exponent]))
+        end.join
       end
 
       def to_i_value(object)
@@ -90,16 +94,17 @@ module Unitsml
       end
 
       def decompose_unit(u)
-        if u&.unit_name == 'g' || Lutaml::Model::Utils.snake_case(u.system_type) == 'si_base'
+        if u&.unit_name == "g" || Lutaml::Model::Utils.snake_case(u.system_type) == "si_base"
           { unit: u, prefix: u&.prefix }
         elsif u.si_derived_bases.nil? || u.si_derived_bases.empty?
           { unit: Unit.new(UNKNOWN) }
         else
           u.si_derived_bases.each_with_object([]) do |k, object|
-            prefix = if !k.prefix_reference.nil?
-                       combine_prefixes(prefix_object(k.prefix_reference), u.prefix)
-                     else
+            prefix = if k.prefix_reference.nil?
                        u.prefix
+                     else
+                       combine_prefixes(prefix_object(k.prefix_reference),
+                                        u.prefix)
                      end
             unit_name = Unitsdb.units.find_by_id(k.unit_reference.id).symbols.first.id
             exponent = (k.power&.to_i || 1) * (u.power_numerator&.to_f || 1)
@@ -116,8 +121,9 @@ module Unitsml
           else
             m[-1][:unit]&.power_numerator = Number.new(numerator_value(k, m))
             m[-1] = {
-              prefix: combine_prefixes(prefix_object(m[-1][:prefix]), prefix_object(k[:prefix])),
-              unit: m[-1][:unit]
+              prefix: combine_prefixes(prefix_object(m[-1][:prefix]),
+                                       prefix_object(k[:prefix])),
+              unit: m[-1][:unit],
             }
           end
         end
@@ -159,16 +165,16 @@ module Unitsml
           system: unitsystem(units),
           name: unitname(norm_text, name),
           symbol: unitsymbols(formula, options),
-          root_units: rootunits(units)
+          root_units: rootunits(units),
         }
         attributes[:dimension_url] = "##{dim_id(dims)}" if dims
         Model::Unit.new(attributes).to_xml
-                   .force_encoding('UTF-8')
-                   .gsub('&lt;', '<')
-                   .gsub('&gt;', '>')
-                   .gsub('&amp;', '&')
-                   .gsub(/−/, '&#x2212;')
-                   .gsub(/⋅/, '&#x22c5;')
+          .force_encoding("UTF-8")
+          .gsub("&lt;", "<")
+          .gsub("&gt;", ">")
+          .gsub("&amp;", "&")
+          .gsub(/−/, "&#x2212;")
+          .gsub(/⋅/, "&#x22c5;")
       end
 
       def unitname(text, name)
@@ -180,20 +186,21 @@ module Unitsml
         %w[HTML MathMl].map do |lang|
           Model::Units::Symbol.new(
             type: lang,
-            content: formula.public_send(:"to_#{lang.downcase}", options)
+            content: formula.public_send(:"to_#{lang.downcase}", options),
           )
         end
       end
 
       def unitsystem(units)
         ret = []
-        ret << Model::Units::System.new(name: 'not_SI', type: 'not_SI') if units.any? { |u| !u.si_system_type? }
+        ret << Model::Units::System.new(name: "not_SI", type: "not_SI") if units.any? { |u| !u.si_system_type? }
         if units.any?(&:si_system_type?)
           if units.size == 1
-            base = units[0].downcase_system_type == 'si_base'
-            base = true if units[0].unit_name == 'g' && units[0]&.prefix_name == 'k'
+            base = units[0].downcase_system_type == "si_base"
+            base = true if units[0].unit_name == "g" && units[0]&.prefix_name == "k"
           end
-          ret << Model::Units::System.new(name: 'SI', type: (base ? 'SI_base' : 'SI_derived'))
+          ret << Model::Units::System.new(name: "SI",
+                                          type: (base ? "SI_base" : "SI_derived"))
         end
         ret
       end
@@ -204,7 +211,7 @@ module Unitsml
 
         dim_attrs = { id: dim_id }
         dimid2dimensions(dim_id)&.compact&.each { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(dim_attrs).to_xml.force_encoding('UTF-8')
+        Model::Dimension.new(dim_attrs).to_xml.force_encoding("UTF-8")
       end
 
       def dimension1(dim, dims_hash)
@@ -212,14 +219,14 @@ module Unitsml
         dim_klass = Model::DimensionQuantities.const_get(dim_name)
         dims_hash[underscore(dim_name).to_sym] = dim_klass.new(
           symbol: dim[:symbol],
-          power_numerator: float_to_display(dim[:exponent])
+          power_numerator: float_to_display(dim[:exponent]),
         )
       end
 
       def float_to_display(float)
         case float
         when Integer, Float
-          float.to_f.round(1).to_s.sub(/\.0$/, '')
+          float.to_f.round(1).to_s.sub(/\.0$/, "")
         when Number, Fenced
           float.float_to_display
         end
@@ -228,31 +235,35 @@ module Unitsml
       def dimid2dimensions(normtext)
         dims = Unitsdb.dimensions.find_by_id(normtext)
         dims&.processed_keys&.map do |processed_key|
-          humanized = processed_key.split('_').map(&:capitalize).join
+          humanized = processed_key.split("_").map(&:capitalize).join
           next unless DIMS_VECTOR.include?(humanized)
 
           dim_quantity = dims.public_send(processed_key)
           {
             dimension: humanized,
             symbol: dim_quantity.symbol,
-            exponent: dim_quantity.power
+            exponent: dim_quantity.power,
           }
         end
       end
 
       def prefixes(units, options)
-        uniq_prefixes = units.map(&:prefix).compact.uniq(&:prefix_name)
+        uniq_prefixes = units.filter_map(&:prefix).uniq(&:prefix_name)
         uniq_prefixes.map do |prefix|
-          prefix_attrs = { prefix_base: prefix&.base, prefix_power: prefix&.power, id: prefix&.id }
-          type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode, LaTeX: :to_latex, HTML: :to_html }
+          prefix_attrs = { prefix_base: prefix&.base,
+                           prefix_power: prefix&.power, id: prefix&.id }
+          type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode,
+                               LaTeX: :to_latex, HTML: :to_html }
           prefix_attrs[:name] = Model::Prefixes::Name.new(content: prefix&.name)
           prefix_attrs[:symbol] = type_and_methods.map do |type, method_name|
             Model::Prefixes::Symbol.new(
               type: type,
-              content: prefix&.public_send(method_name, options)
+              content: prefix&.public_send(method_name, options),
             )
           end
-          Model::Prefix.new(prefix_attrs).to_xml.force_encoding('UTF-8').gsub('&amp;', '&')
+          Model::Prefix.new(prefix_attrs).to_xml.force_encoding("UTF-8").gsub(
+            "&amp;", "&"
+          )
         end.join("\n")
       end
 
@@ -262,7 +273,7 @@ module Unitsml
         enum_root_units = units.map do |unit|
           attributes = { unit: unit.enumerated_name }
           attributes[:prefix] = unit.prefix_name if unit.prefix
-          unit.power_numerator && unit.power_numerator != '1' and
+          unit.power_numerator && unit.power_numerator != "1" and
             attributes[:power_numerator] = unit.power_numerator.raw_value
           Model::Units::EnumeratedRootUnit.new(attributes)
         end
@@ -270,16 +281,16 @@ module Unitsml
       end
 
       def unit_id(text)
-        text = text&.gsub(/[()]/, '')
+        text = text&.gsub(/[()]/, "")
         unit = unit_instance(text)
 
-        format_unit_id(unit, text)&.insert(0, 'U_')
+        format_unit_id(unit, text)&.insert(0, "U_")
       end
 
       def format_unit_id(unit, text)
-        return unit.nist_id&.gsub(/'/, '_') if unit
+        return unit.nist_id&.gsub("'", "_") if unit
 
-        text&.gsub(/\*/, '.')&.gsub(/\^/, '')
+        text&.gsub("*", ".")&.gsub("^", "")
       end
 
       def dimension_components(dims)
@@ -287,7 +298,7 @@ module Unitsml
 
         dim_attrs = { id: dim_id(dims) }
         dims.map { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(dim_attrs).to_xml.force_encoding('UTF-8')
+        Model::Dimension.new(dim_attrs).to_xml.force_encoding("UTF-8")
       end
 
       def quantity(normtext, instance)
@@ -296,12 +307,12 @@ module Unitsml
 
         model_quantity_xml(
           instance || unit.quantity_references&.first&.id,
-          "##{unit.dimension_url}"
+          "##{unit.dimension_url}",
         )
       end
 
       def unit_or_quantity(unit, quantity)
-        unit && unit.quantity_references.size == 1 ||
+        (unit && unit.quantity_references.size == 1) ||
           quantity_instance(quantity)
       end
 
@@ -309,13 +320,13 @@ module Unitsml
         Model::Quantity.new(
           id: id,
           name: quantity_name(id),
-          dimension_url: url
-        ).to_xml.force_encoding('UTF-8')
+          dimension_url: url,
+        ).to_xml.force_encoding("UTF-8")
       end
 
       def quantity_name(id)
         quantity_instance(id)&.names&.filter_map do |name|
-          next unless name.lang == 'en'
+          next unless name.lang == "en"
 
           Model::Quantities::Name.new(content: name.value)
         end
@@ -323,8 +334,8 @@ module Unitsml
 
       def string_to_html_entity(string)
         HTMLEntities.new.encode(
-          string.frozen? ? string : string.force_encoding('UTF-8'),
-          :hexadecimal
+          string.frozen? ? string : string.force_encoding("UTF-8"),
+          :hexadecimal,
         )
       end
 
@@ -339,7 +350,7 @@ module Unitsml
       def set_to_fence(set)
         return set if set.is_a?(Fenced)
 
-        Fenced.new('(', set, ')')
+        Fenced.new("(", set, ")")
       end
     end
   end
