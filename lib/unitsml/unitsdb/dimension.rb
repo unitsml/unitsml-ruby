@@ -16,35 +16,37 @@ module Unitsml
       end
 
       def length=(value)
-        quantities_common_code(:length, value)
+        quantities_common_code(:length, wrap_dimension_value(value))
       end
 
       def mass=(value)
-        quantities_common_code(:mass, value)
+        quantities_common_code(:mass, wrap_dimension_value(value))
       end
 
       def time=(value)
-        quantities_common_code(:time, value)
+        quantities_common_code(:time, wrap_dimension_value(value))
       end
 
       def thermodynamic_temperature=(value)
-        quantities_common_code(:thermodynamic_temperature, value)
+        quantities_common_code(:thermodynamic_temperature,
+                               wrap_dimension_value(value))
       end
 
       def amount_of_substance=(value)
-        quantities_common_code(:amount_of_substance, value)
+        quantities_common_code(:amount_of_substance,
+                               wrap_dimension_value(value))
       end
 
       def luminous_intensity=(value)
-        quantities_common_code(:luminous_intensity, value)
+        quantities_common_code(:luminous_intensity, wrap_dimension_value(value))
       end
 
       def plane_angle=(value)
-        quantities_common_code(:plane_angle, value)
+        quantities_common_code(:plane_angle, wrap_dimension_value(value))
       end
 
       def electric_current=(value)
-        quantities_common_code(:electric_current, value)
+        quantities_common_code(:electric_current, wrap_dimension_value(value))
       end
 
       def dim_symbols
@@ -78,6 +80,14 @@ module Unitsml
 
         @parsable = true
         value.dim_symbols_ids(@parsables, id)
+      end
+
+      def wrap_dimension_value(value)
+        return value if value.is_a?(DimensionQuantity)
+        return DimensionQuantity.new(value.to_hash) if value.is_a?(::Unitsdb::DimensionDetails)
+        return DimensionQuantity.new(value) if value.is_a?(Hash)
+
+        value
       end
     end
   end
