@@ -10,6 +10,7 @@ module Unitsml
     autoload :Quantities, "#{__dir__}/unitsdb/quantities"
     autoload :PrefixReference, "#{__dir__}/unitsdb/prefix_reference"
     autoload :DimensionQuantity, "#{__dir__}/unitsdb/dimension_quantity"
+    autoload :SiDerivedBase, "#{__dir__}/unitsdb/si_derived_base"
 
     class << self
       def units

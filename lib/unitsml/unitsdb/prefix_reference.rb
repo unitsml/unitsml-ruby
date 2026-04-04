@@ -16,7 +16,9 @@ module Unitsml
       end
 
       def prefix
-        @prefix ||= Unitsdb.prefixes.find_by_id(id)
+        @prefix ||= ::Unitsdb.database.prefixes.find do |p|
+          p.identifiers.any? { |i| i.id == id }
+        end
       end
     end
   end

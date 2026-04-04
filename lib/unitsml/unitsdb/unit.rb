@@ -3,9 +3,17 @@
 module Unitsml
   module Unitsdb
     class Unit < ::Unitsdb::Unit
+      def si_derived_bases=(value)
+        return super if value.nil?
+
+        super(value.map do |s|
+          SiDerivedBase.new(s.to_hash)
+        end)
+      end
+
       def dimension_url
         quantity_id = quantity_references[0].id
-        quantity = Unitsdb.quantities.find_by_id(quantity_id)
+        quantity = Unitsml::Unitsdb.quantities.find_by_id(quantity_id)
         quantity.dimension_reference.id
       end
 
