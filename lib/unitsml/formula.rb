@@ -5,6 +5,8 @@ require "htmlentities"
 
 module Unitsml
   class Formula
+    include MathmlHelper
+
     attr_accessor :value, :explicit_value, :root
 
     def initialize(value = [],
@@ -29,7 +31,7 @@ module Unitsml
     def to_mathml(options = {})
       if root
         options = update_options(options)
-        math = ::Mml::V4::Math.new(display: "block", lutaml_register: :mml_v4)
+        math = mml_v4_new(::Mml::V4::Math, display: 'block')
         math.ordered = true
         math.element_order ||= []
         value.each do |instance|
@@ -78,8 +80,7 @@ module Unitsml
                                      :asciimath)
       end
 
-      Plurimath::Math.parse(compact_mathml_for_plurimath(to_mathml(options)),
-                            :mathml)
+      Plurimath::Math.parse(compact_mathml_for_plurimath(to_mathml(options)), :mathml)
     end
 
     def dimensions_extraction
@@ -210,6 +211,10 @@ module Unitsml
       explicit_parenthesis = options.key?(:explicit_parenthesis) ? options[:explicit_parenthesis] : true
       options.merge(multiplier: multiplier,
                     explicit_parenthesis: explicit_parenthesis).compact
+    end
+
+    def compact_mathml_for_plurimath(mathml)
+      mathml.gsub(/>\s+</, "><").strip
     end
 
     def compact_mathml_for_plurimath(mathml)

@@ -2,6 +2,8 @@
 
 module Unitsml
   class Unit
+    include MathmlHelper
+
     attr_accessor :unit_name, :power_numerator, :prefix
 
     SI_UNIT_SYSTEM = %w[si_base si_derived_special
@@ -37,7 +39,7 @@ module Unitsml
     def to_mathml(options)
       value = unit_symbols&.mathml
       tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
-      value = ::Mml::V4.const_get(tag_name.capitalize).from_xml(value, register: :mml_v4)
+      value = mml_v4_from_xml(::Mml::V4.const_get(tag_name.capitalize), value)
       value.value = "#{prefix.to_mathml(options)}#{value.value}" if prefix
       if power_numerator
         value = msup_tag(
@@ -127,7 +129,7 @@ module Unitsml
     end
 
     def msup_tag(value, options)
-      msup = ::Mml::V4::Msup.new(lutaml_register: :mml_v4)
+      msup = mml_v4_new(::Mml::V4::Msup)
       msup.ordered = true
       msup.element_order = []
       [value, power_numerator.to_mathml(options)].flatten.each do |record|

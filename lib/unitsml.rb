@@ -13,6 +13,7 @@ module Unitsml
   autoload :FencedNumeric, "unitsml/fenced_numeric"
   autoload :Formula, "unitsml/formula"
   autoload :IntermediateExpRules, "unitsml/intermediate_exp_rules"
+  autoload :MathmlHelper, "unitsml/mathml_helper"
   autoload :Model, "unitsml/model"
   autoload :Namespace, "unitsml/namespace"
   autoload :Number, "unitsml/number"

@@ -2,6 +2,8 @@
 
 module Unitsml
   class Extender
+    include MathmlHelper
+
     attr_accessor :symbol
 
     def initialize(symbol)
@@ -18,7 +20,7 @@ module Unitsml
       extender = multiplier(options[:multiplier] || "⋅", unicode: true)
       {
         method_name: :mo,
-        value: ::Mml::V4::Mo.new(value: extender, rspace: rspace),
+        value: mml_v4_new(::Mml::V4::Mo, value: extender, rspace: rspace)
       }
     end
 

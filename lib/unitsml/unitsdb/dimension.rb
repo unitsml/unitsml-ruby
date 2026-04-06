@@ -50,9 +50,9 @@ module Unitsml
       end
 
       def dim_symbols
-        processed_keys.map do |vec|
-          public_send(vec)&.dim_symbols&.map(&:id)
-        end.flatten.compact
+        processed_keys.flat_map do |vec|
+          dimension_symbols_for(public_send(vec)).map(&:id)
+        end.compact
       end
 
       def processed_symbol
@@ -76,10 +76,21 @@ module Unitsml
 
         instance_variable_set(:"@#{instance_var}", value)
         @processed_keys << instance_var.to_s
-        return if Lutaml::Model::Utils.empty?(value.symbols)
+        dim_symbols = dimension_symbols_for(value)
+        return if Lutaml::Model::Utils.empty?(dim_symbols)
 
         @parsable = true
-        value.dim_symbols_ids(@parsables, id)
+        dim_symbols.each { |dim_sym| @parsables[dim_sym.id] = id }
+      end
+
+      def dimension_symbols_for(value)
+        return [] if value.nil?
+
+        if value.respond_to?(:dim_symbols)
+          Array(value.dim_symbols)
+        else
+          Array(value.symbols)
+        end
       end
 
       def wrap_dimension_value(value)

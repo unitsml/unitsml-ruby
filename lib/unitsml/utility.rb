@@ -139,24 +139,66 @@ module Unitsml
       end
 
       def prefix_object(prefix)
-        return prefix unless prefix.is_a?(String)
-        return nil unless Unitsdb.prefixes_array.any?(prefix)
+        return nil if prefix.nil?
+        return prefix if prefix_like?(prefix)
 
-        Prefix.new(prefix)
+        if prefix.is_a?(String)
+          return nil unless Unitsdb.prefixes_array.any?(prefix)
+
+          return Prefix.new(prefix)
+        end
+
+        return Unitsdb.prefixes.find_by_id(prefix.id) if prefix.respond_to?(:id)
+
+        prefix
       end
 
       def combine_prefixes(p1, p2)
+        p1 = prefix_object(p1)
+        p2 = prefix_object(p2)
         return nil if p1.nil? && p2.nil?
-        return p1.symbolid if p2.nil?
-        return p2.symbolid if p1.nil?
-        return UNKNOWN if p1.base != p2.base
+        return prefix_symbolid(p1) if p2.nil?
+        return prefix_symbolid(p2) if p1.nil?
+        return UNKNOWN if prefix_base(p1) != prefix_base(p2)
 
         Unitsdb.prefixes_array.each do |prefix_name|
           p = prefix_object(prefix_name)
-          return p if p.base == p1.base && p.power == p1.power + p2.power
+          return p if prefix_base(p) == prefix_base(p1) &&
+                      prefix_power(p) == prefix_power(p1) + prefix_power(p2)
         end
 
         UNKNOWN
+      end
+
+      def prefix_like?(prefix)
+        prefix.respond_to?(:base) && prefix.respond_to?(:power) &&
+          (prefix.respond_to?(:symbolid) || prefix.respond_to?(:symbols))
+      end
+
+      def prefix_symbolid(prefix)
+        return prefix.symbolid if prefix.respond_to?(:symbolid)
+
+        resolved_prefix(prefix)&.symbols&.first&.ascii
+      end
+
+      def prefix_base(prefix)
+        return prefix.base if prefix.respond_to?(:base)
+
+        resolved_prefix(prefix)&.base
+      end
+
+      def prefix_power(prefix)
+        return prefix.power if prefix.respond_to?(:power)
+
+        resolved_prefix(prefix)&.power
+      end
+
+      def resolved_prefix(prefix)
+        return prefix if prefix.nil?
+        return prefix if prefix.respond_to?(:symbols) && prefix.respond_to?(:base) && prefix.respond_to?(:power)
+        return Unitsdb.prefixes.find_by_id(prefix.id) if prefix.respond_to?(:id)
+
+        prefix
       end
 
       def unit(units, formula, dims, norm_text, name, options)
