@@ -31,7 +31,7 @@ module Unitsml
     def to_mathml(options = {})
       if root
         options = update_options(options)
-        math = mml_v4_new(::Mml::V4::Math, display: 'block')
+        math = mml_v4_new(:math, display: 'block')
         math.ordered = true
         math.element_order ||= []
         value.each do |instance|
@@ -151,7 +151,10 @@ module Unitsml
       dim_id = dims.map(&:generate_id).join
       attributes = { id: "D_#{dim_id}" }
       dims.each { |dim| attributes.merge!(dim.xml_instances_hash(options)) }
-      Model::Dimension.new(attributes).to_xml.force_encoding("UTF-8")
+      Model::Dimension.new(
+        **attributes,
+        lutaml_register: Configuration.context.id,
+      ).to_xml.force_encoding("UTF-8")
     end
 
     def sort_dims(values)

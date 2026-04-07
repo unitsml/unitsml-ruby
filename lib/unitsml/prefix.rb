@@ -43,7 +43,7 @@ module Unitsml
       )
       return symbol unless only_instance
 
-      { method_name: :mi, value: mml_v4_new(::Mml::V4::Mi, value: symbol) }
+      { method_name: :mi, value: mml_v4_new(:mi, value: symbol) }
     end
 
     def to_latex(_)

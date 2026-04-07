@@ -21,5 +21,7 @@ module Unitsml
         end
       end
     end
+
+    Configuration.register_model(PrefixReference, id: :prefix_reference)
   end
 end

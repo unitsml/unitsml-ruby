@@ -42,7 +42,6 @@ The UnitsML Ruby library consists of several key components:
 
 The library uses the https://github.com/unitsml/unitsdb-ruby[unitsdb-ruby]
 gem as the primary runtime source for standard units, prefixes, and dimensions.
-A checked-in `unitsdb/` directory is retained for static/Opal fallback loading.
 
 == Development setup
 
@@ -53,9 +52,7 @@ development `Gemfile` uses Bundler `path` dependencies for those repositories.
 
 The standard Ruby runtime path goes through `::Unitsdb.database`. When a local
 `unitsdb-ruby` checkout does not have its `data/` submodule populated, UnitsML
-falls back to the packaged YAML files under `vendor/unitsdb`. The checked-in
-`unitsdb/` YAML files are reserved for the Opal/static fallback in
-`lib/unitsml/opal_unitsdb.rb`.
+falls back to the packaged YAML files under `vendor/unitsdb`.
 
 
 == Usage

@@ -33,13 +33,13 @@ module Unitsml
       return mathml unless options[:explicit_parenthesis]
 
       fenced = mml_v4_new(
-        ::Mml::V4::Mrow,
-        mo_value: [mml_v4_new(::Mml::V4::Mo, value: open_paren)],
+        :mrow,
+        mo_value: [mml_v4_new(:mo, value: open_paren)],
       )
       fenced.ordered = true
       fenced.element_order ||= [xml_order_element("mo")]
       [mathml].flatten.each { |record| add_math_element(fenced, record) }
-      fenced.mo_value << mml_v4_new(::Mml::V4::Mo, value: close_paren)
+      fenced.mo_value << mml_v4_new(:mo, value: close_paren)
       fenced.element_order << xml_order_element('mo')
       { method_name: :mrow, value: fenced }
     end

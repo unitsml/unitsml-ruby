@@ -210,7 +210,7 @@ module Unitsml
           root_units: rootunits(units),
         }
         attributes[:dimension_url] = "##{dim_id(dims)}" if dims
-        Model::Unit.new(attributes).to_xml
+        Model::Unit.new(**attributes, lutaml_register: Configuration.context.id).to_xml
           .force_encoding("UTF-8")
           .gsub("&lt;", "<")
           .gsub("&gt;", ">")
@@ -221,7 +221,10 @@ module Unitsml
 
       def unitname(text, name)
         name ||= unit_instance(text)&.en_name || text
-        Model::Units::Name.new(name: name)
+        Model::Units::Name.new(
+          name: name,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def unitsymbols(formula, options)
@@ -229,20 +232,30 @@ module Unitsml
           Model::Units::Symbol.new(
             type: lang,
             content: formula.public_send(:"to_#{lang.downcase}", options),
+            lutaml_register: Configuration.context.id,
           )
         end
       end
 
       def unitsystem(units)
         ret = []
-        ret << Model::Units::System.new(name: "not_SI", type: "not_SI") if units.any? { |u| !u.si_system_type? }
+        if units.any? { |u| !u.si_system_type? }
+          ret << Model::Units::System.new(
+            name: "not_SI",
+            type: "not_SI",
+            lutaml_register: Configuration.context.id,
+          )
+        end
         if units.any?(&:si_system_type?)
           if units.size == 1
             base = units[0].downcase_system_type == "si_base"
             base = true if units[0].unit_name == "g" && units[0]&.prefix_name == "k"
           end
-          ret << Model::Units::System.new(name: "SI",
-                                          type: (base ? "SI_base" : "SI_derived"))
+          ret << Model::Units::System.new(
+            name: "SI",
+            type: (base ? "SI_base" : "SI_derived"),
+            lutaml_register: Configuration.context.id,
+          )
         end
         ret
       end
@@ -253,7 +266,10 @@ module Unitsml
 
         dim_attrs = { id: dim_id }
         dimid2dimensions(dim_id)&.compact&.each { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(dim_attrs).to_xml.force_encoding("UTF-8")
+        Model::Dimension.new(
+          dim_attrs,
+          lutaml_register: Configuration.context.id,
+        ).to_xml.force_encoding("UTF-8")
       end
 
       def dimension1(dim, dims_hash)
@@ -262,6 +278,7 @@ module Unitsml
         dims_hash[underscore(dim_name).to_sym] = dim_klass.new(
           symbol: dim[:symbol],
           power_numerator: float_to_display(dim[:exponent]),
+          lutaml_register: Configuration.context.id,
         )
       end
 
@@ -296,14 +313,21 @@ module Unitsml
                            prefix_power: prefix&.power, id: prefix&.id }
           type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode,
                                LaTeX: :to_latex, HTML: :to_html }
-          prefix_attrs[:name] = Model::Prefixes::Name.new(content: prefix&.name)
+          prefix_attrs[:name] = Model::Prefixes::Name.new(
+            content: prefix&.name,
+            lutaml_register: Configuration.context.id,
+          )
           prefix_attrs[:symbol] = type_and_methods.map do |type, method_name|
             Model::Prefixes::Symbol.new(
               type: type,
               content: prefix&.public_send(method_name, options),
+              lutaml_register: Configuration.context.id,
             )
           end
-          Model::Prefix.new(prefix_attrs).to_xml.force_encoding("UTF-8").gsub(
+          Model::Prefix.new(
+            prefix_attrs,
+            lutaml_register: Configuration.context.id,
+          ).to_xml.force_encoding("UTF-8").gsub(
             "&amp;", "&"
           )
         end.join("\n")
@@ -317,9 +341,15 @@ module Unitsml
           attributes[:prefix] = unit.prefix_name if unit.prefix
           unit.power_numerator && unit.power_numerator != "1" and
             attributes[:power_numerator] = unit.power_numerator.raw_value
-          Model::Units::EnumeratedRootUnit.new(attributes)
+          Model::Units::EnumeratedRootUnit.new(
+            **attributes,
+            lutaml_register: Configuration.context.id,
+          )
         end
-        Model::Units::RootUnits.new(enumerated_root_unit: enum_root_units)
+        Model::Units::RootUnits.new(
+          enumerated_root_unit: enum_root_units,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def unit_id(text)
@@ -340,7 +370,10 @@ module Unitsml
 
         dim_attrs = { id: dim_id(dims) }
         dims.map { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(dim_attrs).to_xml.force_encoding("UTF-8")
+        Model::Dimension.new(
+          **dim_attrs,
+          lutaml_register: Configuration.context.id,
+        ).to_xml.force_encoding("UTF-8")
       end
 
       def quantity(normtext, instance)
@@ -363,6 +396,7 @@ module Unitsml
           id: id,
           name: quantity_name(id),
           dimension_url: url,
+          lutaml_register: Configuration.context.id,
         ).to_xml.force_encoding("UTF-8")
       end
 
@@ -370,7 +404,7 @@ module Unitsml
         quantity_instance(id)&.names&.filter_map do |name|
           next unless name.lang == "en"
 
-          Model::Quantities::Name.new(content: name.value)
+          Model::Quantities::Name.new(content: name.value, lutaml_register: Configuration.context.id)
         end
       end
 

@@ -30,5 +30,7 @@ module Unitsml
         end
       end
     end
+
+    Configuration.register_model(Prefixes, id: :prefixes)
   end
 end
