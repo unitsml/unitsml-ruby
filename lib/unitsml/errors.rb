@@ -3,7 +3,8 @@
 module Unitsml
   module Errors
     autoload :BaseError, "unitsml/errors/base_error"
-    autoload :OpalPayloadNotBundledError, "unitsml/errors/opal_payload_not_bundled_error"
+    autoload :OpalPayloadNotBundledError,
+             "unitsml/errors/opal_payload_not_bundled_error"
     autoload :PlurimathLoadError, "unitsml/errors/plurimath_load_error"
   end
 end

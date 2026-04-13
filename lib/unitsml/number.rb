@@ -21,7 +21,7 @@ module Unitsml
       matched_value = value&.match(/-?(.+)/)
       mn_value = matched_value ? matched_value[1] : value
       mn_tag = mml_v4_new(:mn, value: mn_value)
-      value.start_with?('-') ? mrow_hash(mn_tag) : mn_hash(mn_tag)
+      value.start_with?("-") ? mrow_hash(mn_tag) : mn_hash(mn_tag)
     end
 
     def to_html(_options)
@@ -65,9 +65,9 @@ module Unitsml
         method_name: :mrow,
         value: mml_v4_new(
           :mrow,
-          mo_value: [mml_v4_new(:mo, value: '&#x2212;')],
+          mo_value: [mml_v4_new(:mo, value: "&#x2212;")],
           mn_value: [mn_tag],
-        )
+        ),
       }
     end
 

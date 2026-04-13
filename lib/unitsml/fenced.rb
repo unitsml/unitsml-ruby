@@ -40,7 +40,7 @@ module Unitsml
       fenced.element_order ||= [xml_order_element("mo")]
       [mathml].flatten.each { |record| add_math_element(fenced, record) }
       fenced.mo_value << mml_v4_new(:mo, value: close_paren)
-      fenced.element_order << xml_order_element('mo')
+      fenced.element_order << xml_order_element("mo")
       { method_name: :mrow, value: fenced }
     end
 

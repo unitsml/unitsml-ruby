@@ -21,19 +21,31 @@ module Unitsml
       ].freeze
 
       def units
-        @units ||= Units.new(units: database.units, lutaml_register: Configuration.context.id)
+        @units ||= Units.new(
+          units: database.units,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def prefixes
-        @prefixes ||= Prefixes.new(prefixes: database.prefixes, lutaml_register: Configuration.context.id)
+        @prefixes ||= Prefixes.new(
+          prefixes: database.prefixes,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def dimensions
-        @dimensions ||= Dimensions.new(dimensions: database.dimensions, lutaml_register: Configuration.context.id)
+        @dimensions ||= Dimensions.new(
+          dimensions: database.dimensions,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def quantities
-        @quantities ||= Quantities.new(quantities: database.quantities, lutaml_register: Configuration.context.id)
+        @quantities ||= Quantities.new(
+          quantities: database.quantities,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def prefixes_array
@@ -65,14 +77,16 @@ module Unitsml
       end
 
       def database_path
-        candidate_database_paths.find { |path| database_files_present?(path) } ||
+        candidate_database_paths.find do |path|
+          database_files_present?(path)
+        end ||
           File.join(unitsdb_gem_path, "vendor", "unitsdb")
       end
 
       def candidate_database_paths
         [
           File.join(unitsdb_gem_path, "data"),
-          File.join(unitsdb_gem_path, "vendor", "unitsdb")
+          File.join(unitsdb_gem_path, "vendor", "unitsdb"),
         ]
       end
 

@@ -10,6 +10,7 @@ module Unitsml
 
         context_id = context.to_sym
         raise Unitsml::Errors::OpalPayloadNotBundledError unless DATABASE
+
         Unitsml::Configuration.context
 
         from_hash(DATABASE, register: context_id)

@@ -40,6 +40,12 @@ module Unitsml
     ].freeze
 
     UNKNOWN = "unknown"
+    PREFIX_SYMBOL_METHODS = {
+      ASCII: :to_asciimath,
+      unicode: :to_unicode,
+      LaTeX: :to_latex,
+      HTML: :to_html,
+    }.freeze
 
     class << self
       def unit_instance(unit)
@@ -164,7 +170,7 @@ module Unitsml
         Unitsdb.prefixes_array.each do |prefix_name|
           p = prefix_object(prefix_name)
           return p if prefix_base(p) == prefix_base(p1) &&
-                      prefix_power(p) == prefix_power(p1) + prefix_power(p2)
+            prefix_power(p) == prefix_power(p1) + prefix_power(p2)
         end
 
         UNKNOWN
@@ -178,7 +184,10 @@ module Unitsml
       def prefix_symbolid(prefix)
         return prefix.symbolid if prefix.respond_to?(:symbolid)
 
-        resolved_prefix(prefix)&.symbols&.first&.ascii
+        resolved_prefix = resolved_prefix(prefix)
+        return unless resolved_prefix
+
+        resolved_prefix.symbols&.first&.ascii
       end
 
       def prefix_base(prefix)
@@ -309,28 +318,42 @@ module Unitsml
       def prefixes(units, options)
         uniq_prefixes = units.filter_map(&:prefix).uniq(&:prefix_name)
         uniq_prefixes.map do |prefix|
-          prefix_attrs = { prefix_base: prefix&.base,
-                           prefix_power: prefix&.power, id: prefix&.id }
-          type_and_methods = { ASCII: :to_asciimath, unicode: :to_unicode,
-                               LaTeX: :to_latex, HTML: :to_html }
-          prefix_attrs[:name] = Model::Prefixes::Name.new(
-            content: prefix&.name,
-            lutaml_register: Configuration.context.id,
-          )
-          prefix_attrs[:symbol] = type_and_methods.map do |type, method_name|
-            Model::Prefixes::Symbol.new(
-              type: type,
-              content: prefix&.public_send(method_name, options),
-              lutaml_register: Configuration.context.id,
-            )
-          end
-          Model::Prefix.new(
-            prefix_attrs,
-            lutaml_register: Configuration.context.id,
-          ).to_xml.force_encoding("UTF-8").gsub(
-            "&amp;", "&"
-          )
+          prefix_xml(prefix, options)
         end.join("\n")
+      end
+
+      def prefix_xml(prefix, options)
+        Model::Prefix.new(
+          prefix_attributes(prefix, options),
+          lutaml_register: Configuration.context.id,
+        ).to_xml.force_encoding("UTF-8").gsub("&amp;", "&")
+      end
+
+      def prefix_attributes(prefix, options)
+        {
+          prefix_base: prefix&.base,
+          prefix_power: prefix&.power,
+          id: prefix&.id,
+          name: prefix_name(prefix),
+          symbol: prefix_symbols(prefix, options),
+        }
+      end
+
+      def prefix_name(prefix)
+        Model::Prefixes::Name.new(
+          content: prefix&.name,
+          lutaml_register: Configuration.context.id,
+        )
+      end
+
+      def prefix_symbols(prefix, options)
+        PREFIX_SYMBOL_METHODS.map do |type, method_name|
+          Model::Prefixes::Symbol.new(
+            type: type,
+            content: prefix&.public_send(method_name, options),
+            lutaml_register: Configuration.context.id,
+          )
+        end
       end
 
       def rootunits(units)
