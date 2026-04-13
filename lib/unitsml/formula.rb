@@ -31,13 +31,14 @@ module Unitsml
     def to_mathml(options = {})
       if root
         options = update_options(options)
-        math = mml_v4_new(:math, display: 'block')
+        math = mml_v4_new(:math, display: "block")
         math.ordered = true
         math.element_order ||= []
         value.each do |instance|
           process_value(math, instance.to_mathml(options))
         end
-        generated_math = math.to_xml.gsub(%r{&amp;(.*?)(?=</)}, '&\1')
+        generated_math = math.to_xml(register: mml_v4_context.id)
+          .gsub(%r{&amp;(.*?)(?=</)}, '&\1')
 
         generated_math.force_encoding("UTF-8")
       else
@@ -214,10 +215,6 @@ module Unitsml
       explicit_parenthesis = options.key?(:explicit_parenthesis) ? options[:explicit_parenthesis] : true
       options.merge(multiplier: multiplier,
                     explicit_parenthesis: explicit_parenthesis).compact
-    end
-
-    def compact_mathml_for_plurimath(mathml)
-      mathml.gsub(/>\s+</, "><").strip
     end
 
     def compact_mathml_for_plurimath(mathml)

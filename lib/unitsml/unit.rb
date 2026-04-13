@@ -40,7 +40,12 @@ module Unitsml
       value = unit_symbols&.mathml
       tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
       value = mml_v4_from_xml(tag_name, value)
-      value.value = "#{prefix.to_mathml(options)}#{value.value}" if prefix
+      if prefix
+        value = mml_v4_with_content(
+          value,
+          "#{prefix.to_mathml(**options, parent: value)}#{value.value}",
+        )
+      end
       if power_numerator
         value = msup_tag(
           { method_name: tag_name, value: value },
