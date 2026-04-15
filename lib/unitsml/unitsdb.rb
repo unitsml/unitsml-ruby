@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "unitsdb"
+
 require_relative "unitsdb/database"
 require_relative "unitsdb/dimension_details"
 require_relative "unitsdb/prefix_reference"
@@ -66,6 +68,10 @@ module Unitsml
       private
 
       def load_database
+        if RUBY_ENGINE == "opal"
+          return Database.from_db(nil, context: Configuration.context.id)
+        end
+
         if ::Unitsdb.respond_to?(:database)
           return ::Unitsdb.database(context: Configuration.context.id)
         end

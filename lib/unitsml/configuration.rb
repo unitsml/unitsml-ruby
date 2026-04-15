@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "unitsdb"
+
 module Unitsml
   module Configuration
     CONTEXT_ID = :unitsml_ruby

@@ -45,14 +45,16 @@ gem as the primary runtime source for standard units, prefixes, and dimensions.
 
 == Development setup
 
-During local development, this repository expects `lutaml-model`, `mml`,
-`plurimath`, and `unitsdb-ruby` to be available as sibling checkouts at
-`../lutaml-model`, `../mml`, `../plurimath`, and `../unitsdb-ruby`. The
-development `Gemfile` uses Bundler `path` dependencies for those repositories.
+The development `Gemfile` pins the current integration branches for
+`lutaml-model`, `mml`, `plurimath`, and `unitsdb-ruby`. If you need to test
+coordinated local changes across those repositories, temporarily switch those
+dependencies to Bundler `path` entries that point at sibling checkouts, for
+example `../lutaml-model` or `../unitsdb-ruby`. Keep those local path changes
+out of commits unless the branch intentionally requires them.
 
-The standard Ruby runtime path goes through `::Unitsdb.database`. When a local
-`unitsdb-ruby` checkout does not have its `data/` submodule populated, UnitsML
-falls back to the packaged YAML files under `vendor/unitsdb`.
+The standard Ruby runtime path goes through `::Unitsdb.database`. When
+`unitsdb-ruby` cannot load its bundled `data/` directory, UnitsML falls back to
+the packaged YAML files under `vendor/unitsdb`.
 
 
 == Usage
