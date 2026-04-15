@@ -35,10 +35,14 @@ module Unitsml
     end
 
     def to_mathml(options)
-      value = unit_symbols&.mathml
-      tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
-      value = ::Mml::V4.const_get(tag_name.capitalize).from_xml(value)
-      value.value = "#{prefix.to_mathml(options)}#{value.value}" if prefix
+      raw_mathml = unit_symbols&.mathml
+      tag_name = raw_mathml.match(/^<(?<tag>\w+)/)[:tag]
+      klass = ::Mml::V4.const_get(tag_name.capitalize)
+      value = klass.from_xml(raw_mathml)
+      if prefix
+        value = with_updated_value(value,
+                                   "#{prefix.to_mathml(options)}#{value.value}")
+      end
       if power_numerator
         value = msup_tag(
           { method_name: tag_name, value: value },
@@ -124,6 +128,15 @@ module Unitsml
 
     def system_reference
       unit_instance.unit_system_reference
+    end
+
+    def with_updated_value(element, new_value)
+      attrs = element.class.attributes.each_with_object({}) do |(name, _), h|
+        val = element.public_send(name)
+        h[name] = val unless val.nil?
+      end
+      attrs[:value] = new_value
+      element.class.new(**attrs)
     end
 
     def msup_tag(value, options)
