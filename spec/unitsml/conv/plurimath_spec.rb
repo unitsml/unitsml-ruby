@@ -28,23 +28,23 @@ RSpec.describe Unitsml::Parser do
       Plurimath::Math::Formula.new([
                                      Plurimath::Math::Function::FontStyle::Normal.new(
                                        Plurimath::Math::Symbols::Symbol.new("mm"),
-                                       "normal",
+                                       "rm",
                                      ),
-                                     Plurimath::Math::Symbols::Cdot.new,
+                                     Plurimath::Math::Symbols::Cdot.new("⋅"),
                                      Plurimath::Math::Function::Power.new(
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("s"),
-                                         "normal",
+                                         "rm",
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Formula.new([
-                                                                          Plurimath::Math::Symbols::Minus.new,
+                                                                          Plurimath::Math::Symbols::Minus.new("−"),
                                                                           Plurimath::Math::Number.new("2"),
                                                                         ]),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ),
                                    ])
@@ -90,7 +90,7 @@ RSpec.describe Unitsml::Parser do
       Plurimath::Math::Formula.new([
                                      Plurimath::Math::Function::FontStyle::Normal.new(
                                        Plurimath::Math::Symbols::Symbol.new("g"),
-                                       "normal",
+                                       "rm",
                                      ),
                                    ])
     end
@@ -105,8 +105,8 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Plurimath::Math::Formula.new([
                                      Plurimath::Math::Function::FontStyle::Normal.new(
-                                       Plurimath::Math::Symbols::Symbol.new("&#xb5;m"),
-                                       "normal",
+                                       Plurimath::Math::Symbols::Symbol.new("µm"),
+                                       "rm",
                                      ),
                                    ])
     end
@@ -124,49 +124,49 @@ RSpec.describe Unitsml::Parser do
           Plurimath::Math::Function::Power.new(
             Plurimath::Math::Function::FontStyle::Normal.new(
               Plurimath::Math::Symbols::Symbol.new("kg"),
-              "normal",
+              "rm",
             ),
             Plurimath::Math::Function::Fenced.new(
-              Plurimath::Math::Symbols::Paren::Lround.new,
+              Plurimath::Math::Symbols::Paren::Lround.new("("),
               [
                 Plurimath::Math::Formula.new([
-                                               Plurimath::Math::Symbols::Minus.new,
+                                               Plurimath::Math::Symbols::Minus.new("−"),
                                                Plurimath::Math::Number.new("1"),
                                              ]),
               ],
-              Plurimath::Math::Symbols::Paren::Rround.new,
+              Plurimath::Math::Symbols::Paren::Rround.new(")"),
             ),
           ),
-          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Symbols::Cdot.new("⋅"),
           Plurimath::Math::Function::Power.new(
             Plurimath::Math::Function::FontStyle::Normal.new(
               Plurimath::Math::Symbols::Symbol.new("m"),
-              "normal",
+              "rm",
             ),
             Plurimath::Math::Function::Fenced.new(
-              Plurimath::Math::Symbols::Paren::Lround.new,
+              Plurimath::Math::Symbols::Paren::Lround.new("("),
               [
                 Plurimath::Math::Formula.new([
-                                               Plurimath::Math::Symbols::Minus.new,
+                                               Plurimath::Math::Symbols::Minus.new("−"),
                                                Plurimath::Math::Number.new("3"),
                                              ]),
               ],
-              Plurimath::Math::Symbols::Paren::Rround.new,
+              Plurimath::Math::Symbols::Paren::Rround.new(")"),
             ),
           ),
-          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Symbols::Cdot.new("⋅"),
           Plurimath::Math::Function::Power.new(
             Plurimath::Math::Function::FontStyle::Normal.new(
               Plurimath::Math::Symbols::Symbol.new("s"),
-              "normal",
+              "rm",
             ),
             Plurimath::Math::Number.new("4"),
           ),
-          Plurimath::Math::Symbols::Cdot.new,
+          Plurimath::Math::Symbols::Cdot.new("⋅"),
           Plurimath::Math::Function::Power.new(
             Plurimath::Math::Function::FontStyle::Normal.new(
               Plurimath::Math::Symbols::Symbol.new("A"),
-              "normal",
+              "rm",
             ),
             Plurimath::Math::Number.new("2"),
           ),
@@ -184,35 +184,35 @@ RSpec.describe Unitsml::Parser do
     let(:expected_value) do
       Plurimath::Math::Formula.new([
                                      Plurimath::Math::Function::Fenced.new(
-                                       Plurimath::Math::Symbols::Paren::Lround.new,
+                                       Plurimath::Math::Symbols::Paren::Lround.new("("),
                                        [
                                          Plurimath::Math::Function::Fenced.new(
-                                           Plurimath::Math::Symbols::Paren::Lround.new,
+                                           Plurimath::Math::Symbols::Paren::Lround.new("("),
                                            [
                                              Plurimath::Math::Function::Power.new(
                                                Plurimath::Math::Function::FontStyle::Normal.new(
                                                  Plurimath::Math::Symbols::Symbol.new("g"),
-                                                 "normal",
+                                                 "rm",
                                                ),
                                                Plurimath::Math::Function::Fenced.new(
-                                                 Plurimath::Math::Symbols::Paren::Lround.new,
+                                                 Plurimath::Math::Symbols::Paren::Lround.new("("),
                                                  [
                                                    Plurimath::Math::Function::Fenced.new(
-                                                     Plurimath::Math::Symbols::Paren::Lround.new,
+                                                     Plurimath::Math::Symbols::Paren::Lround.new("("),
                                                      [
                                                        Plurimath::Math::Number.new("3"),
                                                      ],
-                                                     Plurimath::Math::Symbols::Paren::Rround.new,
+                                                     Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                                    ),
                                                  ],
-                                                 Plurimath::Math::Symbols::Paren::Rround.new,
+                                                 Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                                ),
                                              ),
                                            ],
-                                           Plurimath::Math::Symbols::Paren::Rround.new,
+                                           Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                          ),
                                        ],
-                                       Plurimath::Math::Symbols::Paren::Rround.new,
+                                       Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                      ),
                                    ])
     end
@@ -228,7 +228,7 @@ RSpec.describe Unitsml::Parser do
       Plurimath::Math::Formula.new([
                                      Plurimath::Math::Function::FontStyle::Normal.new(
                                        Plurimath::Math::Symbols::Symbol.new("g"),
-                                       "normal",
+                                       "rm",
                                      ),
                                    ])
     end
@@ -246,22 +246,22 @@ RSpec.describe Unitsml::Parser do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("J"),
-                                         "normal",
+                                         "rm",
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("kg"),
-                                             "normal",
+                                             "rm",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("K"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end
@@ -277,40 +277,40 @@ RSpec.describe Unitsml::Parser do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("J"),
-                                         "normal",
+                                         "rm",
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::Power.new(
                                          Plurimath::Math::Function::FontStyle::Normal.new(
                                            Plurimath::Math::Symbols::Symbol.new("kg"),
-                                           "normal",
+                                           "rm",
                                          ),
                                          Plurimath::Math::Function::Fenced.new(
-                                           Plurimath::Math::Symbols::Paren::Lround.new,
+                                           Plurimath::Math::Symbols::Paren::Lround.new("("),
                                            [
                                              Plurimath::Math::Formula.new([
-                                                                            Plurimath::Math::Symbols::Minus.new,
+                                                                            Plurimath::Math::Symbols::Minus.new("−"),
                                                                             Plurimath::Math::Number.new("1"),
                                                                           ]),
                                            ],
-                                           Plurimath::Math::Symbols::Paren::Rround.new,
+                                           Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                          ),
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::Power.new(
                                          Plurimath::Math::Function::FontStyle::Normal.new(
                                            Plurimath::Math::Symbols::Symbol.new("K"),
-                                           "normal",
+                                           "rm",
                                          ),
                                          Plurimath::Math::Function::Fenced.new(
-                                           Plurimath::Math::Symbols::Paren::Lround.new,
+                                           Plurimath::Math::Symbols::Paren::Lround.new("("),
                                            [
                                              Plurimath::Math::Formula.new([
-                                                                            Plurimath::Math::Symbols::Minus.new,
+                                                                            Plurimath::Math::Symbols::Minus.new("−"),
                                                                             Plurimath::Math::Number.new("1"),
                                                                           ]),
                                            ],
-                                           Plurimath::Math::Symbols::Paren::Rround.new,
+                                           Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                          ),
                                        ),
                                      ])
@@ -327,27 +327,27 @@ RSpec.describe Unitsml::Parser do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("J"),
-                                         "normal",
+                                         "rm",
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::Power.new(
                                          Plurimath::Math::Function::FontStyle::Normal.new(
                                            Plurimath::Math::Symbols::Symbol.new("mol"),
-                                           "normal",
+                                           "rm",
                                          ),
                                          Plurimath::Math::Formula.new([
-                                                                        Plurimath::Math::Symbols::Minus.new,
+                                                                        Plurimath::Math::Symbols::Minus.new("−"),
                                                                         Plurimath::Math::Number.new("1"),
                                                                       ]),
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::Power.new(
                                          Plurimath::Math::Function::FontStyle::Normal.new(
                                            Plurimath::Math::Symbols::Symbol.new("K"),
-                                           "normal",
+                                           "rm",
                                          ),
                                          Plurimath::Math::Formula.new([
-                                                                        Plurimath::Math::Symbols::Minus.new,
+                                                                        Plurimath::Math::Symbols::Minus.new("−"),
                                                                         Plurimath::Math::Number.new("1"),
                                                                       ]),
                                        ),
@@ -365,27 +365,27 @@ RSpec.describe Unitsml::Parser do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("J"),
-                                         "normal",
+                                         "rm",
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::Power.new(
                                          Plurimath::Math::Function::FontStyle::Normal.new(
                                            Plurimath::Math::Symbols::Symbol.new("mol"),
-                                           "normal",
+                                           "rm",
                                          ),
                                          Plurimath::Math::Formula.new([
-                                                                        Plurimath::Math::Symbols::Minus.new,
+                                                                        Plurimath::Math::Symbols::Minus.new("−"),
                                                                         Plurimath::Math::Number.new("1"),
                                                                       ]),
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::Power.new(
                                          Plurimath::Math::Function::FontStyle::Normal.new(
                                            Plurimath::Math::Symbols::Symbol.new("K"),
-                                           "normal",
+                                           "rm",
                                          ),
                                          Plurimath::Math::Formula.new([
-                                                                        Plurimath::Math::Symbols::Minus.new,
+                                                                        Plurimath::Math::Symbols::Minus.new("−"),
                                                                         Plurimath::Math::Number.new("1"),
                                                                       ]),
                                        ),
@@ -402,23 +402,23 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("mol"),
-                                             "normal",
+                                             "rm",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("K"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("J"),
-                                         "normal",
+                                         "rm",
                                        ),
                                      ])
       end
@@ -433,23 +433,23 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("mol"),
-                                             "normal",
+                                             "rm",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("K"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("J"),
-                                         "normal",
+                                         "rm",
                                        ),
                                      ])
       end
@@ -464,29 +464,29 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("mol"),
-                                             "normal",
+                                             "rm",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("K"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("J"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end
@@ -501,34 +501,34 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("mol"),
-                                             "normal",
+                                             "rm",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("K"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("J"),
-                                             "normal",
+                                             "rm",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("K"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end
@@ -544,22 +544,22 @@ RSpec.describe Unitsml::Parser do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("E"),
-                                         "normal",
+                                         "rm",
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::Normal.new(
                                              Plurimath::Math::Symbols::Symbol.new("mm"),
-                                             "normal",
+                                             "rm",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::FontStyle::Normal.new(
                                          Plurimath::Math::Symbols::Symbol.new("kg"),
-                                         "normal",
+                                         "rm",
                                        ),
                                      ])
       end
@@ -574,18 +574,18 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                         Plurimath::Math::Symbols::UpcaseTheta.new,
+                                         Plurimath::Math::Symbols::UpcaseTheta.new("Θ"),
                                          "sans-serif",
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                             Plurimath::Math::Symbols::Phi.new,
+                                             Plurimath::Math::Symbols::Phi.new("φ"),
                                              "sans-serif",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end
@@ -600,14 +600,14 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                             Plurimath::Math::Symbols::UpcaseTheta.new,
+                                             Plurimath::Math::Symbols::UpcaseTheta.new("Θ"),
                                              "sans-serif",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::FontStyle::SansSerif.new(
                                          Plurimath::Math::Symbols::Symbol.new("L"),
@@ -626,10 +626,10 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                         Plurimath::Math::Symbols::UpcaseTheta.new,
+                                         Plurimath::Math::Symbols::UpcaseTheta.new("Θ"),
                                          "sans-serif",
                                        ),
-                                       Plurimath::Math::Symbols::Cdot.new,
+                                       Plurimath::Math::Symbols::Cdot.new("⋅"),
                                        Plurimath::Math::Function::FontStyle::SansSerif.new(
                                          Plurimath::Math::Symbols::Symbol.new("L"),
                                          "sans-serif",
@@ -647,23 +647,23 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                         Plurimath::Math::Symbols::Phi.new,
+                                         Plurimath::Math::Symbols::Phi.new("φ"),
                                          "sans-serif",
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                             Plurimath::Math::Symbols::UpcaseTheta.new,
+                                             Plurimath::Math::Symbols::UpcaseTheta.new("Θ"),
                                              "sans-serif",
                                            ),
-                                           Plurimath::Math::Symbols::Cdot.new,
+                                           Plurimath::Math::Symbols::Cdot.new("⋅"),
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
                                              Plurimath::Math::Symbols::Symbol.new("L"),
                                              "sans-serif",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end
@@ -678,44 +678,44 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                             Plurimath::Math::Symbols::Phi.new,
+                                             Plurimath::Math::Symbols::Phi.new("φ"),
                                              "sans-serif",
                                            ),
                                            Plurimath::Math::Function::Fenced.new(
-                                             Plurimath::Math::Symbols::Paren::Lround.new,
+                                             Plurimath::Math::Symbols::Paren::Lround.new("("),
                                              [
                                                Plurimath::Math::Function::FontStyle::SansSerif.new(
                                                  Plurimath::Math::Symbols::Symbol.new("I"),
                                                  "sans-serif",
                                                ),
                                              ],
-                                             Plurimath::Math::Symbols::Paren::Rround.new,
+                                             Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::Fenced.new(
-                                             Plurimath::Math::Symbols::Paren::Lround.new,
+                                             Plurimath::Math::Symbols::Paren::Lround.new("("),
                                              [
                                                Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                                 Plurimath::Math::Symbols::UpcaseTheta.new,
+                                                 Plurimath::Math::Symbols::UpcaseTheta.new("Θ"),
                                                  "sans-serif",
                                                ),
                                              ],
-                                             Plurimath::Math::Symbols::Paren::Rround.new,
+                                             Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                            ),
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
                                              Plurimath::Math::Symbols::Symbol.new("L"),
                                              "sans-serif",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end
@@ -730,31 +730,31 @@ RSpec.describe Unitsml::Parser do
       let(:expected_value) do
         Plurimath::Math::Formula.new([
                                        Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                         Plurimath::Math::Symbols::Phi.new,
+                                         Plurimath::Math::Symbols::Phi.new("φ"),
                                          "sans-serif",
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::FontStyle::SansSerif.new(
                                              Plurimath::Math::Symbols::Symbol.new("I"),
                                              "sans-serif",
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                        Plurimath::Math::Function::Fenced.new(
-                                         Plurimath::Math::Symbols::Paren::Lround.new,
+                                         Plurimath::Math::Symbols::Paren::Lround.new("("),
                                          [
                                            Plurimath::Math::Function::Fenced.new(
-                                             Plurimath::Math::Symbols::Paren::Lround.new,
+                                             Plurimath::Math::Symbols::Paren::Lround.new("("),
                                              [
                                                Plurimath::Math::Function::FontStyle::SansSerif.new(
-                                                 Plurimath::Math::Symbols::UpcaseTheta.new,
+                                                 Plurimath::Math::Symbols::UpcaseTheta.new("Θ"),
                                                  "sans-serif",
                                                ),
                                              ],
-                                             Plurimath::Math::Symbols::Paren::Rround.new,
+                                             Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                            ),
                                            Plurimath::Math::Function::Power.new(
                                              Plurimath::Math::Function::FontStyle::SansSerif.new(
@@ -762,15 +762,15 @@ RSpec.describe Unitsml::Parser do
                                                "sans-serif",
                                              ),
                                              Plurimath::Math::Function::Fenced.new(
-                                               Plurimath::Math::Symbols::Paren::Lround.new,
+                                               Plurimath::Math::Symbols::Paren::Lround.new("("),
                                                [
                                                  Plurimath::Math::Number.new("12"),
                                                ],
-                                               Plurimath::Math::Symbols::Paren::Rround.new,
+                                               Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                              ),
                                            ),
                                          ],
-                                         Plurimath::Math::Symbols::Paren::Rround.new,
+                                         Plurimath::Math::Symbols::Paren::Rround.new(")"),
                                        ),
                                      ])
       end

@@ -30,11 +30,11 @@ Gem::Specification.new do |spec|
 
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib", "unitsdb/**/*.yaml"]
+  spec.require_paths = ["lib"]
 
   spec.add_dependency "htmlentities"
   spec.add_dependency "lutaml-model", "~> 0.8.0"
-  spec.add_dependency "mml"
+  spec.add_dependency "mml", "~> 2.3.2"
   spec.add_dependency "parslet"
   spec.add_dependency "unitsdb", "~> 2.2.1"
 end

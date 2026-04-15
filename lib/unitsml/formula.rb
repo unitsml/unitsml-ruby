@@ -196,10 +196,14 @@ module Unitsml
     end
 
     def nullify_mml_models
+      return unless defined?(Plurimath::Mathml::Parser::CONFIGURATION)
+
       Plurimath::Mathml::Parser::CONFIGURATION.each_key { |klass| klass.model(klass) }
     end
 
     def reset_mml_models
+      return unless defined?(Plurimath::Mathml::Parser::CONFIGURATION)
+
       ::Mml::V4::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
     end
 
