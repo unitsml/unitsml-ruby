@@ -31,11 +31,9 @@ RSpec.describe Unitsml::Unitsdb::Database do
       end
     end
   end
-end
 
-RSpec.describe Unitsml::Unitsdb do
-  describe ".database" do
-    let(:context) { instance_double("Unitsdb context", id: :unitsml_ruby) }
+  describe Unitsml::Unitsdb, ".database" do
+    let(:context) { Struct.new(:id).new(:unitsml_ruby) }
 
     before do
       described_class.instance_variable_set(:@database, nil)
@@ -57,6 +55,43 @@ RSpec.describe Unitsml::Unitsdb do
         expect(described_class.database).to eq(:opal_database)
         expect(Unitsml::Unitsdb::Database).to have_received(:from_db).with(
           nil,
+          context: :unitsml_ruby,
+        )
+      end
+    end
+
+    context "when unitsdb-ruby exposes a database loader" do
+      before do
+        stub_const("RUBY_ENGINE", "ruby")
+        allow(Unitsdb).to receive(:database).and_return(:unitsdb_database)
+      end
+
+      it "uses the unitsdb-ruby loader with the UnitsML context" do
+        expect(described_class.database).to eq(:unitsdb_database)
+        expect(Unitsdb).to have_received(:database).with(
+          context: :unitsml_ruby,
+        )
+      end
+    end
+
+    context "when unitsdb-ruby cannot load its packaged data directory" do
+      before do
+        stub_const("RUBY_ENGINE", "ruby")
+        allow(Unitsdb).to receive(:database).and_raise(
+          Unitsdb::Errors::DatabaseNotFoundError,
+        )
+        allow(described_class)
+          .to receive(:database_path)
+          .and_return("/tmp/fallback-unitsdb")
+        allow(Unitsml::Unitsdb::Database)
+          .to receive(:from_db)
+          .and_return(:fallback_database)
+      end
+
+      it "falls back to the UnitsML database wrapper with the same context" do
+        expect(described_class.database).to eq(:fallback_database)
+        expect(Unitsml::Unitsdb::Database).to have_received(:from_db).with(
+          "/tmp/fallback-unitsdb",
           context: :unitsml_ruby,
         )
       end

@@ -43,7 +43,7 @@ module Unitsml
       if prefix
         value = mml_v4_with_content(
           value,
-          "#{prefix.to_mathml(**options, parent: value)}#{value.value}",
+          "#{prefix.to_mathml(options.merge(parent: value))}#{value.value}",
         )
       end
       if power_numerator

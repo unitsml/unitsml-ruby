@@ -68,18 +68,24 @@ module Unitsml
       private
 
       def load_database
+        context_id = Configuration.context.id
+
         if RUBY_ENGINE == "opal"
-          return Database.from_db(nil, context: Configuration.context.id)
+          return Database.from_db(nil, context: context_id)
         end
 
         if ::Unitsdb.respond_to?(:database)
-          return ::Unitsdb.database(context: Configuration.context.id)
+          return load_unitsdb_database(context_id)
         end
 
-        ::Unitsdb::Database.from_db(database_path)
+        Database.from_db(database_path, context: context_id)
+      end
+
+      def load_unitsdb_database(context_id)
+        ::Unitsdb.database(context: context_id)
       rescue ::Unitsdb::Errors::DatabaseNotFoundError,
              ::Unitsdb::Errors::DatabaseFileNotFoundError
-        ::Unitsdb::Database.from_db(database_path)
+        Database.from_db(database_path, context: context_id)
       end
 
       def database_path

@@ -184,10 +184,10 @@ module Unitsml
       def prefix_symbolid(prefix)
         return prefix.symbolid if prefix.respond_to?(:symbolid)
 
-        resolved_prefix = resolved_prefix(prefix)
-        return unless resolved_prefix
+        prefix_record = resolved_prefix(prefix)
+        return unless prefix_record
 
-        resolved_prefix.symbols&.first&.ascii
+        prefix_record.symbols&.first&.ascii
       end
 
       def prefix_base(prefix)

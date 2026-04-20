@@ -10,7 +10,7 @@ gem "lutaml-model",
     "~> 0.8.0",
     github: "lutaml/lutaml-model",
     branch: "fix/global-context-register-lookup-fallback"
-gem "mml", github: "plurimath/mml", branch: "main"
+gem "mml", github: "plurimath/mml", branch: "fix/mixed-content-collection"
 gem "oga"
 gem "ox"
 gem "plurimath", github: "plurimath/plurimath",

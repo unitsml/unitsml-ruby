@@ -54,7 +54,8 @@ out of commits unless the branch intentionally requires them.
 
 The standard Ruby runtime path goes through `::Unitsdb.database`. When
 `unitsdb-ruby` cannot load its bundled `data/` directory, UnitsML falls back to
-the packaged YAML files under `vendor/unitsdb`.
+the packaged YAML files in the `unitsdb-ruby` gem's `vendor/unitsdb`
+directory, rather than a `vendor/unitsdb` directory in this repository.
 
 
 == Usage
