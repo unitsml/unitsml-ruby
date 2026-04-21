@@ -10,7 +10,7 @@ gem "lutaml-model",
     "~> 0.8.0",
     github: "lutaml/lutaml-model",
     branch: "fix/global-context-register-lookup-fallback"
-gem "mml", github: "plurimath/mml", branch: "fix/mixed-content-collection"
+gem "mml"
 gem "oga"
 gem "ox"
 gem "plurimath", github: "plurimath/plurimath",
@@ -27,5 +27,4 @@ gem "unitsdb",
     github: "unitsml/unitsdb-ruby",
     branch: "feat/context-register-models",
     submodules: true
-# gem "unitsdb", path: "../unitsdb-ruby"
 gem "irb"

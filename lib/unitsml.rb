@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "lutaml/model"
+require "mml"
 
 module Unitsml
   module_function
