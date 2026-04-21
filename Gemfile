@@ -26,4 +26,3 @@ gem "unitsdb",
     github: "unitsml/unitsdb-ruby",
     branch: "feat/context-register-models",
     submodules: true
-gem "irb"
