@@ -11,7 +11,7 @@ RSpec.describe Unitsml::MathmlHelper do
 
       updated = helper_host.send(:mml_v4_with_content, instance, "m")
 
-      expect(updated.value).to eq("m")
+      expect(updated.value).to eq(["m"])
     end
   end
 end
