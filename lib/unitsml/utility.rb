@@ -229,7 +229,7 @@ module Unitsml
       end
 
       def unitname(text, name)
-        name ||= unit_instance(text)&.en_name || text
+        name ||= unit_en_name(unit_instance(text)) || text
         Model::Units::Name.new(
           name: name,
           lutaml_register: Configuration.context.id,
@@ -270,7 +270,7 @@ module Unitsml
       end
 
       def dimension(norm_text)
-        dim_id = unit_instance(norm_text)&.dimension_url
+        dim_id = unit_dimension_id(unit_instance(norm_text))
         return unless dim_id
 
         dim_attrs = { id: dim_id }
@@ -383,7 +383,7 @@ module Unitsml
       end
 
       def format_unit_id(unit, text)
-        return unit.nist_id&.gsub("'", "_") if unit
+        return unit_nist_id(unit)&.gsub("'", "_") if unit
 
         text&.gsub("*", ".")&.gsub("^", "")
       end
@@ -405,8 +405,34 @@ module Unitsml
 
         model_quantity_xml(
           instance || unit.quantity_references&.first&.id,
-          "##{unit.dimension_url}",
+          "##{unit_dimension_id(unit)}",
         )
+      end
+
+      def unit_nist_id(unit)
+        return unless unit
+        return unit.nist_id if unit.respond_to?(:nist_id)
+
+        unit.identifiers&.find { |identifier| identifier.type == "nist" }&.id
+      end
+
+      def unit_en_name(unit)
+        return unless unit
+        return unit.en_name if unit.respond_to?(:en_name)
+
+        unit.names&.find { |name| name.lang == "en" }&.value
+      end
+
+      def unit_dimension_id(unit)
+        return unless unit
+        return unit.dimension_url if unit.respond_to?(:dimension_url)
+
+        unit.dimension_reference&.id ||
+          quantity_dimension_id(quantity_instance(unit.quantity_references&.first&.id))
+      end
+
+      def quantity_dimension_id(quantity)
+        quantity&.dimension_reference&.id
       end
 
       def unit_or_quantity(unit, quantity)

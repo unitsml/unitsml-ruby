@@ -7,7 +7,6 @@ gemspec
 
 gem "canon"
 gem "lutaml-model",
-    "~> 0.8.0",
     github: "lutaml/lutaml-model",
     branch: "fix/global-context-register-lookup-fallback"
 gem "mml"

@@ -23,7 +23,7 @@ module Unitsml
       mml_v4_new(
         instance.class,
         **attributes,
-        mml_v4_content_attribute(instance) => content
+        mml_v4_content_attribute(instance) => content,
       )
     end
 
