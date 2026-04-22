@@ -44,17 +44,15 @@ RSpec.describe Unitsml::Unitsdb::Database do
       described_class.instance_variable_set(:@database, nil)
     end
 
-    context "when running on opal" do
+    context "when running on opal and unitsdb-ruby exposes a database loader" do
       before do
         stub_const("RUBY_ENGINE", "opal")
-        allow(Unitsml::Unitsdb::Database)
-          .to receive(:from_db).and_return(:opal_database)
+        allow(Unitsdb).to receive(:database).and_return(:unitsdb_database)
       end
 
-      it "loads the packaged opal payload without a filesystem path" do
-        expect(described_class.database).to eq(:opal_database)
-        expect(Unitsml::Unitsdb::Database).to have_received(:from_db).with(
-          nil,
+      it "uses the unitsdb-ruby loader with the UnitsML context" do
+        expect(described_class.database).to eq(:unitsdb_database)
+        expect(Unitsdb).to have_received(:database).with(
           context: :unitsml_ruby,
         )
       end
