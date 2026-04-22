@@ -1,32 +1,53 @@
 # frozen_string_literal: true
 
+require "unitsdb"
+
+require_relative "unitsdb/database"
+require_relative "unitsdb/dimension_details"
+require_relative "unitsdb/prefix_reference"
+require_relative "unitsdb/dimension"
+require_relative "unitsdb/dimensions"
+require_relative "unitsdb/unit"
+require_relative "unitsdb/units"
+require_relative "unitsdb/prefixes"
+require_relative "unitsdb/quantities"
 module Unitsml
   module Unitsdb
-    autoload :Unit, "#{__dir__}/unitsdb/unit"
-    autoload :Units, "#{__dir__}/unitsdb/units"
-    autoload :Prefixes, "#{__dir__}/unitsdb/prefixes"
-    autoload :Dimension, "#{__dir__}/unitsdb/dimension"
-    autoload :Dimensions, "#{__dir__}/unitsdb/dimensions"
-    autoload :Quantities, "#{__dir__}/unitsdb/quantities"
-    autoload :PrefixReference, "#{__dir__}/unitsdb/prefix_reference"
-    autoload :DimensionQuantity, "#{__dir__}/unitsdb/dimension_quantity"
-    autoload :SiDerivedBase, "#{__dir__}/unitsdb/si_derived_base"
-
     class << self
+      REQUIRED_DATABASE_FILES = %w[
+        prefixes.yaml
+        dimensions.yaml
+        units.yaml
+        quantities.yaml
+        unit_systems.yaml
+      ].freeze
+
       def units
-        Units.new(units: ::Unitsdb.database.units)
+        @units ||= Units.new(
+          units: database.units,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def prefixes
-        Prefixes.new(prefixes: ::Unitsdb.database.prefixes)
+        @prefixes ||= Prefixes.new(
+          prefixes: database.prefixes,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def dimensions
-        Dimensions.new(dimensions: ::Unitsdb.database.dimensions)
+        @dimensions ||= Dimensions.new(
+          dimensions: database.dimensions,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def quantities
-        Quantities.new(quantities: ::Unitsdb.database.quantities)
+        @quantities ||= Quantities.new(
+          quantities: database.quantities,
+          lutaml_register: Configuration.context.id,
+        )
       end
 
       def prefixes_array
@@ -38,6 +59,53 @@ module Unitsml
         return @sized_prefixes[size] if @sized_prefixes.key?(size)
 
         @sized_prefixes[size] = prefixes_array.select { |p| p.size == size }
+      end
+
+      def database
+        @database ||= load_database
+      end
+
+      private
+
+      def load_database
+        context_id = Configuration.context.id
+
+        if ::Unitsdb.respond_to?(:database)
+          return load_unitsdb_database(context_id)
+        end
+
+        Database.from_db(database_path, context: context_id)
+      end
+
+      def load_unitsdb_database(context_id)
+        ::Unitsdb.database(context: context_id)
+      rescue ::Unitsdb::Errors::DatabaseNotFoundError,
+             ::Unitsdb::Errors::DatabaseFileNotFoundError
+        Database.from_db(database_path, context: context_id)
+      end
+
+      def database_path
+        candidate_database_paths.find do |path|
+          database_files_present?(path)
+        end ||
+          File.join(unitsdb_gem_path, "vendor", "unitsdb")
+      end
+
+      def candidate_database_paths
+        [
+          File.join(unitsdb_gem_path, "data"),
+          File.join(unitsdb_gem_path, "vendor", "unitsdb"),
+        ]
+      end
+
+      def database_files_present?(dir_path)
+        REQUIRED_DATABASE_FILES.all? do |file_name|
+          File.exist?(File.join(dir_path, file_name))
+        end
+      end
+
+      def unitsdb_gem_path
+        Gem.loaded_specs.fetch("unitsdb").full_gem_path
       end
     end
   end

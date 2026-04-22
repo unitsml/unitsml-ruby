@@ -32,5 +32,7 @@ module Unitsml
         dimensions.find { |dim| dim.send(field) == matching_data }
       end
     end
+
+    Configuration.register_model(Dimensions, id: :dimensions)
   end
 end

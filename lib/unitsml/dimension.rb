@@ -2,6 +2,8 @@
 
 module Unitsml
   class Dimension
+    include MathmlHelper
+
     attr_accessor :dimension_name, :power_numerator
 
     def initialize(dimension_name, power_numerator = nil)
@@ -26,7 +28,7 @@ module Unitsml
     def to_mathml(options)
       # MathML key's value in unitsdb/dimensions.yaml
       # file includes mi tags only.
-      value = ::Mml::V4::Mi.from_xml(dim_symbols.mathml)
+      value = mml_v4_from_xml(:mi, dim_symbols.mathml)
       method_name = if power_numerator
                       value = msup_tag(value, options)
                       :msup
@@ -63,7 +65,10 @@ module Unitsml
         symbol: dim_instance.processed_symbol,
         power_numerator: power_numerator&.raw_value || 1,
       }
-      Model::DimensionQuantities.const_get(modelize(element_name)).new(attributes)
+      Model::DimensionQuantities.const_get(modelize(element_name)).new(
+        **attributes,
+        lutaml_register: Configuration.context.id,
+      )
     end
 
     def xml_instances_hash(options)
@@ -94,8 +99,9 @@ module Unitsml
 
     def msup_tag(value, options)
       mathml = power_numerator.to_mathml(options)
-      msup = ::Mml::V4::Msup.new(
-        mrow_value: [::Mml::V4::Mrow.new(mi_value: [value])],
+      msup = mml_v4_new(
+        :msup,
+        mrow_value: [mml_v4_new(:mrow, mi_value: [value])],
       )
       [mathml].flatten.each do |record|
         record_values = msup.public_send("#{record[:method_name]}_value") || []

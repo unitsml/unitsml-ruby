@@ -9,5 +9,7 @@ module Unitsml
         end
       end
     end
+
+    Configuration.register_model(Quantities, id: :quantities)
   end
 end

@@ -6,10 +6,14 @@ source "https://rubygems.org"
 gemspec
 
 gem "canon"
-gem "lutaml-model", "~> 0.8.0", github: "lutaml/lutaml-model", branch: "main"
+gem "lutaml-model",
+    github: "lutaml/lutaml-model",
+    branch: "fix/global-context-register-lookup-fallback"
+gem "mml"
 gem "oga"
 gem "ox"
-gem "plurimath", github: "plurimath/plurimath", branch: "rt-lutaml-080"
+gem "plurimath", github: "plurimath/plurimath",
+                 branch: "feat/autoload-and-mml-update"
 gem "pry"
 gem "rake"
 gem "rspec"
@@ -18,3 +22,7 @@ gem "rubocop-performance"
 gem "rubocop-rake"
 gem "rubocop-rspec"
 gem "simplecov"
+gem "unitsdb",
+    github: "unitsml/unitsdb-ruby",
+    branch: "feat/context-register-models",
+    submodules: true

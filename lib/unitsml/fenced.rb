@@ -3,6 +3,7 @@
 module Unitsml
   class Fenced
     include FencedNumeric
+    include MathmlHelper
 
     attr_reader :open_paren, :value, :close_paren
 
@@ -31,11 +32,14 @@ module Unitsml
       mathml = value.to_mathml(options)
       return mathml unless options[:explicit_parenthesis]
 
-      fenced = ::Mml::V4::Mrow.new(mo_value: [::Mml::V4::Mo.new(value: open_paren)])
+      fenced = mml_v4_new(
+        :mrow,
+        mo_value: [mml_v4_new(:mo, value: open_paren)],
+      )
       fenced.ordered = true
       fenced.element_order ||= [xml_order_element("mo")]
       [mathml].flatten.each { |record| add_math_element(fenced, record) }
-      fenced.mo_value << ::Mml::V4::Mo.new(value: close_paren)
+      fenced.mo_value << mml_v4_new(:mo, value: close_paren)
       fenced.element_order << xml_order_element("mo")
       { method_name: :mrow, value: fenced }
     end

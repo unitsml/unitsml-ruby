@@ -5,6 +5,8 @@ require "htmlentities"
 
 module Unitsml
   class Formula
+    include MathmlHelper
+
     attr_accessor :value, :explicit_value, :root
 
     def initialize(value = [],
@@ -29,15 +31,14 @@ module Unitsml
     def to_mathml(options = {})
       if root
         options = update_options(options)
-        nullify_mml_models if plurimath_available?
-        math = ::Mml::V4::Math.new(display: "block")
+        math = mml_v4_new(:math, display: "block")
         math.ordered = true
         math.element_order ||= []
         value.each do |instance|
           process_value(math, instance.to_mathml(options))
         end
-        generated_math = math.to_xml.gsub(%r{&amp;(.*?)(?=</)}, '&\1')
-        reset_mml_models if plurimath_available?
+        generated_math = math.to_xml(register: mml_v4_context.id)
+          .gsub(%r{&amp;(.*?)(?=</)}, '&\1')
 
         generated_math.force_encoding("UTF-8")
       else
@@ -80,7 +81,7 @@ module Unitsml
                                      :asciimath)
       end
 
-      Plurimath::Math.parse(to_mathml(options), :mathml)
+      Plurimath::Math.parse(compact_mathml_for_plurimath(to_mathml(options)), :mathml)
     end
 
     def dimensions_extraction
@@ -151,7 +152,10 @@ module Unitsml
       dim_id = dims.map(&:generate_id).join
       attributes = { id: "D_#{dim_id}" }
       dims.each { |dim| attributes.merge!(dim.xml_instances_hash(options)) }
-      Model::Dimension.new(attributes).to_xml.force_encoding("UTF-8")
+      Model::Dimension.new(
+        **attributes,
+        lutaml_register: Configuration.context.id,
+      ).to_xml.force_encoding("UTF-8")
     end
 
     def sort_dims(values)
@@ -195,18 +199,6 @@ module Unitsml
         Plurimath.const_defined?(:Mathml)
     end
 
-    def nullify_mml_models
-      return unless defined?(Plurimath::Mathml::Parser::CONFIGURATION)
-
-      Plurimath::Mathml::Parser::CONFIGURATION.each_key { |klass| klass.model(klass) }
-    end
-
-    def reset_mml_models
-      return unless defined?(Plurimath::Mathml::Parser::CONFIGURATION)
-
-      ::Mml::V4::Configuration.custom_models = Plurimath::Mathml::Parser::CONFIGURATION
-    end
-
     def process_value(math, mathml_instances)
       case mathml_instances
       when Array
@@ -223,6 +215,10 @@ module Unitsml
       explicit_parenthesis = options.key?(:explicit_parenthesis) ? options[:explicit_parenthesis] : true
       options.merge(multiplier: multiplier,
                     explicit_parenthesis: explicit_parenthesis).compact
+    end
+
+    def compact_mathml_for_plurimath(mathml)
+      mathml.gsub(/>\s+</, "><").strip
     end
   end
 end

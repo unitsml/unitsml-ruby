@@ -16,10 +16,12 @@ module Unitsml
       end
 
       def prefix
-        @prefix ||= ::Unitsdb.database.prefixes.find do |p|
+        @prefix ||= Unitsml::Unitsdb.database.prefixes.find do |p|
           p.identifiers.any? { |i| i.id == id }
         end
       end
     end
+
+    Configuration.register_model(PrefixReference, id: :prefix_reference)
   end
 end

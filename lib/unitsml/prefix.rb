@@ -2,6 +2,8 @@
 
 module Unitsml
   class Prefix
+    include MathmlHelper
+
     attr_accessor :prefix_name, :only_instance
 
     def initialize(prefix_name, only_instance = false)
@@ -41,7 +43,7 @@ module Unitsml
       )
       return symbol unless only_instance
 
-      { method_name: :mi, value: ::Mml::V4::Mi.new(value: symbol) }
+      { method_name: :mi, value: mml_v4_new(:mi, value: symbol) }
     end
 
     def to_latex(_)

@@ -40,8 +40,22 @@ The UnitsML Ruby library consists of several key components:
 * Prefix: Represents unit prefixes (k, m, μ, etc.)
 * Dimension: Represents physical dimensions
 
-The library also includes the full https://github.com/unitsml/unitsdb[UnitsDB]
-units database, which contains standard units, prefixes, and dimensions.
+The library uses the https://github.com/unitsml/unitsdb-ruby[unitsdb-ruby]
+gem as the primary runtime source for standard units, prefixes, and dimensions.
+
+== Development setup
+
+The development `Gemfile` pins the current integration branches for
+`lutaml-model`, `mml`, `plurimath`, and `unitsdb-ruby`. If you need to test
+coordinated local changes across those repositories, temporarily switch those
+dependencies to Bundler `path` entries that point at sibling checkouts, for
+example `../lutaml-model` or `../unitsdb-ruby`. Keep those local path changes
+out of commits unless the branch intentionally requires them.
+
+The standard Ruby runtime path goes through `::Unitsdb.database`. When
+`unitsdb-ruby` cannot load its bundled `data/` directory, UnitsML falls back to
+the packaged YAML files in the `unitsdb-ruby` gem's `vendor/unitsdb`
+directory, rather than a `vendor/unitsdb` directory in this repository.
 
 
 == Usage

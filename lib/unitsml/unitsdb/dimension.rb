@@ -16,43 +16,41 @@ module Unitsml
       end
 
       def length=(value)
-        quantities_common_code(:length, wrap_dimension_value(value))
+        quantities_common_code(:length, value)
       end
 
       def mass=(value)
-        quantities_common_code(:mass, wrap_dimension_value(value))
+        quantities_common_code(:mass, value)
       end
 
       def time=(value)
-        quantities_common_code(:time, wrap_dimension_value(value))
+        quantities_common_code(:time, value)
       end
 
       def thermodynamic_temperature=(value)
-        quantities_common_code(:thermodynamic_temperature,
-                               wrap_dimension_value(value))
+        quantities_common_code(:thermodynamic_temperature, value)
       end
 
       def amount_of_substance=(value)
-        quantities_common_code(:amount_of_substance,
-                               wrap_dimension_value(value))
+        quantities_common_code(:amount_of_substance, value)
       end
 
       def luminous_intensity=(value)
-        quantities_common_code(:luminous_intensity, wrap_dimension_value(value))
+        quantities_common_code(:luminous_intensity, value)
       end
 
       def plane_angle=(value)
-        quantities_common_code(:plane_angle, wrap_dimension_value(value))
+        quantities_common_code(:plane_angle, value)
       end
 
       def electric_current=(value)
-        quantities_common_code(:electric_current, wrap_dimension_value(value))
+        quantities_common_code(:electric_current, value)
       end
 
       def dim_symbols
-        processed_keys.map do |vec|
-          public_send(vec)&.dim_symbols&.map(&:id)
-        end.flatten.compact
+        processed_keys.flat_map do |vec|
+          dimension_symbols_for(public_send(vec)).map(&:id)
+        end.compact
       end
 
       def processed_symbol
@@ -76,19 +74,24 @@ module Unitsml
 
         instance_variable_set(:"@#{instance_var}", value)
         @processed_keys << instance_var.to_s
-        return if Lutaml::Model::Utils.empty?(value.symbols)
+        dim_symbols = dimension_symbols_for(value)
+        return if Lutaml::Model::Utils.empty?(dim_symbols)
 
         @parsable = true
-        value.dim_symbols_ids(@parsables, id)
+        dim_symbols.each { |dim_sym| @parsables[dim_sym.id] = id }
       end
 
-      def wrap_dimension_value(value)
-        return value if value.is_a?(DimensionQuantity)
-        return DimensionQuantity.new(value.to_hash) if value.is_a?(::Unitsdb::DimensionDetails)
-        return DimensionQuantity.new(value) if value.is_a?(Hash)
+      def dimension_symbols_for(value)
+        return [] if value.nil?
 
-        value
+        if value.respond_to?(:dim_symbols)
+          Array(value.dim_symbols)
+        else
+          Array(value.symbols)
+        end
       end
     end
+
+    Configuration.register_model(Dimension, id: :dimension)
   end
 end
