@@ -70,10 +70,6 @@ module Unitsml
       def load_database
         context_id = Configuration.context.id
 
-        if RUBY_ENGINE == "opal"
-          return Database.from_db(nil, context: context_id)
-        end
-
         if ::Unitsdb.respond_to?(:database)
           return load_unitsdb_database(context_id)
         end
