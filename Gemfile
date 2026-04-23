@@ -8,11 +8,11 @@ gemspec
 gem "canon"
 gem "lutaml-model",
     github: "lutaml/lutaml-model",
-    branch: "fix/global-context-register-lookup-fallback"
+    branch: "main"
 gem "oga"
 gem "ox"
 gem "plurimath", github: "plurimath/plurimath",
-                 branch: "rt-lutaml-080"
+                 branch: "main"
 gem "pry"
 gem "rake"
 gem "rspec"
