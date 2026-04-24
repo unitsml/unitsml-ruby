@@ -21,13 +21,30 @@ RSpec.describe Unitsml::Unitsdb::Database do
     end
 
     context "when running on opal" do
-      before { stub_const("RUBY_ENGINE", "opal") }
+      before do
+        stub_const("RUBY_ENGINE", "opal")
+        described_class.remove_instance_variable(:@opal_payload) if
+          described_class.instance_variable_defined?(:@opal_payload)
+      end
 
       it "raises a clear error when the bundled payload is missing" do
         expect do
           described_class.from_db("/does/not/matter", context: :unitsml_ruby)
         end.to raise_error(Unitsml::Errors::OpalPayloadNotBundledError,
                            /not bundled/)
+      end
+
+      it "loads the bundled Opal payload" do
+        described_class.load_opal_payload({ "units" => [] })
+        allow(described_class).to receive(:from_hash).and_return(:database)
+
+        result = described_class.from_db("/does/not/matter", context: :unitsml_ruby)
+
+        expect(result).to eq(:database)
+        expect(described_class).to have_received(:from_hash).with(
+          { "units" => [] },
+          register: :unitsml_ruby,
+        )
       end
     end
   end
