@@ -21,10 +21,28 @@ RSpec.describe Unitsml::Unitsdb::Database do
     end
 
     context "when running on opal" do
+      def clear_opal_payload
+        return unless described_class.instance_variable_defined?(:@opal_payload)
+
+        described_class.remove_instance_variable(:@opal_payload)
+      end
+
       before do
         stub_const("RUBY_ENGINE", "opal")
-        described_class.remove_instance_variable(:@opal_payload) if
-          described_class.instance_variable_defined?(:@opal_payload)
+        clear_opal_payload
+      end
+
+      after do
+        clear_opal_payload
+      end
+
+      def allow_from_hash(database_class)
+        allow(database_class).to receive(:from_hash).and_return(:database)
+      end
+
+      def expect_loaded_payload(database_class, payload)
+        expect(database_class).to have_received(:from_hash)
+          .with(payload, register: :unitsml_ruby)
       end
 
       it "raises a clear error when the bundled payload is missing" do
@@ -35,16 +53,24 @@ RSpec.describe Unitsml::Unitsdb::Database do
       end
 
       it "loads the bundled Opal payload" do
-        described_class.load_opal_payload({ "units" => [] })
-        allow(described_class).to receive(:from_hash).and_return(:database)
+        payload = { "units" => [] }
+        described_class.load_opal_payload(payload)
+        allow_from_hash(described_class)
 
-        result = described_class.from_db("/does/not/matter", context: :unitsml_ruby)
+        expect(described_class.from_db("/does/not/matter",
+                                       context: :unitsml_ruby)).to eq(:database)
+        expect_loaded_payload(described_class, payload)
+      end
 
-        expect(result).to eq(:database)
-        expect(described_class).to have_received(:from_hash).with(
-          { "units" => [] },
-          register: :unitsml_ruby,
-        )
+      it "falls back to a legacy DATABASE constant" do
+        payload = { "units" => [:from_const] }
+        subclass = Class.new(described_class)
+        subclass.const_set(:DATABASE, payload)
+        allow_from_hash(subclass)
+
+        expect(subclass.from_db("/does/not/matter",
+                                context: :unitsml_ruby)).to eq(:database)
+        expect_loaded_payload(subclass, payload)
       end
     end
   end
