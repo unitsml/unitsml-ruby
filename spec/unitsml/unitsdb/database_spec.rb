@@ -101,6 +101,49 @@ RSpec.describe Unitsml::Unitsdb::Database do
       end
     end
 
+    context "when running on opal with a loaded payload" do
+      let(:payload) { { "units" => [] } }
+
+      before do
+        stub_const("RUBY_ENGINE", "opal")
+        allow(Unitsml::Configuration).to receive(:context).and_call_original
+        clear_unitsdb_database_cache
+        clear_unitsml_database_cache
+        Unitsml::Configuration.context(force_populate: true)
+        Unitsml::Unitsdb::Database.load_opal_payload(payload)
+        allow(Unitsml::Unitsdb::Database)
+          .to receive(:from_hash)
+          .and_return(:opal_database)
+      end
+
+      after do
+        clear_unitsdb_database_cache
+        clear_unitsml_database_cache
+        clear_opal_payload
+      end
+
+      def clear_unitsdb_database_cache
+        Unitsdb.instance_variable_set(:@databases, nil)
+      end
+
+      def clear_unitsml_database_cache
+        described_class.instance_variable_set(:@database, nil)
+      end
+
+      def clear_opal_payload
+        database_class = Unitsml::Unitsdb::Database
+        return unless database_class.instance_variable_defined?(:@opal_payload)
+
+        database_class.remove_instance_variable(:@opal_payload)
+      end
+
+      it "loads the UnitsML database through the real unitsdb-ruby loader" do
+        expect(described_class.database).to eq(:opal_database)
+        expect(Unitsml::Unitsdb::Database).to have_received(:from_hash)
+          .with(payload, register: :unitsml_ruby)
+      end
+    end
+
     context "when unitsdb-ruby exposes a database loader" do
       before do
         stub_const("RUBY_ENGINE", "ruby")
