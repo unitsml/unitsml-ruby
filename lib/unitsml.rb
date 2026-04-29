@@ -32,7 +32,3 @@ module Unitsml
     Unitsml::Parser.new(string).parse
   end
 end
-
-Lutaml::Model::Config.configure do |config|
-  config.xml_adapter_type = RUBY_ENGINE == "opal" ? :oga : :ox
-end
