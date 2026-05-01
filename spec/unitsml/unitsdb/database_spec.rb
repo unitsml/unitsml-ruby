@@ -21,13 +21,56 @@ RSpec.describe Unitsml::Unitsdb::Database do
     end
 
     context "when running on opal" do
-      before { stub_const("RUBY_ENGINE", "opal") }
+      def clear_opal_payload
+        return unless described_class.instance_variable_defined?(:@opal_payload)
+
+        described_class.remove_instance_variable(:@opal_payload)
+      end
+
+      before do
+        stub_const("RUBY_ENGINE", "opal")
+        clear_opal_payload
+      end
+
+      after do
+        clear_opal_payload
+      end
+
+      def allow_from_hash(database_class)
+        allow(database_class).to receive(:from_hash).and_return(:database)
+      end
+
+      def expect_loaded_payload(database_class, payload)
+        expect(database_class).to have_received(:from_hash)
+          .with(payload, register: :unitsml_ruby)
+      end
 
       it "raises a clear error when the bundled payload is missing" do
         expect do
           described_class.from_db("/does/not/matter", context: :unitsml_ruby)
         end.to raise_error(Unitsml::Errors::OpalPayloadNotBundledError,
                            /not bundled/)
+      end
+
+      it "loads the bundled Opal payload" do
+        payload = { "units" => [] }
+        described_class.load_opal_payload(payload)
+        allow_from_hash(described_class)
+
+        expect(described_class.from_db("/does/not/matter",
+                                       context: :unitsml_ruby)).to eq(:database)
+        expect_loaded_payload(described_class, payload)
+      end
+
+      it "falls back to a legacy DATABASE constant" do
+        payload = { "units" => [:from_const] }
+        subclass = Class.new(described_class)
+        subclass.const_set(:DATABASE, payload)
+        allow_from_hash(subclass)
+
+        expect(subclass.from_db("/does/not/matter",
+                                context: :unitsml_ruby)).to eq(:database)
+        expect_loaded_payload(subclass, payload)
       end
     end
   end
@@ -55,6 +98,49 @@ RSpec.describe Unitsml::Unitsdb::Database do
         expect(Unitsdb).to have_received(:database).with(
           context: :unitsml_ruby,
         )
+      end
+    end
+
+    context "when running on opal with a loaded payload" do
+      let(:payload) { { "units" => [] } }
+
+      before do
+        stub_const("RUBY_ENGINE", "opal")
+        allow(Unitsml::Configuration).to receive(:context).and_call_original
+        clear_unitsdb_database_cache
+        clear_unitsml_database_cache
+        Unitsml::Configuration.context(force_populate: true)
+        Unitsml::Unitsdb::Database.load_opal_payload(payload)
+        allow(Unitsml::Unitsdb::Database)
+          .to receive(:from_hash)
+          .and_return(:opal_database)
+      end
+
+      after do
+        clear_unitsdb_database_cache
+        clear_unitsml_database_cache
+        clear_opal_payload
+      end
+
+      def clear_unitsdb_database_cache
+        Unitsdb.instance_variable_set(:@databases, nil)
+      end
+
+      def clear_unitsml_database_cache
+        described_class.instance_variable_set(:@database, nil)
+      end
+
+      def clear_opal_payload
+        database_class = Unitsml::Unitsdb::Database
+        return unless database_class.instance_variable_defined?(:@opal_payload)
+
+        database_class.remove_instance_variable(:@opal_payload)
+      end
+
+      it "loads the UnitsML database through the real unitsdb-ruby loader" do
+        expect(described_class.database).to eq(:opal_database)
+        expect(Unitsml::Unitsdb::Database).to have_received(:from_hash)
+          .with(payload, register: :unitsml_ruby)
       end
     end
 
