@@ -38,11 +38,32 @@ module Unitsml
 
       def body
         "Unitsml::Unitsdb::Database.const_set(:DATABASE, " \
-          "#{database_hash.inspect}.freeze)\n"
+          "#{serialize(database_hash)}.freeze)\n"
       end
 
       def database_hash
         ::Unitsdb::Database.from_db(unitsdb_data_dir).to_hash
+      end
+
+      # Custom serializer rather than Hash#inspect so the output is
+      # byte-identical across Ruby versions (3.3 vs 3.4 changed Hash#inspect
+      # to add spaces around "=>"). String#inspect is itself stable for
+      # UTF-8 clean data.
+      def serialize(value)
+        case value
+        when Hash
+          "{#{value.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(",")}}"
+        when Array
+          "[#{value.map { |v| serialize(v) }.join(",")}]"
+        when String then value.inspect
+        when Symbol then ":#{value}"
+        when Integer, Float then value.to_s
+        when true then "true"
+        when false then "false"
+        when nil then "nil"
+        else
+          raise "Unsupported payload type: #{value.class}"
+        end
       end
 
       def default_data_dir
