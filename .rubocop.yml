@@ -16,3 +16,4 @@ AllCops:
   Exclude:
     - 'unitsdb/**/*'
     - 'vendor/**/*'
+    - 'lib/unitsml/opal/database_payload.rb'

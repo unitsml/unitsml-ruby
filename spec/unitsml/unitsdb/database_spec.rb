@@ -23,11 +23,43 @@ RSpec.describe Unitsml::Unitsdb::Database do
     context "when running on opal" do
       before { stub_const("RUBY_ENGINE", "opal") }
 
+      around do |example|
+        described_class.reset_opal_payload
+        example.run
+        described_class.reset_opal_payload
+      end
+
       it "raises a clear error when the bundled payload is missing" do
         expect do
           described_class.from_db("/does/not/matter", context: :unitsml_ruby)
         end.to raise_error(Unitsml::Errors::OpalPayloadNotBundledError,
                            /not bundled/)
+      end
+
+      it "loads a payload injected via load_opal_payload" do # rubocop:disable RSpec/ExampleLength
+        payload = { "units" => [], "schema_version" => "2.0.0" }
+        described_class.load_opal_payload(payload)
+        allow(described_class).to receive(:from_hash).and_return(:database)
+
+        result = described_class.from_db("/does/not/matter",
+                                         context: :unitsml_ruby)
+
+        expect(result).to eq(:database)
+        expect(described_class).to have_received(:from_hash)
+          .with(payload, register: :unitsml_ruby)
+      end
+
+      it "falls back to a committed DATABASE constant" do # rubocop:disable RSpec/ExampleLength
+        payload = { "units" => [:from_const] }
+        subclass = Class.new(described_class)
+        subclass.const_set(:DATABASE, payload)
+        allow(subclass).to receive(:from_hash).and_return(:database)
+
+        result = subclass.from_db("/does/not/matter", context: :unitsml_ruby)
+
+        expect(result).to eq(:database)
+        expect(subclass).to have_received(:from_hash)
+          .with(payload, register: :unitsml_ruby)
       end
     end
   end
