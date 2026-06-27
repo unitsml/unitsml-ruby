@@ -2,17 +2,18 @@
 
 require "unitsdb"
 
-require_relative "unitsdb/database"
-require_relative "unitsdb/dimension_details"
-require_relative "unitsdb/prefix_reference"
-require_relative "unitsdb/dimension"
-require_relative "unitsdb/dimensions"
-require_relative "unitsdb/unit"
-require_relative "unitsdb/units"
-require_relative "unitsdb/prefixes"
-require_relative "unitsdb/quantities"
 module Unitsml
   module Unitsdb
+    autoload :Database, "unitsml/unitsdb/database"
+    autoload :DimensionDetails, "unitsml/unitsdb/dimension_details"
+    autoload :PrefixReference, "unitsml/unitsdb/prefix_reference"
+    autoload :Dimension, "unitsml/unitsdb/dimension"
+    autoload :Dimensions, "unitsml/unitsdb/dimensions"
+    autoload :Unit, "unitsml/unitsdb/unit"
+    autoload :Units, "unitsml/unitsdb/units"
+    autoload :Prefixes, "unitsml/unitsdb/prefixes"
+    autoload :Quantities, "unitsml/unitsdb/quantities"
+
     class << self
       REQUIRED_DATABASE_FILES = %w[
         prefixes.yaml

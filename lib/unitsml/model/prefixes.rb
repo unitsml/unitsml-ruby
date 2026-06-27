@@ -3,8 +3,8 @@
 module Unitsml
   module Model
     module Prefixes
-      autoload :Name, "#{__dir__}/prefixes/name"
-      autoload :Symbol, "#{__dir__}/prefixes/symbol"
+      autoload :Name, "unitsml/model/prefixes/name"
+      autoload :Symbol, "unitsml/model/prefixes/symbol"
     end
   end
 end

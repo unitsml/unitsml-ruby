@@ -1,0 +1,42 @@
+name: opal
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  opal-verification:
+    name: Opal boot file and payload verification
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Run Opal specs
+      # Verifies the Opal toolchain for unitsml:
+      # - the boot file (lib/unitsml/opal.rb) eager-requires every
+      #   autoloaded entry point so Opal users see no NameError,
+      # - the committed database_payload.rb is in sync with the
+      #   PayloadGenerator output for the current unitsdb gem,
+      # - the PayloadGenerator produces evaluable Ruby that round-trips
+      #   through Unitsml::Unitsdb::Database.from_hash,
+      # - Opal::Builder can compile the boot file end-to-end with
+      #   native-only deps stubbed (the consumer provides them).
+      run: |
+        bundle exec rspec spec/unitsml/opal_boot_spec.rb \
+                          spec/unitsml/payload_sync_spec.rb \
+                          spec/unitsml/opal/payload_generator_spec.rb

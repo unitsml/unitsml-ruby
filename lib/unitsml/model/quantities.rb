@@ -3,7 +3,7 @@
 module Unitsml
   module Model
     module Quantities
-      autoload :Name, "#{__dir__}/quantities/name"
+      autoload :Name, "unitsml/model/quantities/name"
     end
   end
 end
