@@ -22,7 +22,7 @@ module Unitsml
     end
 
     def dim_symbols
-      dim_instance.send(dim_instance.processed_keys.last).symbols.first
+      dim_instance.public_send(dim_instance.processed_keys.last).symbols.first
     end
 
     def to_mathml(options)
