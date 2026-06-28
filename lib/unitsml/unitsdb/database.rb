@@ -25,10 +25,7 @@ module Unitsml
       end
 
       def self.opal_payload
-        return @opal_payload if instance_variable_defined?(:@opal_payload)
-        return unless const_defined?(:DATABASE, false)
-
-        @opal_payload = const_get(:DATABASE, false)
+        @opal_payload
       end
       private_class_method :opal_payload
 

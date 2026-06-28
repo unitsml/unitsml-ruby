@@ -4,6 +4,8 @@ require "bundler/setup"
 require_relative "../lib/unitsml"
 require "canon"
 
+Dir[File.join(__dir__, "support", "**", "*.rb")].each { |f| require f }
+
 Lutaml::Model::Config.configure do |config|
   config.xml_adapter_type = :nokogiri
 end
