@@ -20,6 +20,10 @@ module Unitsml
     end
 
     def register_model(klass, id:)
+      unless unitsdb_model_subclass?(klass)
+        raise Unitsml::Errors::InvalidModelError, klass
+      end
+
       registered_models[id.to_sym] = klass
     end
 
@@ -30,11 +34,8 @@ module Unitsml
     def build_context
       ::Unitsdb::Config.context # ensure unitsdb context exists
 
-      substitutions = registered_models.each_value.filter_map do |klass|
-        parent = klass.superclass
-        next if parent == Object
-
-        { from_type: parent, to_type: klass }
+      substitutions = registered_models.each_value.map do |klass|
+        { from_type: klass.superclass, to_type: klass }
       end
 
       ::Unitsdb::Config.populate_context(
@@ -42,6 +43,15 @@ module Unitsml
         fallback_to: [::Unitsdb::Config.context_id],
         substitutions: substitutions,
       )
+    end
+
+    def unitsdb_model_subclass?(klass)
+      return false unless klass.is_a?(Class)
+
+      parent = klass.superclass
+      return false if parent.nil? || parent == Object
+
+      parent.name&.start_with?("Unitsdb::")
     end
   end
 end
