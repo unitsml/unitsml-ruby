@@ -4,9 +4,11 @@ module Unitsml
   module Unitsdb
     class Unit < ::Unitsdb::Unit
       def dimension_url
-        quantity_id = quantity_references[0].id
+        quantity_id = quantity_references.first&.id
+        return unless quantity_id
+
         quantity = Unitsml::Unitsdb.quantities.find_by_id(quantity_id)
-        quantity.dimension_reference.id
+        quantity&.dimension_reference&.id
       end
 
       def en_name

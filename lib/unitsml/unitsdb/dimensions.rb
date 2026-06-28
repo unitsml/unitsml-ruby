@@ -3,6 +3,8 @@
 module Unitsml
   module Unitsdb
     class Dimensions < ::Unitsdb::Dimensions
+      include Unitsml::Unitsdb::Finders
+
       def dimensions=(value)
         super(value.map { |d| Dimension.new(d.to_hash) })
       end
@@ -13,23 +15,17 @@ module Unitsml
       end
 
       def find_by_id(d_id)
-        find(:id, d_id)
+        find_first_in(dimensions, field: :id, value: d_id)
       end
 
       def find_parsables_by_id(d_id)
-        find(:id, parsables[d_id])
+        find_first_in(dimensions, field: :id, value: parsables[d_id])
       end
 
       def parsables
         @parsables ||= dimensions.select(&:parsables).each_with_object({}) do |dimension, object|
           object.merge!(dimension.parsables)
         end
-      end
-
-      private
-
-      def find(field, matching_data)
-        dimensions.find { |dim| dim.send(field) == matching_data }
       end
     end
 

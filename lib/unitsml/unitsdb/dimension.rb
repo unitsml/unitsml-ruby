@@ -3,48 +3,38 @@
 module Unitsml
   module Unitsdb
     class Dimension < ::Unitsdb::Dimension
+      QUANTITY_KEYS = %i[
+        length
+        mass
+        time
+        thermodynamic_temperature
+        amount_of_substance
+        luminous_intensity
+        plane_angle
+        electric_current
+      ].freeze
+
       attr_reader :parsables,
                   :parsable,
                   :processed_keys,
                   :vector
 
       def initialize(attrs)
+        @quantities = {}
         @parsables = {}
         @processed_keys = []
         @parsable = false
         super
       end
 
-      def length=(value)
-        quantities_common_code(:length, value)
-      end
+      QUANTITY_KEYS.each do |key|
+        define_method("#{key}=") do |value|
+          register_quantity(key, value)
+        end
 
-      def mass=(value)
-        quantities_common_code(:mass, value)
-      end
-
-      def time=(value)
-        quantities_common_code(:time, value)
-      end
-
-      def thermodynamic_temperature=(value)
-        quantities_common_code(:thermodynamic_temperature, value)
-      end
-
-      def amount_of_substance=(value)
-        quantities_common_code(:amount_of_substance, value)
-      end
-
-      def luminous_intensity=(value)
-        quantities_common_code(:luminous_intensity, value)
-      end
-
-      def plane_angle=(value)
-        quantities_common_code(:plane_angle, value)
-      end
-
-      def electric_current=(value)
-        quantities_common_code(:electric_current, value)
+        define_method(key) do
+          @quantities[key]
+        end
       end
 
       def dim_symbols
@@ -69,11 +59,11 @@ module Unitsml
 
       private
 
-      def quantities_common_code(instance_var, value)
+      def register_quantity(key, value)
         return if value.nil?
 
-        instance_variable_set(:"@#{instance_var}", value)
-        @processed_keys << instance_var.to_s
+        @quantities[key] = value
+        @processed_keys << key.to_s
         dim_symbols = dimension_symbols_for(value)
         return if Lutaml::Model::Utils.empty?(dim_symbols)
 
@@ -83,12 +73,10 @@ module Unitsml
 
       def dimension_symbols_for(value)
         return [] if value.nil?
+        return Array(value.dim_symbols) if value.is_a?(::Unitsdb::Dimension)
+        return Array(value.symbols) if value.is_a?(::Unitsdb::DimensionDetails)
 
-        if value.respond_to?(:dim_symbols)
-          Array(value.dim_symbols)
-        else
-          Array(value.symbols)
-        end
+        []
       end
     end
 

@@ -3,12 +3,15 @@
 module Unitsml
   module Unitsdb
     class Prefixes < ::Unitsdb::Prefixes
+      include Unitsml::Unitsdb::Finders
+
       def find_by_id(p_id)
-        find(p_id, :id, :identifiers)
+        find_first_through(prefixes, via: :identifiers, field: :id, value: p_id)
       end
 
       def find_by_symbol_name(ascii_sym)
-        find(ascii_sym, :ascii, :symbols)
+        find_first_through(prefixes, via: :symbols, field: :ascii,
+                                     value: ascii_sym)
       end
 
       def ascii_symbols
@@ -17,16 +20,6 @@ module Unitsml
           next if symbol.empty?
 
           names_array.concat(symbol)
-        end
-      end
-
-      private
-
-      def find(matching_data, field, prefix_method)
-        prefixes.find do |prefix|
-          prefix.public_send(prefix_method.to_sym).find do |object|
-            object.public_send(field) == matching_data
-          end
         end
       end
     end

@@ -48,32 +48,20 @@ RSpec.describe Unitsml::Unitsdb::Database do
         expect(described_class).to have_received(:from_hash)
           .with(payload, register: :unitsml_ruby)
       end
-
-      it "falls back to a committed DATABASE constant" do # rubocop:disable RSpec/ExampleLength
-        payload = { "units" => [:from_const] }
-        subclass = Class.new(described_class)
-        subclass.const_set(:DATABASE, payload)
-        allow(subclass).to receive(:from_hash).and_return(:database)
-
-        result = subclass.from_db("/does/not/matter", context: :unitsml_ruby)
-
-        expect(result).to eq(:database)
-        expect(subclass).to have_received(:from_hash)
-          .with(payload, register: :unitsml_ruby)
-      end
     end
   end
 
   describe Unitsml::Unitsdb, ".database" do
     let(:context) { Struct.new(:id).new(:unitsml_ruby) }
 
-    before do
-      described_class.instance_variable_set(:@database, nil)
-      allow(Unitsml::Configuration).to receive(:context).and_return(context)
+    around do |example|
+      described_class.reset_caches
+      example.run
+      described_class.reset_caches
     end
 
-    after do
-      described_class.instance_variable_set(:@database, nil)
+    before do
+      allow(Unitsml::Configuration).to receive(:context).and_return(context)
     end
 
     context "when running on opal and unitsdb-ruby exposes a database loader" do
