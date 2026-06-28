@@ -8,6 +8,19 @@ module Unitsml
       DEFAULT_OUTPUT_PATH =
         File.expand_path("database_payload.rb", __dir__).freeze
 
+      RECEIVER = "Unitsml::Unitsdb::Database"
+      METHOD = "load_opal_payload"
+
+      # Maps a scalar value's class to the serializer that emits its
+      # Ruby source representation. Kept as a constant so adding a new
+      # scalar type is a one-line change (OCP).
+      SCALAR_SERIALIZERS = {
+        String => :inspect.to_proc,
+        Symbol => ->(v) { ":#{v}" },
+        Integer => :to_s.to_proc,
+        Float => :to_s.to_proc,
+      }.freeze
+
       def initialize(unitsdb_data_dir: default_data_dir)
         @unitsdb_data_dir = unitsdb_data_dir
       end
@@ -37,8 +50,7 @@ module Unitsml
       end
 
       def body
-        "Unitsml::Unitsdb::Database.const_set(:DATABASE, " \
-          "#{serialize(database_hash)}.freeze)\n"
+        "#{RECEIVER}.#{METHOD}(#{serialize(database_hash)}.freeze)\n"
       end
 
       def database_hash
@@ -51,19 +63,28 @@ module Unitsml
       # UTF-8 clean data.
       def serialize(value)
         case value
-        when Hash
-          "{#{value.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(",")}}"
-        when Array
-          "[#{value.map { |v| serialize(v) }.join(",")}]"
-        when String then value.inspect
-        when Symbol then ":#{value}"
-        when Integer, Float then value.to_s
+        when Hash then serialize_hash(value)
+        when Array then serialize_array(value)
         when true then "true"
         when false then "false"
         when nil then "nil"
-        else
-          raise "Unsupported payload type: #{value.class}"
+        else serialize_scalar(value)
         end
+      end
+
+      def serialize_hash(value)
+        "{#{value.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(',')}}"
+      end
+
+      def serialize_array(value)
+        "[#{value.map { |v| serialize(v) }.join(',')}]"
+      end
+
+      def serialize_scalar(value)
+        serializer = SCALAR_SERIALIZERS[value.class]
+        return serializer.call(value) if serializer
+
+        raise Unitsml::Errors::UnsupportedPayloadTypeError, value.class
       end
 
       def default_data_dir

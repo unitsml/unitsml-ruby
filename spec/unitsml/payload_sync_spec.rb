@@ -17,15 +17,6 @@ RSpec.describe "committed Opal database payload" do # rubocop:disable RSpec/Desc
 
   let(:generator_source) { Unitsml::Opal::PayloadGenerator.new.call }
 
-  def extract_hash_literal(source)
-    prefix = "Unitsml::Unitsdb::Database.const_set(:DATABASE, "
-    suffix = ".freeze)\n"
-    non_comment = source.each_line.reject do |line|
-      line.start_with?("#") || line.strip.empty?
-    end
-    non_comment.join.delete_prefix(prefix).delete_suffix(suffix)
-  end
-
   it "exists at lib/unitsml/opal/database_payload.rb" do
     expect(committed_payload_path).to exist
   end
@@ -40,7 +31,7 @@ RSpec.describe "committed Opal database payload" do # rubocop:disable RSpec/Desc
   end
 
   it "round-trips through Unitsml::Unitsdb::Database.from_hash" do
-    payload = eval(extract_hash_literal(committed_source)) # rubocop:disable Security/Eval
+    payload = eval(PayloadHelper.extract_payload_hash_literal(committed_source)) # rubocop:disable Security/Eval
     reconstructed = Unitsml::Unitsdb::Database.from_hash(payload)
 
     expect(reconstructed).to be_a(Unitsml::Unitsdb::Database)

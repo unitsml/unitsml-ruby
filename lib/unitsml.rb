@@ -21,12 +21,14 @@ module Unitsml
   autoload :Parse, "unitsml/parse"
   autoload :Parser, "unitsml/parser"
   autoload :Prefix, "unitsml/prefix"
+  autoload :PrefixAdapter, "unitsml/prefix_adapter"
   autoload :Sqrt, "unitsml/sqrt"
   autoload :Transform, "unitsml/transform"
   autoload :Unit, "unitsml/unit"
   autoload :Unitsdb, "unitsml/unitsdb"
   autoload :Utility, "unitsml/utility"
   autoload :VERSION, "unitsml/version"
+  autoload :Xml, "unitsml/xml"
 
   def parse(string)
     Unitsml::Parser.new(string).parse
