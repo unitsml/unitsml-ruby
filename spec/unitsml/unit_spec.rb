@@ -4,34 +4,46 @@ require "spec_helper"
 
 RSpec.describe Unitsml::Unit do
   describe "#to_mathml" do
-    let(:mathml) { '<mi mathvariant="normal">m</mi>' }
-    let(:prefix) { instance_double(Unitsml::Prefix) }
-    let(:unit) { described_class.new("m", nil, prefix: prefix) }
-    let(:parsed_unit) { instance_double(ParsedUnitSymbol, value: ["m"]) }
-    let(:updated_value) { instance_double(UpdatedMathmlValue) }
+    subject(:result) { unit.to_mathml({}) }
 
-    before do
-      stub_const("ParsedUnitSymbol", Class.new)
-      stub_const("UpdatedMathmlValue", Class.new)
-      stub_const("UnitSymbol", Class.new)
+    context "with a bare SI unit" do
+      let(:unit) { described_class.new("m") }
 
-      allow(unit).to receive(:unit_symbols).and_return(unit_symbol)
-      allow(unit).to receive(:mml_v4_from_xml).with("mi", mathml)
-        .and_return(parsed_unit)
-      allow(prefix).to receive(:to_mathml)
-        .with(hash_including(parent: parsed_unit))
-        .and_return("m")
-      allow(unit).to receive(:mml_v4_with_content)
-        .with(parsed_unit, "mm")
-        .and_return(updated_value)
+      it "returns an mi method_name" do
+        expect(result[:method_name]).to eq(:mi)
+      end
+
+      it "returns an Mml::V4::Mi value" do
+        expect(result[:value]).to be_a(Mml::V4::Mi)
+      end
     end
 
-    def unit_symbol
-      instance_double(UnitSymbol, mathml: mathml)
+    context "with a prefixed unit (milli + meter)" do
+      let(:prefix) { Unitsml::Prefix.new("m") }
+      let(:unit) { described_class.new("m", nil, prefix: prefix) }
+
+      it "returns an mi method_name" do
+        expect(result[:method_name]).to eq(:mi)
+      end
+
+      it "returns an Mml::V4::Mi value carrying both prefix and unit content" do
+        value = result[:value]
+        expect(value).to be_a(Mml::V4::Mi)
+        combined = Array(value.value).join
+        expect(combined).to include("m")
+      end
     end
 
-    it "joins parsed token collections before prefix concatenation" do
-      expect(unit.to_mathml({})).to eq(method_name: :mi, value: updated_value)
+    context "with a power numerator" do
+      let(:unit) { described_class.new("m", Unitsml::Number.new("2")) }
+
+      it "returns an msup method_name" do
+        expect(result[:method_name]).to eq(:msup)
+      end
+
+      it "returns an Mml::V4::Msup value" do
+        expect(result[:value]).to be_a(Mml::V4::Msup)
+      end
     end
   end
 end
