@@ -3,12 +3,14 @@
 module Unitsml
   module Unitsdb
     class Units < ::Unitsdb::Units
+      include Unitsml::Unitsdb::Finders
+
       def find_by_id(u_id)
-        find(u_id, :id, :identifiers)
+        find_first_through(units, via: :identifiers, field: :id, value: u_id)
       end
 
       def find_by_name(u_name)
-        find(u_name, :id, :symbols)
+        find_first_through(units, via: :symbols, field: :id, value: u_name)
       end
 
       def filtered
@@ -28,16 +30,6 @@ module Unitsml
       def symbols_hash
         @symbols_hash ||= units.each_with_object({}) do |unit, object|
           unit.symbols&.each { |unit_sym| object[unit_sym.id] = unit }
-        end
-      end
-
-      private
-
-      def find(matching_data, field, unit_method)
-        units.find do |unit|
-          unit.public_send(unit_method.to_sym).find do |id|
-            id.public_send(field) == matching_data
-          end
         end
       end
     end

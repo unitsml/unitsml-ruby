@@ -6,6 +6,7 @@ module Unitsml
   module Unitsdb
     autoload :Database, "unitsml/unitsdb/database"
     autoload :DimensionDetails, "unitsml/unitsdb/dimension_details"
+    autoload :Finders, "unitsml/unitsdb/finders"
     autoload :PrefixReference, "unitsml/unitsdb/prefix_reference"
     autoload :Dimension, "unitsml/unitsdb/dimension"
     autoload :Dimensions, "unitsml/unitsdb/dimensions"
@@ -21,6 +22,16 @@ module Unitsml
         units.yaml
         quantities.yaml
         unit_systems.yaml
+      ].freeze
+
+      CACHE_INSTANCE_VARIABLES = %i[
+        @units
+        @prefixes
+        @dimensions
+        @quantities
+        @prefixes_array
+        @sized_prefixes
+        @database
       ].freeze
 
       def units
@@ -66,15 +77,20 @@ module Unitsml
         @database ||= load_database
       end
 
+      def reset_caches
+        CACHE_INSTANCE_VARIABLES.each do |ivar|
+          remove_instance_variable(ivar) if instance_variable_defined?(ivar)
+        end
+      end
+
       private
 
       def load_database
         context_id = Configuration.context.id
 
-        if ::Unitsdb.respond_to?(:database)
-          return load_unitsdb_database(context_id)
-        end
-
+        load_unitsdb_database(context_id)
+      rescue ::Unitsdb::Errors::DatabaseNotFoundError,
+             ::Unitsdb::Errors::DatabaseFileNotFoundError
         Database.from_db(database_path, context: context_id)
       end
 
