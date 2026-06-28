@@ -92,7 +92,7 @@ module Unitsml
     end
 
     def fenced_conversion_for(lang:, options:)
-      lang_value = value.send(:"to_#{lang}", options)
+      lang_value = value.public_send(:"to_#{lang}", options)
       return lang_value unless options[:explicit_parenthesis]
 
       "#{open_paren}#{lang_value}#{close_paren}"

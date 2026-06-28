@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "htmlentities"
+
 module Unitsml
   module Utility
     # Unit to dimension
@@ -109,8 +111,7 @@ module Unitsml
             prefix = if k.prefix_reference.nil?
                        u.prefix
                      else
-                       combine_prefixes(prefix_object(k.prefix_reference),
-                                        u.prefix)
+                       combine_prefixes(k.prefix_reference, u.prefix)
                      end
             unit_name = Unitsdb.units.find_by_id(k.unit_reference.id).symbols.first.id
             exponent = (k.power&.to_i || 1) * (u.power_numerator&.to_f || 1)
@@ -127,8 +128,7 @@ module Unitsml
           else
             m[-1][:unit]&.power_numerator = Number.new(numerator_value(k, m))
             m[-1] = {
-              prefix: combine_prefixes(prefix_object(m[-1][:prefix]),
-                                       prefix_object(k[:prefix])),
+              prefix: combine_prefixes(m[-1][:prefix], k[:prefix]),
               unit: m[-1][:unit],
             }
           end
@@ -144,70 +144,21 @@ module Unitsml
         object_hash[:unit]&.power_numerator&.to_f || 1
       end
 
-      def prefix_object(prefix)
-        return nil if prefix.nil?
-        return prefix if prefix_like?(prefix)
-
-        if prefix.is_a?(String)
-          return nil unless Unitsdb.prefixes_array.any?(prefix)
-
-          return Prefix.new(prefix)
-        end
-
-        return Unitsdb.prefixes.find_by_id(prefix.id) if prefix.respond_to?(:id)
-
-        prefix
-      end
-
       def combine_prefixes(p1, p2)
-        p1 = prefix_object(p1)
-        p2 = prefix_object(p2)
-        return nil if p1.nil? && p2.nil?
-        return prefix_symbolid(p1) if p2.nil?
-        return prefix_symbolid(p2) if p1.nil?
-        return UNKNOWN if prefix_base(p1) != prefix_base(p2)
+        a1 = PrefixAdapter.wrap(p1)
+        a2 = PrefixAdapter.wrap(p2)
+        return nil if a1.null? && a2.null?
+        return a1.symbolid if a2.null?
+        return a2.symbolid if a1.null?
+        return UNKNOWN if a1.base != a2.base
 
         Unitsdb.prefixes_array.each do |prefix_name|
-          p = prefix_object(prefix_name)
-          return p if prefix_base(p) == prefix_base(p1) &&
-            prefix_power(p) == prefix_power(p1) + prefix_power(p2)
+          candidate = PrefixAdapter.from_name(prefix_name)
+          return candidate.raw if candidate.base == a1.base &&
+            candidate.power == a1.power + a2.power
         end
 
         UNKNOWN
-      end
-
-      def prefix_like?(prefix)
-        prefix.respond_to?(:base) && prefix.respond_to?(:power) &&
-          (prefix.respond_to?(:symbolid) || prefix.respond_to?(:symbols))
-      end
-
-      def prefix_symbolid(prefix)
-        return prefix.symbolid if prefix.respond_to?(:symbolid)
-
-        prefix_record = resolved_prefix(prefix)
-        return unless prefix_record
-
-        prefix_record.symbols&.first&.ascii
-      end
-
-      def prefix_base(prefix)
-        return prefix.base if prefix.respond_to?(:base)
-
-        resolved_prefix(prefix)&.base
-      end
-
-      def prefix_power(prefix)
-        return prefix.power if prefix.respond_to?(:power)
-
-        resolved_prefix(prefix)&.power
-      end
-
-      def resolved_prefix(prefix)
-        return prefix if prefix.nil?
-        return prefix if prefix.respond_to?(:symbols) && prefix.respond_to?(:base) && prefix.respond_to?(:power)
-        return Unitsdb.prefixes.find_by_id(prefix.id) if prefix.respond_to?(:id)
-
-        prefix
       end
 
       def unit(units, formula, dims, norm_text, name, options)
@@ -219,13 +170,11 @@ module Unitsml
           root_units: rootunits(units),
         }
         attributes[:dimension_url] = "##{dim_id(dims)}" if dims
-        Model::Unit.new(**attributes, lutaml_register: Configuration.context.id).to_xml
-          .force_encoding("UTF-8")
-          .gsub("&lt;", "<")
-          .gsub("&gt;", ">")
-          .gsub("&amp;", "&")
-          .gsub(/−/, "&#x2212;")
-          .gsub(/⋅/, "&#x22c5;")
+        xml = Model::Unit.new(
+          **attributes,
+          lutaml_register: Configuration.context.id,
+        ).to_xml
+        Xml::Formatter.format_unit(xml)
       end
 
       def unitname(text, name)
@@ -275,10 +224,11 @@ module Unitsml
 
         dim_attrs = { id: dim_id }
         dimid2dimensions(dim_id)&.compact&.each { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(
+        xml = Model::Dimension.new(
           dim_attrs,
           lutaml_register: Configuration.context.id,
-        ).to_xml.force_encoding("UTF-8")
+        ).to_xml
+        xml.force_encoding("UTF-8")
       end
 
       def dimension1(dim, dims_hash)
@@ -323,34 +273,46 @@ module Unitsml
       end
 
       def prefix_xml(prefix, options)
-        Model::Prefix.new(
+        xml = Model::Prefix.new(
           prefix_attributes(prefix, options),
           lutaml_register: Configuration.context.id,
-        ).to_xml.force_encoding("UTF-8").gsub("&amp;", "&")
+        ).to_xml
+        Xml::Formatter.format_prefix(xml)
       end
 
       def prefix_attributes(prefix, options)
+        adapter = PrefixAdapter.wrap(prefix)
         {
-          prefix_base: prefix&.base,
-          prefix_power: prefix&.power,
-          id: prefix&.id,
-          name: prefix_name(prefix),
+          prefix_base: adapter.base,
+          prefix_power: adapter.power,
+          id: prefix_id(prefix, adapter),
+          name: prefix_name(prefix, adapter),
           symbol: prefix_symbols(prefix, options),
         }
       end
 
-      def prefix_name(prefix)
+      def prefix_id(prefix, adapter)
+        prefix.is_a?(Unitsml::Prefix) ? prefix.id : adapter.raw&.identifiers&.find { |i| i.type == "nist" }&.id
+      end
+
+      def prefix_name(prefix, adapter)
+        name_value = if prefix.is_a?(Unitsml::Prefix)
+                       prefix.name
+                     elsif adapter.raw.is_a?(::Unitsdb::Prefix)
+                       adapter.raw.names.find { |n| n.lang == "en" }&.value
+                     end
         Model::Prefixes::Name.new(
-          content: prefix&.name,
+          content: name_value,
           lutaml_register: Configuration.context.id,
         )
       end
 
       def prefix_symbols(prefix, options)
+        adapter = PrefixAdapter.wrap(prefix)
         PREFIX_SYMBOL_METHODS.map do |type, method_name|
           Model::Prefixes::Symbol.new(
             type: type,
-            content: prefix&.public_send(method_name, options),
+            content: adapter.raw&.public_send(method_name, options),
             lutaml_register: Configuration.context.id,
           )
         end
@@ -393,10 +355,11 @@ module Unitsml
 
         dim_attrs = { id: dim_id(dims) }
         dims.map { |u| dimension1(u, dim_attrs) }
-        Model::Dimension.new(
+        xml = Model::Dimension.new(
           **dim_attrs,
           lutaml_register: Configuration.context.id,
-        ).to_xml.force_encoding("UTF-8")
+        ).to_xml
+        xml.force_encoding("UTF-8")
       end
 
       def quantity(normtext, instance)
@@ -411,21 +374,21 @@ module Unitsml
 
       def unit_nist_id(unit)
         return unless unit
-        return unit.nist_id if unit.respond_to?(:nist_id)
+        return unit.nist_id if unit.is_a?(Unitsml::Unitsdb::Unit)
 
         unit.identifiers&.find { |identifier| identifier.type == "nist" }&.id
       end
 
       def unit_en_name(unit)
         return unless unit
-        return unit.en_name if unit.respond_to?(:en_name)
+        return unit.en_name if unit.is_a?(Unitsml::Unitsdb::Unit)
 
         unit.names&.find { |name| name.lang == "en" }&.value
       end
 
       def unit_dimension_id(unit)
         return unless unit
-        return unit.dimension_url if unit.respond_to?(:dimension_url)
+        return unit.dimension_url if unit.is_a?(Unitsml::Unitsdb::Unit)
 
         unit.dimension_reference&.id ||
           quantity_dimension_id(quantity_instance(unit.quantity_references&.first&.id))
@@ -441,12 +404,13 @@ module Unitsml
       end
 
       def model_quantity_xml(id, url)
-        Model::Quantity.new(
+        xml = Model::Quantity.new(
           id: id,
           name: quantity_name(id),
           dimension_url: url,
           lutaml_register: Configuration.context.id,
-        ).to_xml.force_encoding("UTF-8")
+        ).to_xml
+        xml.force_encoding("UTF-8")
       end
 
       def quantity_name(id)

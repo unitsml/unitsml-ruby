@@ -36,7 +36,7 @@ module Unitsml
     private
 
     def coerce_mml_v4_collection_attributes!(klass, attributes)
-      return unless klass.respond_to?(:attributes)
+      return unless klass.is_a?(Class) && klass <= Lutaml::Model::Serializable
 
       attributes.each do |name, value|
         attribute = klass.attributes[name]

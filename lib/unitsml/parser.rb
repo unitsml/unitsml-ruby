@@ -32,7 +32,7 @@ module Unitsml
       array.each do |object|
         if object.is_a?(Sqrt)
           object = object.value
-          if object.respond_to?(:power_numerator)
+          if object.is_a?(Unit)
             object.power_numerator = Number.new("0.5")
           else
             update_units_exponents([object], inverse, true)
