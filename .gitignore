@@ -9,5 +9,14 @@
 
 # rspec failure tracking
 .rspec_status
+
+# Local planning / scratch files — never ship in the gem
+TODO*
+NOTES*
+
+# Editor / OS noise
+.DS_Store
+/.ruby-lsp/
+
 Gemfile.lock
 /vendor/bundle/
