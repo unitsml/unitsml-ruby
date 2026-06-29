@@ -33,9 +33,9 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "htmlentities"
-  spec.add_dependency "ox"
   spec.add_dependency "lutaml-model", "~> 0.8.0"
   spec.add_dependency "mml", "~> 2.3.6"
+  spec.add_dependency "ox"
   spec.add_dependency "parslet"
   spec.add_dependency "unitsdb", "~> 2.2.4"
 end

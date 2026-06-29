@@ -292,7 +292,13 @@ module Unitsml
       end
 
       def prefix_id(prefix, adapter)
-        prefix.is_a?(Unitsml::Prefix) ? prefix.id : adapter.raw&.identifiers&.find { |i| i.type == "nist" }&.id
+        if prefix.is_a?(Unitsml::Prefix)
+          prefix.id
+        else
+          adapter.raw&.identifiers&.find do |i|
+            i.type == "nist"
+          end&.id
+        end
       end
 
       def prefix_name(prefix, adapter)
@@ -417,7 +423,8 @@ module Unitsml
         quantity_instance(id)&.names&.filter_map do |name|
           next unless name.lang == "en"
 
-          Model::Quantities::Name.new(content: name.value, lutaml_register: Configuration.context.id)
+          Model::Quantities::Name.new(content: name.value,
+                                      lutaml_register: Configuration.context.id)
         end
       end
 
