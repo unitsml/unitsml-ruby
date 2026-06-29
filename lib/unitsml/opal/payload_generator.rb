@@ -88,11 +88,7 @@ module Unitsml
       end
 
       def default_data_dir
-        File.join(unitsdb_gem_path, "data")
-      end
-
-      def unitsdb_gem_path
-        Gem.loaded_specs.fetch("unitsdb").full_gem_path
+        ::Unitsdb.data_dir
       end
     end
   end

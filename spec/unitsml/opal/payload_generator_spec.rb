@@ -5,9 +5,7 @@ require "tmpdir"
 require "unitsml/opal/payload_generator"
 
 RSpec.describe Unitsml::Opal::PayloadGenerator do
-  let(:unitsdb_data_dir) do
-    File.join(Gem.loaded_specs.fetch("unitsdb").full_gem_path, "data")
-  end
+  let(:unitsdb_data_dir) { Unitsdb.data_dir }
 
   let(:real_database_hash) do
     Unitsdb::Database.from_db(unitsdb_data_dir).to_hash
