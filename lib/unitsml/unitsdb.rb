@@ -16,14 +16,6 @@ module Unitsml
     autoload :Quantities, "unitsml/unitsdb/quantities"
 
     class << self
-      REQUIRED_DATABASE_FILES = %w[
-        prefixes.yaml
-        dimensions.yaml
-        units.yaml
-        quantities.yaml
-        unit_systems.yaml
-      ].freeze
-
       CACHE_INSTANCE_VARIABLES = %i[
         @units
         @prefixes
@@ -85,16 +77,15 @@ module Unitsml
 
       private
 
+      # Delegates to the upstream loader, falling back to the UnitsML
+      # Database subclass when the upstream cannot satisfy the request
+      # (e.g. context substitution not yet wired up). Both paths load
+      # from `Unitsdb.data_dir` — the upstream `Unitsdb.database` calls
+      # `Database.from_db(data_dir, ...)` internally, and so does the
+      # fallback.
       def load_database
         context_id = Configuration.context.id
 
-        load_unitsdb_database(context_id)
-      rescue ::Unitsdb::Errors::DatabaseNotFoundError,
-             ::Unitsdb::Errors::DatabaseFileNotFoundError
-        Database.from_db(database_path, context: context_id)
-      end
-
-      def load_unitsdb_database(context_id)
         ::Unitsdb.database(context: context_id)
       rescue ::Unitsdb::Errors::DatabaseNotFoundError,
              ::Unitsdb::Errors::DatabaseFileNotFoundError
@@ -102,27 +93,7 @@ module Unitsml
       end
 
       def database_path
-        candidate_database_paths.find do |path|
-          database_files_present?(path)
-        end ||
-          File.join(unitsdb_gem_path, "vendor", "unitsdb")
-      end
-
-      def candidate_database_paths
-        [
-          File.join(unitsdb_gem_path, "data"),
-          File.join(unitsdb_gem_path, "vendor", "unitsdb"),
-        ]
-      end
-
-      def database_files_present?(dir_path)
-        REQUIRED_DATABASE_FILES.all? do |file_name|
-          File.exist?(File.join(dir_path, file_name))
-        end
-      end
-
-      def unitsdb_gem_path
-        Gem.loaded_specs.fetch("unitsdb").full_gem_path
+        ::Unitsdb.data_dir
       end
     end
   end
