@@ -81,7 +81,8 @@ module Unitsml
                                      :asciimath)
       end
 
-      Plurimath::Math.parse(compact_mathml_for_plurimath(to_mathml(options)), :mathml)
+      Plurimath::Math.parse(compact_mathml_for_plurimath(to_mathml(options)),
+                            :mathml)
     end
 
     def dimensions_extraction
