@@ -32,6 +32,16 @@ module Unitsml
           unit.symbols&.each { |unit_sym| object[unit_sym.id] = unit }
         end
       end
+
+      def find_by_short(short)
+        short_hash[short]
+      end
+
+      def short_hash
+        @short_hash ||= units.each_with_object({}) do |unit, object|
+          object[unit.short] = unit if unit.short
+        end
+      end
     end
 
     Configuration.register_model(Units, id: :units)

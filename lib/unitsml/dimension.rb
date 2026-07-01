@@ -3,6 +3,7 @@
 module Unitsml
   class Dimension
     include MathmlHelper
+    include Composable
 
     attr_accessor :dimension_name, :power_numerator
 

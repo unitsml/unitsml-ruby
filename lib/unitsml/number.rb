@@ -12,6 +12,31 @@ module Unitsml
       @value = value
     end
 
+    # Coerce a builder-supplied power into a Number, mirroring the exponent
+    # strings the parser produces: 1 -> "1", -1 -> "-1", 1/2 -> "1/2",
+    # 2.0 -> "2". Non-integer Floats are rejected (the parser cannot express a
+    # decimal exponent) - pass a Rational instead. nil and existing power
+    # objects pass through untouched.
+    def self.coerce(power)
+      case power
+      when nil, Number then power
+      when Integer then new(power.to_s)
+      when Rational
+        new(power.denominator == 1 ? power.numerator.to_s : power.to_s)
+      when Float then coerce_float(power)
+      else raise ArgumentError, "unsupported power: #{power.inspect}"
+      end
+    end
+
+    def self.coerce_float(power)
+      unless power.finite? && power == power.to_i
+        raise ArgumentError, "non-integer Float power #{power.inspect}; " \
+                             "use a Rational (e.g. Rational(1, 2))"
+      end
+
+      new(power.to_i.to_s)
+    end
+
     def ==(other)
       self.class == other.class &&
         value == other&.value

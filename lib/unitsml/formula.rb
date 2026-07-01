@@ -6,6 +6,7 @@ require "htmlentities"
 module Unitsml
   class Formula
     include MathmlHelper
+    include Composable
 
     attr_accessor :value, :explicit_value, :root
 
@@ -89,7 +90,149 @@ module Unitsml
       extract_dimensions(value)
     end
 
+    class << self
+      # Assemble a root Formula from a left-hand term list and a right-hand
+      # operand. `/` inverts every unit/dimension term on the right. Terms are
+      # deep-copied so operands are never mutated.
+      def build_product(lhs_terms, rhs, operator)
+        lhs = lhs_terms.map { |term| dup_term(term) }
+        rhs_terms = terms_of(rhs).map { |term| dup_term(term) }
+        invert_terms(rhs_terms) if operator == "/"
+        terms = lhs + [Extender.new("*")] + rhs_terms
+        guard_terms!(terms)
+        text = synthesize_text(terms)
+        new(terms, root: true, orig_text: text, norm_text: text)
+      end
+
+      # Build a root Formula from an ordered list of unit/dimension objects,
+      # interleaving multiplication. Used by the keyword compose builder.
+      def from_terms(objects, quantity: nil, name: nil, multiplier: nil)
+        raise ArgumentError, "compose requires at least one unit" if objects.empty?
+
+        terms = interleave(objects.map { |object| dup_term(object) })
+        guard_terms!(terms)
+        text = synthesize_text(terms)
+        new(terms, explicit_value: build_extras(quantity, name, multiplier),
+                   root: true, orig_text: text, norm_text: text)
+      end
+
+      private
+
+      def interleave(objects)
+        objects.each_with_index.flat_map do |object, index|
+          index.zero? ? [object] : [Extender.new("*"), object]
+        end
+      end
+
+      def build_extras(quantity, name, multiplier)
+        extras = { quantity: quantity, name: name,
+                   multiplier: multiplier }.compact
+        extras.empty? ? nil : extras
+      end
+
+      def terms_of(rhs)
+        case rhs
+        when Formula then rhs.value
+        when Unit, Dimension then [rhs]
+        else raise ArgumentError, "cannot compose with #{rhs.inspect}"
+        end
+      end
+
+      # Deep-copy a term so composing never mutates an operand. Nested Formula,
+      # Fenced and Sqrt structures are copied recursively (a parsed operand can
+      # carry them), and unit/dimension powers are coerced + duplicated.
+      def dup_term(term)
+        case term
+        when Unit then dup_leaf(term, dup_prefix: true)
+        when Dimension then dup_leaf(term)
+        when Formula then dup_formula(term)
+        when Fenced then Fenced.new(term.open_paren, dup_term(term.value),
+                                    term.close_paren)
+        when Sqrt then Sqrt.new(dup_term(term.value))
+        else term.dup
+        end
+      end
+
+      def dup_leaf(term, dup_prefix: false)
+        copy = term.dup
+        power = Number.coerce(copy.power_numerator)
+        copy.power_numerator = power.is_a?(Number) ? power.dup : power
+        copy.prefix = copy.prefix.dup if dup_prefix && copy.prefix
+        copy
+      end
+
+      def dup_formula(formula)
+        copy = formula.dup
+        copy.value = formula.value.map { |term| dup_term(term) }
+        copy
+      end
+
+      # Invert every unit/dimension term (division). The right-hand term list is
+      # already exponent-resolved - the parser bakes division into the powers and
+      # leaves "/" extenders decorative - so each leaf is negated and extenders
+      # are ignored; Fenced/Sqrt/nested Formula structures recurse.
+      def invert_terms(terms)
+        terms.each do |term|
+          case term
+          when Unit then invert_unit(term)
+          when Dimension then invert_dimension(term)
+          when Fenced, Sqrt then invert_terms([term.value])
+          when Formula then invert_terms(term.value)
+          end
+        end
+      end
+
+      # A resolved exponent of +1 renders as no exponent (canonical plain unit),
+      # so dividing by an inverse term matches the parsed equivalent.
+      def invert_unit(unit)
+        unit.inverse_power_numerator
+        unit.power_numerator = nil if unit.power_numerator&.raw_value == "1"
+      end
+
+      def invert_dimension(dimension)
+        raw = dimension.power_numerator&.raw_value
+        negated = raw ? negate(raw) : "-1"
+        dimension.power_numerator = negated == "1" ? nil : Number.new(negated)
+      end
+
+      def negate(raw)
+        raw.start_with?("-") ? raw.delete_prefix("-") : "-#{raw}"
+      end
+
+      def guard_terms!(terms)
+        raise Errors::MixedTermsError if terms.any?(Unit) &&
+          terms.any?(Dimension)
+      end
+
+      def synthesize_text(terms)
+        terms.map { |term| term_text(term) }.join
+      end
+
+      def term_text(term)
+        case term
+        when Unit then term.xml_postprocess_name
+        when Dimension then dimension_text(term)
+        when Extender then term.symbol
+        when Fenced
+          "#{term.open_paren}#{term_text(term.value)}#{term.close_paren}"
+        when Sqrt then "sqrt(#{term_text(term.value)})"
+        when Formula then synthesize_text(term.value)
+        else ""
+        end
+      end
+
+      def dimension_text(dimension)
+        exponent = dimension.power_numerator&.raw_value
+        suffix = exponent && exponent != "1" ? "^#{exponent}" : ""
+        "#{dimension.dimension_name}#{suffix}"
+      end
+    end
+
     private
+
+    def composable_terms
+      value
+    end
 
     def extract_dimensions(formula)
       formula.each_with_object([]) do |term, dimensions|
@@ -135,10 +278,12 @@ module Unitsml
       dims = Utility.units2dimensions(extract_units(value))
       [
         Utility.unit(all_units, self, dims, norm_text,
-                     explicit_value&.dig(:name), options),
+                     options[:name] || explicit_value&.dig(:name), options),
         Utility.prefixes(all_units, options),
         *unique_dimensions(dims, norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text,
+                         options[:quantity] || explicit_value&.dig(:quantity),
+                         dims),
       ].join
     end
 
@@ -173,7 +318,8 @@ module Unitsml
       [
         Utility.prefixes([prefix_object], options),
         Utility.dimension(norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text,
+                         options[:quantity] || explicit_value&.dig(:quantity)),
       ].join
     end
 
