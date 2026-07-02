@@ -375,8 +375,11 @@ module Unitsml
         return unless unit_or_quantity(unit, instance)
 
         record = instance && quantity_instance(instance)
-        id = canonical_nist_id(record) || instance ||
-          unit.quantity_references&.first&.id
+        # An explicit but unresolvable quantity emits nothing (silent), rather
+        # than leaking the raw reference as an xml:id.
+        return if instance && record.nil?
+
+        id = canonical_nist_id(record) || unit.quantity_references&.first&.id
         url = unit ? "##{unit_dimension_id(unit)}" : "##{dim_id(dims)}"
         model_quantity_xml(id, url, record&.quantity_type)
       end

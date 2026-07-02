@@ -9,32 +9,11 @@ module Unitsml
     alias raw_value value
 
     def initialize(value)
-      @value = value
-    end
-
-    # Coerce a builder-supplied power into a Number, mirroring the exponent
-    # strings the parser produces: 1 -> "1", -1 -> "-1", 1/2 -> "1/2",
-    # 2.0 -> "2". Non-integer Floats are rejected (the parser cannot express a
-    # decimal exponent) - pass a Rational instead. nil and existing power
-    # objects pass through untouched.
-    def self.coerce(power)
-      case power
-      when nil, Number then power
-      when Integer then new(power.to_s)
-      when Rational
-        new(power.denominator == 1 ? power.numerator.to_s : power.to_s)
-      when Float then coerce_float(power)
-      else raise ArgumentError, "unsupported power: #{power.inspect}"
-      end
-    end
-
-    def self.coerce_float(power)
-      unless power.finite? && power == power.to_i
-        raise ArgumentError, "non-integer Float power #{power.inspect}; " \
-                             "use a Rational (e.g. Rational(1, 2))"
-      end
-
-      new(power.to_i.to_s)
+      # Number always holds a String representation; the render/compare helpers
+      # (to_html, negative?, update_negative_sign, ...) assume String, so a
+      # numeric value (e.g. a Float exponent from unit decomposition) is
+      # normalized here rather than crashing later.
+      @value = value.to_s
     end
 
     def ==(other)

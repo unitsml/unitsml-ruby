@@ -3,7 +3,7 @@
 module Unitsml
   class Unit
     include MathmlHelper
-    include Composable
+    include Compose::Composable
 
     attr_accessor :unit_name, :power_numerator, :prefix
 

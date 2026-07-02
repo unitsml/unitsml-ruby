@@ -6,8 +6,7 @@ require "mml"
 module Unitsml
   module_function
 
-  autoload :Composable, "unitsml/composable"
-  autoload :Composite, "unitsml/composite"
+  autoload :Compose, "unitsml/compose"
   autoload :Dimension, "unitsml/dimension"
   autoload :Configuration, "unitsml/configuration"
   autoload :Errors, "unitsml/errors"
@@ -36,8 +35,11 @@ module Unitsml
     Unitsml::Parser.new(string).parse
   end
 
-  def compose(units:, quantity: nil, name: nil, multiplier: nil)
-    Unitsml::Composite.new(units: units, quantity: quantity, name: name,
-                           multiplier: multiplier).to_formula
+  def compose(units: nil, dimensions: nil,
+              quantity: nil, name: nil, multiplier: nil)
+    Unitsml::Compose::Composite.new(
+      units: units, dimensions: dimensions,
+      quantity: quantity, name: name, multiplier: multiplier
+    ).to_formula
   end
 end

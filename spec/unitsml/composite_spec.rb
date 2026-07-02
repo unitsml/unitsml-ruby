@@ -61,23 +61,73 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect(formula.to_xml).to eq(parsed)
     end
 
-    it "composes pure dimensions like the parser" do
-      formula = Unitsml.compose(units: ["dim_L", "dim_M"])
-      expect(formula.to_xml).to eq(Unitsml.parse("dim_L*dim_M").to_xml)
+    it "raises for an empty composition" do
+      expect { Unitsml.compose(units: []) }
+        .to raise_error(Unitsml::Errors::EmptyCompositionError)
+      expect { Unitsml.compose }
+        .to raise_error(Unitsml::Errors::EmptyCompositionError)
     end
 
-    it "raises for an empty unit list" do
-      expect { Unitsml.compose(units: []) }.to raise_error(ArgumentError)
-    end
-
-    it "raises when units and dimensions are mixed" do
+    it "rejects a dim_* reference in units: (units-only)" do
       expect { Unitsml.compose(units: ["W", "dim_L"]) }
+        .to raise_error(Unitsml::Errors::UnknownUnitError)
+    end
+
+    it "raises when both units: and dimensions: are given" do
+      expect { Unitsml.compose(units: ["W"], dimensions: ["dim_L"]) }
         .to raise_error(Unitsml::Errors::MixedTermsError)
     end
 
     it "raises for an unknown unit reference" do
       expect { Unitsml.compose(units: ["zzz"]) }
         .to raise_error(Unitsml::Errors::UnknownUnitError)
+    end
+
+    it "rejects a pre-built Dimension in units:" do
+      expect { Unitsml.compose(units: [Unitsml::Dimension.new("dim_L")]) }
+        .to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+    end
+
+    it "raises every compose failure under Errors::BaseError" do
+      expect { Unitsml.compose(units: []) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml.compose(units: [{ unit: "m", power: 0.5 }]) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+  end
+
+  describe "Unitsml.compose dimensions" do
+    it "composes pure dimensions like the parser" do
+      formula = Unitsml.compose(dimensions: ["dim_L", "dim_M"])
+      expect(formula.to_xml).to eq(Unitsml.parse("dim_L*dim_M").to_xml)
+    end
+
+    it "accepts a {dimension:, power:} hash like dim_L^2" do
+      formula = Unitsml.compose(dimensions: [{ dimension: "dim_L", power: 2 }])
+      expect(formula.to_xml).to eq(Unitsml.parse("dim_L^2").to_xml)
+    end
+
+    it "raises UnknownDimensionError for an unknown dimension" do
+      expect { Unitsml.compose(dimensions: ["dim_bogus"]) }
+        .to raise_error(Unitsml::Errors::UnknownDimensionError)
+    end
+
+    it "rejects a prefix on a dimension entry" do
+      expect do
+        Unitsml.compose(dimensions: [{ dimension: "dim_L", prefix: "k" }])
+      end.to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+    end
+
+    it "rejects a pre-built Unit in dimensions:" do
+      expect { Unitsml.compose(dimensions: [Unitsml::Unit.new("W")]) }
+        .to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+    end
+
+    it "ignores quantity/name metadata for a dimension composition" do
+      formula = Unitsml.compose(dimensions: ["dim_L"],
+                                quantity: "length", name: "L")
+      expect { formula.to_xml }.not_to raise_error
+      expect(formula.to_xml).not_to include("<Quantity")
     end
   end
 
@@ -124,23 +174,120 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
   end
 
-  describe "power coercion (Number.coerce)" do
-    it "mirrors the parser exponent strings" do
-      cases = { 2 => "2", -1 => "-1", 1 => "1", 2.0 => "2",
-                Rational(1, 2) => "1/2", Rational(2, 1) => "2" }
-      cases.each do |input, expected|
-        expect(Unitsml::Number.coerce(input).raw_value).to eq(expected)
-      end
+  describe "power coercion" do
+    def latex_for(power)
+      Unitsml.compose(units: [{ unit: "m", power: power }]).to_latex
+    end
+
+    it "mirrors parser exponent strings for valid powers" do
+      expect(latex_for(2)).to eq(Unitsml.parse("m^2").to_latex)
+      expect(latex_for(2.0)).to eq(Unitsml.parse("m^2").to_latex)
+      expect(latex_for(Rational(2, 1))).to eq(Unitsml.parse("m^2").to_latex)
+      expect(latex_for(Rational(1, 2))).to match(%r{\^1/2$})
+      expect(latex_for(Unitsml::Number.new("3")))
+        .to eq(Unitsml.parse("m^3").to_latex)
+    end
+
+    it "keeps an explicit exponent of 1, treats nil as no exponent" do
+      expect(latex_for(1)).to eq(Unitsml.parse("m^1").to_latex)
+      expect(latex_for(nil)).to eq(Unitsml.parse("m").to_latex)
     end
 
     it "rejects a non-integer Float power" do
-      expect { Unitsml::Number.coerce(0.5) }.to raise_error(ArgumentError)
+      expect { latex_for(0.5) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+  end
+
+  describe "operand-safety (pure leaf construction)" do
+    it "duplicates the prefix so operand and result never share it" do
+      km = Unitsml::Unit.new("m", prefix: "k")
+      original = km.prefix
+      result = km * Unitsml::Unit.new("s")
+      expect(km.prefix).to be(original)
+      copied = result.value.first.prefix
+      expect(copied).not_to be(original)
+      expect(copied.prefix_name).to eq(original.prefix_name)
     end
 
-    it "passes nil and existing Numbers through" do
-      number = Unitsml::Number.new("3")
-      expect(Unitsml::Number.coerce(nil)).to be_nil
-      expect(Unitsml::Number.coerce(number)).to be(number)
+    it "does not mutate a parsed sqrt operand it divides by" do
+      op = Unitsml.parse("sqrt(m)")
+      before = op.to_xml
+      Unitsml::Unit.new("W") / op
+      expect(op.to_xml).to eq(before)
+    end
+
+    it "composes a sqrt-dimension operand without mutating it" do
+      op = Unitsml.parse("sqrt(dim_L)")
+      before = op.to_xml
+      Unitsml::Dimension.new("dim_M") * op
+      expect(op.to_xml).to eq(before)
+    end
+  end
+
+  describe "adversarial hardening (bug-hunt findings)" do
+    it "rejects a fractional pre-built Number power like a Float" do
+      half = Unitsml::Number.new("0.5")
+      expect { Unitsml.compose(units: [{ unit: "m", power: half }]) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    it "still accepts an integer or fraction pre-built Number power" do
+      three = Unitsml::Number.new("3")
+      expect(Unitsml.compose(units: [{ unit: "m", power: three }]).to_latex)
+        .to eq(Unitsml.parse("m^3").to_latex)
+      half = Unitsml::Number.new("1/2")
+      expect(Unitsml.compose(units: [{ unit: "m", power: half }]).to_latex)
+        .to match(%r{\^1/2$})
+    end
+
+    it "fails fast on a pre-built Dimension with an unknown name" do
+      expect { Unitsml.compose(dimensions: [Unitsml::Dimension.new("dim_bogus")]) }
+        .to raise_error(Unitsml::Errors::UnknownDimensionError)
+    end
+
+    it "validates a pre-built Prefix object like a string prefix" do
+      bad = Unitsml::Prefix.new("zz")
+      expect { Unitsml.compose(units: [{ unit: "m", prefix: bad }]) }
+        .to raise_error(Unitsml::Errors::UnknownPrefixError)
+    end
+
+    it "accepts a valid pre-built Prefix object" do
+      k = Unitsml::Prefix.new("k")
+      obj = Unitsml.compose(units: [{ unit: "m", prefix: k }])
+      str = Unitsml.compose(units: [{ unit: "m", prefix: "k" }])
+      expect(obj.to_xml).to eq(str.to_xml)
+    end
+
+    it "normalizes a pre-built Dimension with a Symbol name" do
+      sym = Unitsml.compose(dimensions: [Unitsml::Dimension.new(:dim_L)])
+      str = Unitsml.compose(dimensions: ["dim_L"])
+      expect(sym.to_xml).to eq(str.to_xml)
+    end
+
+    it "validates the prefix of a pre-built Unit entry" do
+      bad = Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("zz"))
+      expect { Unitsml.compose(units: [bad]) }
+        .to raise_error(Unitsml::Errors::UnknownPrefixError)
+    end
+
+    it "validates the power of a pre-built Unit entry" do
+      bad = Unitsml::Unit.new("m", Unitsml::Number.new("abc"))
+      expect { Unitsml.compose(units: [bad]) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    it "accepts slashed Number exponents the parser accepts" do
+      %w[1/-2 1//2].each do |raw|
+        pow = Unitsml::Number.new(raw)
+        got = Unitsml.compose(units: [{ unit: "m", power: pow }]).to_latex
+        expect(got).to eq(Unitsml.parse("m^(#{raw})").to_latex)
+      end
+    end
+
+    it "fails loud (not a crash) on an unsupported fenced-exponent operand" do
+      expect { Unitsml::Unit.new("W") / Unitsml.parse("m^((1/2))") }
+        .to raise_error(Unitsml::Errors::BaseError)
     end
   end
 
@@ -195,6 +342,16 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
 
     it "treats a blank prefix as no prefix rather than crashing" do
       expect(Unitsml::Unit.new("m", prefix: "").prefix).to be_nil
+    end
+
+    it "guards a Sqrt-wrapped dimension against mixing with a unit" do
+      expect { Unitsml::Unit.new("m") * Unitsml.parse("sqrt(dim_L)") }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+    end
+
+    it "emits no Quantity for an explicit but unresolvable quantity" do
+      xml = Unitsml.compose(units: ["Hz"], quantity: "bogus_qty").to_xml
+      expect(xml).not_to include("<Quantity")
     end
   end
 end
