@@ -55,7 +55,9 @@ module Unitsml
       end
 
       def quantity_instance(id)
-        Unitsdb.quantities.find_by_id(id)
+        return if id.nil?
+
+        Unitsdb.quantities.find_by_id(id) || Unitsdb.quantities.find_by_name(id)
       end
 
       def units2dimensions(units)
@@ -368,14 +370,22 @@ module Unitsml
         xml.force_encoding("UTF-8")
       end
 
-      def quantity(normtext, instance)
+      def quantity(normtext, instance, dims = nil)
         unit = unit_instance(normtext)
         return unless unit_or_quantity(unit, instance)
 
-        model_quantity_xml(
-          instance || unit.quantity_references&.first&.id,
-          "##{unit_dimension_id(unit)}",
-        )
+        record = instance && quantity_instance(instance)
+        # An explicit but unresolvable quantity emits nothing (silent), rather
+        # than leaking the raw reference as an xml:id.
+        return if instance && record.nil?
+
+        id = canonical_nist_id(record) || unit.quantity_references&.first&.id
+        url = unit ? "##{unit_dimension_id(unit)}" : "##{dim_id(dims)}"
+        model_quantity_xml(id, url, record&.quantity_type)
+      end
+
+      def canonical_nist_id(record)
+        record&.identifiers&.find { |identifier| identifier.type == "nist" }&.id
       end
 
       def unit_nist_id(unit)
@@ -409,13 +419,15 @@ module Unitsml
           quantity_instance(quantity)
       end
 
-      def model_quantity_xml(id, url)
-        xml = Model::Quantity.new(
+      def model_quantity_xml(id, url, quantity_type = nil)
+        attrs = {
           id: id,
           name: quantity_name(id),
           dimension_url: url,
           lutaml_register: Configuration.context.id,
-        ).to_xml
+        }
+        attrs[:quantity_type] = quantity_type if quantity_type
+        xml = Model::Quantity.new(**attrs).to_xml
         xml.force_encoding("UTF-8")
       end
 

@@ -6,6 +6,7 @@ require "htmlentities"
 module Unitsml
   class Formula
     include MathmlHelper
+    include Compose::Composable
 
     attr_accessor :value, :explicit_value, :root
 
@@ -89,6 +90,12 @@ module Unitsml
       extract_dimensions(value)
     end
 
+    # A composed Formula contributes its already-interleaved term list (the
+    # Composable default of [self] is only right for a single leaf).
+    def composable_terms
+      value
+    end
+
     private
 
     def extract_dimensions(formula)
@@ -135,10 +142,12 @@ module Unitsml
       dims = Utility.units2dimensions(extract_units(value))
       [
         Utility.unit(all_units, self, dims, norm_text,
-                     explicit_value&.dig(:name), options),
+                     options[:name] || explicit_value&.dig(:name), options),
         Utility.prefixes(all_units, options),
         *unique_dimensions(dims, norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text,
+                         options[:quantity] || explicit_value&.dig(:quantity),
+                         dims),
       ].join
     end
 
@@ -173,7 +182,8 @@ module Unitsml
       [
         Utility.prefixes([prefix_object], options),
         Utility.dimension(norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text,
+                         options[:quantity] || explicit_value&.dig(:quantity)),
       ].join
     end
 

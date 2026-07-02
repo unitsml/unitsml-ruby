@@ -3,6 +3,7 @@
 module Unitsml
   class Unit
     include MathmlHelper
+    include Compose::Composable
 
     attr_accessor :unit_name, :power_numerator, :prefix
 
@@ -12,8 +13,8 @@ module Unitsml
     def initialize(unit_name,
                    power_numerator = nil,
                    prefix: nil)
-      @prefix = prefix
-      @unit_name = unit_name
+      @prefix = coerce_prefix(prefix)
+      @unit_name = resolve_ref(unit_name)
       @power_numerator = power_numerator
     end
 
@@ -121,6 +122,40 @@ module Unitsml
     end
 
     private
+
+    # Resolve a unit reference to a canonical symbol id. Tries the symbol id
+    # first (parse-consistent), then the unique `short` slug. The empty string
+    # and the UNKNOWN sentinel are passed through untouched (internal callers
+    # rely on them). Raises for anything unresolvable.
+    def resolve_ref(ref)
+      ref = ref.to_s
+      return ref if ref.empty? || ref == Utility::UNKNOWN
+      return ref if Unitsdb.units.find_by_symbol_id(ref)
+
+      short_unit = Unitsdb.units.find_by_short(ref)
+      return short_unit.symbols.first.id if short_unit
+
+      raise Errors::UnknownUnitError.new(value: ref)
+    end
+
+    # A pre-built Prefix (the parse path) is passed through untouched, so the
+    # parser keeps its lazy resolution. A string/symbol prefix (the builder) is
+    # validated eagerly and wrapped.
+    def coerce_prefix(prefix)
+      return prefix if prefix.nil? || prefix.is_a?(Prefix)
+
+      name = prefix.to_s
+      # A blank prefix means "no prefix", and the UNKNOWN sentinel from internal
+      # decomposition (combine_prefixes for da-/h-prefixed derived units, whose
+      # unit is dropped before rendering) both resolve to nil rather than an
+      # unvalidated bare string that would crash at render time.
+      return if name.strip.empty? || name == Utility::UNKNOWN
+      unless Unitsdb.prefixes.find_by_symbol_name(name)
+        raise Errors::UnknownPrefixError.new(value: name)
+      end
+
+      Prefix.new(name)
+    end
 
     def display_exp
       return unless power_numerator

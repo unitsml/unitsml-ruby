@@ -3,6 +3,7 @@
 module Unitsml
   class Dimension
     include MathmlHelper
+    include Compose::Composable
 
     attr_accessor :dimension_name, :power_numerator
 
@@ -79,7 +80,20 @@ module Unitsml
       value&.split("_")&.map(&:capitalize)&.join
     end
 
+    # Parser-style source text for the dimension, e.g. "dim_L" or "dim_L^2".
+    # Mirrors Unit#xml_postprocess_name so composed text is built the same way.
+    def xml_postprocess_name
+      "#{dimension_name}#{display_exp}"
+    end
+
     private
+
+    def display_exp
+      return unless power_numerator
+
+      exp = power_numerator.raw_value
+      "^#{exp}" if exp != "1"
+    end
 
     def html_numerator_conversion(options)
       "<sup>#{power_numerator.to_html(options)}</sup>"

@@ -149,12 +149,74 @@ Prefixed units: mm, kg, μm
 A composite unit is a unit that is derived from two or more basic units
 conjoined by multiplication or division.
 
-Composite units are created using the `Unitsml.parse` method.
+Composite units are created using the `Unitsml.parse` method, or built
+programmatically (see below).
 
 Compound units with operations: kg*s^-2
 Units with powers: C^3
 Square roots: sqrt(Hz)
 Units with prefixes: m/s, m^2/s^2
+
+==== Programmatic composition
+
+When the parts are already available as data rather than a string, composite
+units can be built without parsing.
+
+Multiplication (`*`) and division (`/`) compose units, dimensions and formulas,
+returning a `Unitsml::Formula`:
+
+[source,ruby]
+----
+# watt per metre per steradian; "/" inverts the right-hand operand
+Unitsml::Unit.new("W") / Unitsml::Unit.new("m") / Unitsml::Unit.new("sr")
+
+# m·s⁻²; powers come from the constructor's second argument
+Unitsml::Unit.new("m") / Unitsml::Unit.new("s", 2)
+
+# prefixes via the `prefix:` keyword
+Unitsml::Unit.new("m", prefix: "k") # km
+----
+
+A unit is referenced by its symbol id (as in a parsed string, e.g. `"W"`) or by
+its `short` name (e.g. `"watt"`). Dimensions compose the same way
+(`Unitsml::Dimension.new("dim_L")`), but units and dimensions cannot be mixed in
+one expression.
+
+The `Unitsml.compose` keyword form builds the same `Formula` from a list. Pass
+either `units:` or `dimensions:` (not both). A `units:` entry is a symbol id, a
+`short` name, a `{ unit:, power:, prefix: }` hash, or a pre-built
+`Unitsml::Unit`; a `dimensions:` entry is a dimension id or a
+`{ dimension:, power: }` hash:
+
+[source,ruby]
+----
+Unitsml.compose(
+  units: ["W", { unit: "m", power: -1 }, { unit: "sr", power: -1 }],
+  quantity: "radiance",
+)
+
+Unitsml.compose(dimensions: ["dim_L", { dimension: "dim_M", power: 2 }])
+----
+
+The `quantity`, `name` and `multiplier` metadata are also accepted directly by
+the format methods. They apply to `to_xml` (`quantity`/`name` are ignored by the
+other formats), and a value passed at render time overrides one carried by a
+parsed comma-metadata expression:
+
+[source,ruby]
+----
+formula = Unitsml.compose(units: ["W", { unit: "m", power: -1 }])
+formula.to_xml(quantity: "radiance") # emits a <Quantity> element
+----
+
+`Unitsml.compose` validates every reference, power and prefix it is given and
+raises a `Unitsml::Errors::*` (all subclasses of `Unitsml::Errors::BaseError`)
+for anything it cannot resolve: an unknown unit, dimension or prefix, a
+units/dimensions mix, an empty composition, or a power the parser cannot express
+(a decimal exponent — use a `Rational`). The operator DSL composes the objects
+you construct, so — as with rendering a `Unit` or `Dimension` directly — a
+hand-built object carrying an unresolvable prefix or dimension name is the
+caller's responsibility.
 
 
 === Format representation
