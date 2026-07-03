@@ -291,6 +291,59 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
   end
 
+  describe "fluent chain (#unit / #dimension / metadata)" do
+    it "chains units like the keyword form" do
+      chained = Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1)
+      expect(chained.to_xml).to eq(Unitsml.parse("W*m^-1*sr^-1").to_xml)
+    end
+
+    it "matches the keyword form with metadata last" do
+      base = Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1)
+      chained = base.quantity("radiance")
+      keyword = Unitsml.compose(
+        units: ["W", { unit: "m", power: -1 }, { unit: "sr", power: -1 }],
+        quantity: "radiance",
+      )
+      expect(chained.to_xml).to eq(keyword.to_xml)
+    end
+
+    it "accepts a prefix in a chained unit" do
+      chained = Unitsml::Unit.new("W").unit("m", prefix: "k")
+      keyword = Unitsml.compose(units: ["W", { unit: "m", prefix: "k" }])
+      expect(chained.to_xml).to eq(keyword.to_xml)
+    end
+
+    it "chains dimensions" do
+      chained = Unitsml::Dimension.new("dim_L").dimension("dim_M")
+      keyword = Unitsml.compose(dimensions: ["dim_L", "dim_M"])
+      expect(chained.to_xml).to eq(keyword.to_xml)
+    end
+
+    it "guards a units/dimensions mix in the chain" do
+      expect { Unitsml::Unit.new("W").dimension("dim_L") }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+    end
+
+    it "attaches metadata to a single unit" do
+      chained = Unitsml::Unit.new("W").quantity("radiance")
+      keyword = Unitsml.compose(units: ["W"], quantity: "radiance")
+      expect(chained).to be_a(Unitsml::Formula)
+      expect(chained.to_xml).to eq(keyword.to_xml)
+    end
+
+    it "does not mutate the starting operand" do
+      w = Unitsml::Unit.new("W")
+      w.unit("m", -1)
+      expect(w).to eq(Unitsml::Unit.new("W"))
+    end
+
+    it "drops metadata set before a later unit (metadata-last rule)" do
+      dropped = Unitsml::Unit.new("W").quantity("radiance").unit("m", -1)
+      plain = Unitsml::Unit.new("W").unit("m", -1)
+      expect(dropped.to_xml).to eq(plain.to_xml)
+    end
+  end
+
   describe "regressions" do
     it "does not break parsing of da-/h-prefixed derived units" do
       expect { Unitsml.parse("hPa").to_xml }.not_to raise_error

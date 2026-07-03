@@ -177,6 +177,16 @@ Unitsml::Unit.new("m") / Unitsml::Unit.new("s", 2)
 Unitsml::Unit.new("m", prefix: "k") # km
 ----
 
+The same composition can be written as a fluent chain — `#unit`/`#dimension` are
+sugar over `*` (`unit("m", -1)` == `* Unit.new("m", -1)`), and
+`#quantity`/`#name`/`#multiplier` attach metadata. Metadata must come last, since
+each chained term builds a fresh `Formula`:
+
+[source,ruby]
+----
+Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1).quantity("radiance")
+----
+
 A unit is referenced by its symbol id (as in a parsed string, e.g. `"W"`) or by
 its `short` name (e.g. `"watt"`). Dimensions compose the same way
 (`Unitsml::Dimension.new("dim_L")`), but units and dimensions cannot be mixed in

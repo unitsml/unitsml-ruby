@@ -26,7 +26,26 @@ module Unitsml
           build_root_formula(terms, build_metadata(quantity, name, multiplier))
         end
 
+        # Return a Formula carrying the given render metadata (quantity/name/
+        # multiplier). A Formula gets a copy with merged metadata; a lone
+        # Unit/Dimension is wrapped into a root Formula. Backs the fluent
+        # #quantity/#name/#multiplier chain methods.
+        def attach_metadata(node, **extras)
+          return from_terms([node], **extras) unless node.is_a?(Formula)
+
+          added = build_metadata(extras[:quantity], extras[:name],
+                                 extras[:multiplier])
+          copy = node.dup
+          copy.explicit_value = merge_metadata(node.explicit_value, added)
+          copy
+        end
+
         private
+
+        def merge_metadata(existing, added)
+          merged = (existing || {}).merge(added || {})
+          merged.empty? ? nil : merged
+        end
 
         def build_root_formula(terms, metadata = nil)
           reject_mixed_terms!(terms)
