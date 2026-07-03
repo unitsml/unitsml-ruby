@@ -123,17 +123,14 @@ module Unitsml
 
     private
 
-    # Resolve a unit reference to a canonical symbol id. Tries the symbol id
-    # first (parse-consistent), then the unique `short` slug. The empty string
-    # and the UNKNOWN sentinel are passed through untouched (internal callers
-    # rely on them). Raises for anything unresolvable.
+    # Resolve a unit reference to a canonical symbol id, exactly like the parser
+    # (symbol ids only — no short-name resolution). The empty string and the
+    # UNKNOWN sentinel are passed through untouched (internal callers rely on
+    # them). Raises for anything unresolvable.
     def resolve_ref(ref)
       ref = ref.to_s
       return ref if ref.empty? || ref == Utility::UNKNOWN
       return ref if Unitsdb.units.find_by_symbol_id(ref)
-
-      short_unit = Unitsdb.units.find_by_short(ref)
-      return short_unit.symbols.first.id if short_unit
 
       raise Errors::UnknownUnitError.new(value: ref)
     end

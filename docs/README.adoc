@@ -187,16 +187,15 @@ each chained term builds a fresh `Formula`:
 Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1).quantity("radiance")
 ----
 
-A unit is referenced by its symbol id (as in a parsed string, e.g. `"W"`) or by
-its `short` name (e.g. `"watt"`). Dimensions compose the same way
+A unit is referenced by its symbol id, exactly as in a parsed string
+(e.g. `"W"`). Dimensions compose the same way
 (`Unitsml::Dimension.new("dim_L")`), but units and dimensions cannot be mixed in
 one expression.
 
 The `Unitsml.compose` keyword form builds the same `Formula` from a list. Pass
 either `units:` or `dimensions:` (not both). A `units:` entry is a symbol id, a
-`short` name, a `{ unit:, power:, prefix: }` hash, or a pre-built
-`Unitsml::Unit`; a `dimensions:` entry is a dimension id or a
-`{ dimension:, power: }` hash:
+`{ unit:, power:, prefix: }` hash, or a pre-built `Unitsml::Unit`; a
+`dimensions:` entry is a dimension id or a `{ dimension:, power: }` hash:
 
 [source,ruby]
 ----

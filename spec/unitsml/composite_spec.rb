@@ -155,8 +155,9 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
   end
 
   describe "unit references" do
-    it "resolves a short name to the canonical symbol id" do
-      expect(Unitsml::Unit.new("watt")).to eq(Unitsml::Unit.new("W"))
+    it "rejects a short name (symbol ids only, like the parser)" do
+      expect { Unitsml::Unit.new("watt") }
+        .to raise_error(Unitsml::Errors::UnknownUnitError)
     end
 
     it "accepts a symbol reference" do

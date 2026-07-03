@@ -9,7 +9,7 @@ module Unitsml
         @value = value
         @field = field
         super("[unitsml] Unknown unit reference: #{value.inspect} — expected " \
-              "a symbol id (e.g. \"W\") or short name (e.g. \"watt\").")
+              "a unit symbol id (e.g. \"W\").")
       end
     end
   end
