@@ -171,10 +171,20 @@ module Unitsml
         end
 
         def build_metadata(quantity, name, multiplier)
+          validate_name!(name)
           validate_multiplier!(multiplier)
           metadata = { quantity: quantity, name: name,
                        multiplier: multiplier }.compact
           metadata.empty? ? nil : metadata
+        end
+
+        # name is embedded directly into <UnitName>, so it must be a plain
+        # String/Symbol; a Hash/other would serialize as garbage. (quantity is
+        # resolved and dropped silently when unresolvable, so needs no guard.)
+        def validate_name!(name)
+          return if name.nil? || name.is_a?(String) || name.is_a?(Symbol)
+
+          raise Errors::InvalidUnitEntryError.new(value: name, field: :name)
         end
 
         # The multiplier is a render separator: nil, a String, or :space/

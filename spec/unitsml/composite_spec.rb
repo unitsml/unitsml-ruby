@@ -350,6 +350,13 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::BaseError)
     end
 
+    it "rejects a non-String/Symbol name as a BaseError" do
+      expect { Unitsml::Unit.new("W").name({ x: 1 }) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml.compose(units: ["W"], name: { x: 1 }) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
     it "still accepts a valid multiplier" do
       expect { Unitsml::Unit.new("W").unit("m").multiplier("·") }
         .not_to raise_error

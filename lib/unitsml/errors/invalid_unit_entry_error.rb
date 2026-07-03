@@ -27,6 +27,9 @@ module Unitsml
         when :multiplier
           "[unitsml] Invalid multiplier: #{value.inspect} — expected a " \
           "String, :space, or :nospace."
+        when :name
+          "[unitsml] Invalid name: #{value.inspect} — expected a String " \
+          "or Symbol."
         else
           "[unitsml] Invalid #{field} entry: #{value.inspect} — expected a " \
           "reference (String/Symbol), a Hash, or a matching Unit/Dimension."
