@@ -25,7 +25,7 @@ module Unitsml
       end
 
       def dimension(reference, power = nil)
-        self * Dimension.new(reference, power)
+        self * Dimension.new(Compose.dimension_ref(reference), power)
       end
 
       # Attach render metadata. These come AFTER the units/dimensions: each

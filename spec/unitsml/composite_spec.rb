@@ -324,6 +324,11 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::MixedTermsError)
     end
 
+    it "fails fast (BaseError) on an unknown dimension in the chain" do
+      expect { Unitsml::Dimension.new("dim_L").dimension("dim_bogus") }
+        .to raise_error(Unitsml::Errors::UnknownDimensionError)
+    end
+
     it "attaches metadata to a single unit" do
       chained = Unitsml::Unit.new("W").quantity("radiance")
       keyword = Unitsml.compose(units: ["W"], quantity: "radiance")

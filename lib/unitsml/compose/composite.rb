@@ -122,12 +122,10 @@ module Unitsml
       end
 
       # A dimension reference is validated eagerly (Dimension.new does not),
-      # keeping compose fail-fast like the parser.
+      # keeping compose fail-fast like the parser. Shared with the fluent
+      # #dimension chain via Compose.dimension_ref.
       def require_dimension(reference)
-        string = reference.to_s
-        return string if Unitsdb.dimensions.parsables.key?(string)
-
-        raise Errors::UnknownDimensionError.new(value: reference)
+        Compose.dimension_ref(reference)
       end
 
       def blank_reference
