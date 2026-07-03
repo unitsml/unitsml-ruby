@@ -171,9 +171,21 @@ module Unitsml
         end
 
         def build_metadata(quantity, name, multiplier)
+          validate_multiplier!(multiplier)
           metadata = { quantity: quantity, name: name,
                        multiplier: multiplier }.compact
           metadata.empty? ? nil : metadata
+        end
+
+        # The multiplier is a render separator: nil, a String, or :space/
+        # :nospace. Reject anything else at the compose boundary so a bad value
+        # fails as an Errors::* instead of leaking at render.
+        def validate_multiplier!(multiplier)
+          return if multiplier.nil? || multiplier.is_a?(String)
+          return if %i[space nospace].include?(multiplier)
+
+          raise Errors::InvalidUnitEntryError.new(value: multiplier,
+                                                  field: :multiplier)
         end
 
         def mul_extender

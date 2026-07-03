@@ -112,45 +112,26 @@ module Unitsml
         Dimension.new(require_dimension(reference))
       end
 
-      # A unit reference just needs to be non-blank; Unit.new fail-fasts on an
-      # unresolvable (or dim_*) name, which is what makes units: units-only.
+      # Reference/power/prefix validation is shared with the fluent chain via
+      # the Compose.* validators, so both surfaces reject the same bad input.
       def require_reference(reference)
-        string = reference.to_s
-        return string unless string.strip.empty?
-
-        raise Errors::UnknownUnitError.new(value: reference)
+        Compose.unit_ref(reference)
       end
 
-      # A dimension reference is validated eagerly (Dimension.new does not),
-      # keeping compose fail-fast like the parser. Shared with the fluent
-      # #dimension chain via Compose.dimension_ref.
       def require_dimension(reference)
         Compose.dimension_ref(reference)
       end
 
+      def require_power(power)
+        Compose.power(power)
+      end
+
+      def prefix_ref(prefix)
+        Compose.prefix_ref(prefix)
+      end
+
       def blank_reference
         @kind == :dimension ? require_dimension(nil) : require_reference(nil)
-      end
-
-      # A user-supplied power wrapped in a Number must still be a parser-valid
-      # exponent. This regex mirrors the grammar's `slashed_number`
-      # (parse.rb: a signed integer, optionally `/` or `//` then a signed
-      # integer), so forms like "1/-2" and "1//2" are accepted while a decimal
-      # ("0.5") or non-numeric string has no parsed equivalent and is rejected.
-      # Other power types are validated by Builder during assembly.
-      def require_power(power)
-        return power unless power.is_a?(Number)
-        return power if power.raw_value.match?(%r{\A-?\d+(//?-?\d+)?\z})
-
-        raise Errors::InvalidPowerError.new(value: power,
-                                            reason: :non_integer_float)
-      end
-
-      # A prefix passed as a Prefix object is reduced to its name so Unit.new
-      # validates it (a bad name raises UnknownPrefixError); an unvalidated
-      # Prefix object would otherwise leak a NoMethodError at render.
-      def prefix_ref(prefix)
-        prefix.is_a?(Prefix) ? prefix.prefix_name : prefix
       end
 
       def expected_class

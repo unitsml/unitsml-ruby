@@ -24,6 +24,9 @@ module Unitsml
           "Unit, Dimension or Formula."
         when :prefix
           "[unitsml] A dimension entry cannot take a prefix: #{value.inspect}."
+        when :multiplier
+          "[unitsml] Invalid multiplier: #{value.inspect} — expected a " \
+          "String, :space, or :nospace."
         else
           "[unitsml] Invalid #{field} entry: #{value.inspect} — expected a " \
           "reference (String/Symbol), a Hash, or a matching Unit/Dimension."

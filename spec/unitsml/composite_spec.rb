@@ -329,6 +329,34 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::UnknownDimensionError)
     end
 
+    it "validates a blank/nil ref in the chain like the keyword form" do
+      w = Unitsml::Unit.new("W")
+      expect { w.unit(nil) }.to raise_error(Unitsml::Errors::UnknownUnitError)
+      expect { w.unit("") }.to raise_error(Unitsml::Errors::UnknownUnitError)
+    end
+
+    it "validates power and prefix in a chained unit" do
+      w = Unitsml::Unit.new("W")
+      expect { w.unit("m", Unitsml::Number.new("abc")) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+      expect { w.unit("m", prefix: Unitsml::Prefix.new("zz")) }
+        .to raise_error(Unitsml::Errors::UnknownPrefixError)
+    end
+
+    it "rejects a non-String/Symbol multiplier as a BaseError" do
+      expect { Unitsml::Unit.new("W").unit("m").multiplier({ x: 1 }) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml.compose(units: ["W"], multiplier: { x: 1 }) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "still accepts a valid multiplier" do
+      expect { Unitsml::Unit.new("W").unit("m").multiplier("·") }
+        .not_to raise_error
+      expect { Unitsml::Unit.new("W").unit("m").multiplier(:nospace) }
+        .not_to raise_error
+    end
+
     it "attaches metadata to a single unit" do
       chained = Unitsml::Unit.new("W").quantity("radiance")
       keyword = Unitsml.compose(units: ["W"], quantity: "radiance")

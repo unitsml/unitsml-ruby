@@ -21,11 +21,13 @@ module Unitsml
       # so a chain reads like the operator DSL, e.g.
       #   Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1)
       def unit(reference, power = nil, prefix: nil)
-        self * Unit.new(reference, power, prefix: prefix)
+        self * Unit.new(Compose.unit_ref(reference), Compose.power(power),
+                        prefix: Compose.prefix_ref(prefix))
       end
 
       def dimension(reference, power = nil)
-        self * Dimension.new(Compose.dimension_ref(reference), power)
+        self * Dimension.new(Compose.dimension_ref(reference),
+                             Compose.power(power))
       end
 
       # Attach render metadata. These come AFTER the units/dimensions: each
