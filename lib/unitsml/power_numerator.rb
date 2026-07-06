@@ -21,7 +21,8 @@ module Unitsml
       return power if power.nil? || power.is_a?(Numeric)
       return power if power.is_a?(Number) || power.is_a?(Fenced)
 
-      raise Errors::InvalidPowerError.new(value: power)
+      raise Errors::InvalidPowerError.new(value: power,
+                                          reason: :unsupported_storage)
     end
   end
 end

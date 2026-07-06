@@ -24,6 +24,9 @@ module Unitsml
         when :invalid_number
           "[unitsml] Invalid Number power: #{value.inspect} — a Number " \
           "exponent must hold an integer or n/m fraction (e.g. \"2\", \"1/2\")."
+        when :unsupported_storage
+          "[unitsml] Cannot store #{value.inspect} as an exponent — " \
+          "expected a Numeric, Unitsml::Number, or Unitsml::Fenced."
         else
           "[unitsml] Unsupported power: #{value.inspect} — expected an " \
           "Integer, Rational, Float or Unitsml::Number."

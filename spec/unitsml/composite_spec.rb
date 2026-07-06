@@ -170,7 +170,8 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
   describe "power type validation (Unit/Dimension storage)" do
     it "rejects an unsupported power datatype at construction" do
       expect { Unitsml::Unit.new("m", "2") }
-        .to raise_error(Unitsml::Errors::InvalidPowerError)
+        .to raise_error(Unitsml::Errors::InvalidPowerError,
+                        /Cannot store .+ as an exponent/)
       expect { Unitsml::Dimension.new("dim_L", "2") }
         .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
