@@ -49,7 +49,7 @@ module Unitsml
       return value if value.raw_value.match?(%r{\A-?\d+(//?-?\d+)?\z})
 
       raise Errors::InvalidPowerError.new(value: value,
-                                          reason: :non_integer_float)
+                                          reason: :invalid_number)
     end
   end
 end

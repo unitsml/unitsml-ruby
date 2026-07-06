@@ -21,6 +21,9 @@ module Unitsml
         when :non_integer_float
           "[unitsml] Non-integer Float power: #{value.inspect} — use a " \
           "Rational (e.g. Rational(1, 2)) for a fractional exponent."
+        when :invalid_number
+          "[unitsml] Invalid Number power: #{value.inspect} — a Number " \
+          "exponent must hold an integer or n/m fraction (e.g. \"2\", \"1/2\")."
         else
           "[unitsml] Unsupported power: #{value.inspect} — expected an " \
           "Integer, Rational, Float or Unitsml::Number."

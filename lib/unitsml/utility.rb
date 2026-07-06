@@ -380,8 +380,17 @@ module Unitsml
         return if instance && record.nil?
 
         id = canonical_nist_id(record) || unit.quantity_references&.first&.id
-        url = unit ? "##{unit_dimension_id(unit)}" : "##{dim_id(dims)}"
-        model_quantity_xml(id, url, record&.quantity_type)
+        model_quantity_xml(id, quantity_dimension_url(unit, dims),
+                           record&.quantity_type)
+      end
+
+      # The Quantity's dimensionURL, or nil when the dimension id cannot be
+      # determined (e.g. a composite whose decomposition hits the UNKNOWN
+      # sentinel) — the attribute is then omitted rather than emitting a
+      # broken "#" pointer, keeping the rest of the Quantity data intact.
+      def quantity_dimension_url(unit, dims)
+        ref = unit ? unit_dimension_id(unit) : dim_id(dims)
+        "##{ref}" if ref
       end
 
       def canonical_nist_id(record)

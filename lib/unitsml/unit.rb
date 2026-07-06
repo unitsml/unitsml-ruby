@@ -126,8 +126,11 @@ module Unitsml
     # Resolve a unit reference to a canonical symbol id, exactly like the parser
     # (symbol ids only — no short-name resolution). The empty string and the
     # UNKNOWN sentinel are passed through untouched (internal callers rely on
-    # them). Raises for anything unresolvable.
+    # them); nil is not a sentinel and fails fast rather than silently building
+    # a broken unit. Raises for anything unresolvable.
     def resolve_ref(ref)
+      raise Errors::UnknownUnitError.new(value: ref) if ref.nil?
+
       ref = ref.to_s
       return ref if ref.empty? || ref == Utility::UNKNOWN
       return ref if Unitsdb.units.find_by_symbol_id(ref)

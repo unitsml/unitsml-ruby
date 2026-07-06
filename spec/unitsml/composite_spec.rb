@@ -160,6 +160,12 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::UnknownUnitError)
     end
 
+    it "fails fast on a nil reference (nil is not the internal sentinel)" do
+      expect { Unitsml::Unit.new(nil) }
+        .to raise_error(Unitsml::Errors::UnknownUnitError)
+      expect { Unitsml::Unit.new("") }.not_to raise_error
+    end
+
     it "accepts a symbol reference" do
       expect(Unitsml::Unit.new(:W).unit_name).to eq("W")
     end
@@ -446,6 +452,23 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     it "emits no Quantity for an explicit but unresolvable quantity" do
       xml = Unitsml.compose(units: ["Hz"], quantity: "bogus_qty").to_xml
       expect(xml).not_to include("<Quantity")
+    end
+
+    it "omits dimensionURL (not a broken \"#\") when the dim id is unknown" do
+      composed = Unitsml.compose(units: [{ unit: "Pa", prefix: "h" }, "s"],
+                                 quantity: "pressure").to_xml
+      parsed = Unitsml.parse("hPa*s").to_xml(quantity: "pressure")
+      [composed, parsed].each do |xml|
+        expect(xml).to include("<Quantity")
+        expect(xml).not_to include('dimensionURL="#"')
+      end
+    end
+
+    it "explains an invalid Number power without mentioning Float" do
+      bad = Unitsml::Number.new("abc")
+      expect { Unitsml.compose(units: [{ unit: "m", power: bad }]) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError,
+                        /Invalid Number power/)
     end
   end
 end
