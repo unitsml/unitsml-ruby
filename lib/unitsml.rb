@@ -21,6 +21,7 @@ module Unitsml
   autoload :Number, "unitsml/number"
   autoload :Parse, "unitsml/parse"
   autoload :Parser, "unitsml/parser"
+  autoload :PowerNumerator, "unitsml/power_numerator"
   autoload :Prefix, "unitsml/prefix"
   autoload :PrefixAdapter, "unitsml/prefix_adapter"
   autoload :Sqrt, "unitsml/sqrt"

@@ -4,12 +4,13 @@ module Unitsml
   class Dimension
     include MathmlHelper
     include Compose::Composable
+    include PowerNumerator
 
-    attr_accessor :dimension_name, :power_numerator
+    attr_accessor :dimension_name
 
     def initialize(dimension_name, power_numerator = nil)
       @dimension_name = dimension_name
-      @power_numerator = power_numerator
+      self.power_numerator = power_numerator
     end
 
     def ==(other)

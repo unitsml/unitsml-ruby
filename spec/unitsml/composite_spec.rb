@@ -165,6 +165,35 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::UnknownUnitError)
       expect { Unitsml::Unit.new("") }.not_to raise_error
     end
+  end
+
+  describe "power type validation (Unit/Dimension storage)" do
+    it "rejects an unsupported power datatype at construction" do
+      expect { Unitsml::Unit.new("m", "2") }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+      expect { Unitsml::Dimension.new("dim_L", "2") }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    it "rejects an unsupported power datatype via the setter" do
+      unit = Unitsml::Unit.new("m")
+      expect { unit.power_numerator = { x: 1 } }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    it "stores supported power types as given (no coercion)" do
+      expect(Unitsml::Unit.new("m", 2).power_numerator).to eq(2)
+      expect(Unitsml::Unit.new("m", Rational(1, 2)).power_numerator)
+        .to eq(Rational(1, 2))
+      expect(Unitsml::Unit.new("m", 1.5).power_numerator).to eq(1.5)
+      number = Unitsml::Number.new("3")
+      expect(Unitsml::Unit.new("m", number).power_numerator).to be(number)
+      expect(Unitsml::Dimension.new("dim_L", 2).power_numerator).to eq(2)
+    end
+
+    it "keeps the parser's Fenced exponent storable" do
+      expect { Unitsml.parse("m^((1/2))").to_xml }.not_to raise_error
+    end
 
     it "accepts a symbol reference" do
       expect(Unitsml::Unit.new(:W).unit_name).to eq("W")

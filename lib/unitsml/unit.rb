@@ -4,8 +4,9 @@ module Unitsml
   class Unit
     include MathmlHelper
     include Compose::Composable
+    include PowerNumerator
 
-    attr_accessor :unit_name, :power_numerator, :prefix
+    attr_accessor :unit_name, :prefix
 
     SI_UNIT_SYSTEM = %w[si_base si_derived_special
                         si_derived_non_special].freeze
@@ -15,7 +16,7 @@ module Unitsml
                    prefix: nil)
       @prefix = coerce_prefix(prefix)
       @unit_name = resolve_ref(unit_name)
-      @power_numerator = power_numerator
+      self.power_numerator = power_numerator
     end
 
     def ==(other)
