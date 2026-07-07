@@ -7,6 +7,8 @@ module Unitsml
     autoload :InvalidModelError, "unitsml/errors/invalid_model_error"
     autoload :InvalidPowerError, "unitsml/errors/invalid_power_error"
     autoload :InvalidUnitEntryError, "unitsml/errors/invalid_unit_entry_error"
+    autoload :MisplacedExtenderError,
+             "unitsml/errors/misplaced_extender_error"
     autoload :MixedTermsError, "unitsml/errors/mixed_terms_error"
     autoload :OpalPayloadNotBundledError,
              "unitsml/errors/opal_payload_not_bundled_error"

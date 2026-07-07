@@ -163,14 +163,16 @@ When the parts are already available as data rather than a string, composite
 units can be built without parsing.
 
 Multiplication (`*`) and division (`/`) compose units, dimensions and formulas,
-returning a `Unitsml::Formula`:
+returning a `Unitsml::Formula`. Like the parser, `/` keeps the `"/"` separator
+and inverts the right-hand operand's power, so a single division renders
+identically to the parsed string (`W / m` == `Unitsml.parse("W/m")`):
 
 [source,ruby]
 ----
-# watt per metre per steradian; "/" inverts the right-hand operand
+# watt per metre per steradian, rendered "W/m^-1/sr^-1"
 Unitsml::Unit.new("W") / Unitsml::Unit.new("m") / Unitsml::Unit.new("sr")
 
-# m·s⁻²; powers come from the constructor's second argument
+# m/s^2; powers come from the constructor's second argument
 Unitsml::Unit.new("m") / Unitsml::Unit.new("s", 2)
 
 # prefixes via the `prefix:` keyword
@@ -185,6 +187,40 @@ each chained term builds a fresh `Formula`:
 [source,ruby]
 ----
 Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1).quantity("radiance")
+----
+
+An explicit separator can be placed between terms with `#extender` (alias
+`#ext`), accepting exactly the parser's grammar set: `"*"`, `"/"` or `"//"`
+(any other glyph is a display concern — use the `multiplier:` render option).
+It is glyph-only: nothing is negated or transformed, so exponents are stated
+explicitly, exactly as a parsed string stores them:
+
+[source,ruby]
+----
+# byte-identical to Unitsml.parse("W/m") in every format
+Unitsml::Unit.new("W").extender("/").unit("m", -1)
+
+# mixed separators, as in Unitsml.parse("W*m/W")
+Unitsml::Unit.new("W").ext("*").unit("m").ext("/").unit("W", -1)
+----
+
+The glyph may be a String, a Symbol, or an `Unitsml::Extender` object; an
+`Extender` also works directly as an operator operand:
+
+[source,ruby]
+----
+Unitsml::Unit.new("W") * Unitsml::Extender.new("/") * Unitsml::Unit.new("m", -1)
+----
+
+A separator must sit between two operands. An expression left ending in a
+separator, or with two separators together, has no valid rendering and raises
+`Unitsml::Errors::MisplacedExtenderError` when a `to_*` method is called (the
+intermediate chain value is still usable — only rendering it is rejected):
+
+[source,ruby]
+----
+Unitsml::Unit.new("W").ext("/").to_latex        # raises MisplacedExtenderError
+Unitsml::Unit.new("W").ext("/").unit("m", -1).to_latex # ok — "W/m^-1"
 ----
 
 A unit is referenced by its symbol id, exactly as in a parsed string

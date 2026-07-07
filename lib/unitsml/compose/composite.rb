@@ -25,11 +25,14 @@ module Unitsml
 
       private
 
-      # A lone Hash is a single entry; nil is nothing; anything else is a list.
+      # A lone Hash is a single entry; nil is nothing; an Array is the list;
+      # anything else (incl. a bare reference or a pathological BasicObject)
+      # becomes a one-element list so coerce_entry validates/rejects it.
       def normalize(entries)
-        return [] if entries.nil?
+        return [] if Compose.type?(NilClass, entries)
+        return [entries] if Compose.type?(Hash, entries)
 
-        entries.is_a?(Hash) ? [entries] : Array(entries)
+        Compose.type?(Array, entries) ? entries : [entries]
       end
 
       # Exactly one of units:/dimensions: may be non-empty. Store the resolved

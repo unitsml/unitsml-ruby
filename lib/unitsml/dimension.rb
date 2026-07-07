@@ -9,7 +9,7 @@ module Unitsml
     attr_accessor :dimension_name
 
     def initialize(dimension_name, power_numerator = nil)
-      @dimension_name = dimension_name
+      @dimension_name = safe_dimension_name(dimension_name)
       self.power_numerator = power_numerator
     end
 
@@ -88,6 +88,18 @@ module Unitsml
     end
 
     private
+
+    # Resolve a dimension reference to a known parsable id, as Unit#resolve_ref
+    # does for units: a pathological name (BasicObject / bad #to_s) or an
+    # unresolvable one fails fast as UnknownDimensionError instead of crashing
+    # at render on a nil dim_instance. The parser only ever supplies ids the
+    # grammar produced, so valid names pass through unchanged.
+    def safe_dimension_name(name)
+      string = Compose.safe_string(name)
+      return string if string && Unitsdb.dimensions.parsables.key?(string)
+
+      raise Errors::UnknownDimensionError.new(value: name)
+    end
 
     def display_exp
       return unless power_numerator

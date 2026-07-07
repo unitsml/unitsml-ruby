@@ -8,7 +8,7 @@ module Unitsml
       def initialize(value:, field: :prefix)
         @value = value
         @field = field
-        super("[unitsml] Unknown prefix reference: #{value.inspect}.")
+        super("[unitsml] Unknown prefix reference: #{describe(value)}.")
       end
     end
   end

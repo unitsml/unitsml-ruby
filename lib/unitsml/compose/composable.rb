@@ -30,6 +30,18 @@ module Unitsml
                              Compose.power(power))
       end
 
+      # Append an explicit separator glyph ("*", "/" or "//") exactly as a
+      # parsed string would carry it. Glyph-only by design: nothing is negated
+      # or transformed — powers are always stated explicitly (the parser's
+      # division inference belongs to parsing, not to this builder). The next
+      # chained term joins without an implicit "*". To mirror parse("W/m"),
+      # write: unit_w.extender("/").unit("m", -1).
+      def extender(symbol)
+        Builder.append_extender(composable_terms,
+                                Compose.extender_sym(symbol))
+      end
+      alias ext extender
+
       # Attach render metadata. These come AFTER the units/dimensions: each
       # #unit/#dimension (like `*`) builds a fresh root Formula and does not
       # carry earlier metadata forward, so metadata set before another term is
@@ -57,6 +69,11 @@ module Unitsml
       private
 
       def build_formula(other, operator)
+        # An Extender operand is an explicit separator, not a term to combine:
+        # `w * Extender.new("/")` appends the glyph just like `w.extender("/")`
+        # (the operator itself is irrelevant — the Extender carries the glyph).
+        return extender(other) if Compose.type?(Extender, other)
+
         Builder.build_product(composable_terms, operand_terms(other), operator)
       end
 
@@ -69,7 +86,7 @@ module Unitsml
       end
 
       def composable?(other)
-        other.is_a?(Unit) || other.is_a?(Dimension) || other.is_a?(Formula)
+        Compose.type_any?([Unit, Dimension, Formula], other)
       end
     end
   end

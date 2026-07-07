@@ -9,7 +9,7 @@ module Unitsml
 
       def initialize(value:)
         @value = value
-        super("[unitsml] Unknown dimension reference: #{value.inspect} — " \
+        super("[unitsml] Unknown dimension reference: #{describe(value)} — " \
               "expected a dimension id (e.g. \"dim_L\").")
       end
     end

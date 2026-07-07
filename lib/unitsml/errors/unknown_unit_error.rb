@@ -8,8 +8,8 @@ module Unitsml
       def initialize(value:, field: :unit)
         @value = value
         @field = field
-        super("[unitsml] Unknown unit reference: #{value.inspect} — expected " \
-              "a unit symbol id (e.g. \"W\").")
+        super("[unitsml] Unknown unit reference: #{describe(value)} — " \
+              "expected a unit symbol id (e.g. \"W\").")
       end
     end
   end

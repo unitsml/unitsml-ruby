@@ -18,8 +18,9 @@ module Unitsml
     private
 
     def validate_power_type(power)
-      return power if power.nil? || power.is_a?(Numeric)
-      return power if power.is_a?(Number) || power.is_a?(Fenced)
+      if Compose.type_any?([NilClass, Numeric, Number, Fenced], power)
+        return power
+      end
 
       raise Errors::InvalidPowerError.new(value: power,
                                           reason: :unsupported_storage)

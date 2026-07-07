@@ -20,18 +20,22 @@ module Unitsml
       def message_for(field, value)
         case field
         when :operand
-          "[unitsml] Cannot compose with #{value.inspect} — expected a " \
+          "[unitsml] Cannot compose with #{describe(value)} — expected a " \
           "Unit, Dimension or Formula."
         when :prefix
-          "[unitsml] A dimension entry cannot take a prefix: #{value.inspect}."
+          "[unitsml] A dimension cannot take a prefix: #{describe(value)}."
         when :multiplier
-          "[unitsml] Invalid multiplier: #{value.inspect} — expected a " \
+          "[unitsml] Invalid multiplier: #{describe(value)} — expected a " \
           "String, :space, or :nospace."
         when :name
-          "[unitsml] Invalid name: #{value.inspect} — expected a String " \
+          "[unitsml] Invalid name: #{describe(value)} — expected a String " \
           "or Symbol."
+        when :extender
+          "[unitsml] Invalid extender: #{describe(value)} — expected \"*\", " \
+          "\"/\" or \"//\"; custom separators are a render option " \
+          "(multiplier:)."
         else
-          "[unitsml] Invalid #{field} entry: #{value.inspect} — expected a " \
+          "[unitsml] Invalid #{field} entry: #{describe(value)} — expected a " \
           "reference (String/Symbol), a Hash, or a matching Unit/Dimension."
         end
       end

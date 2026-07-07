@@ -19,16 +19,16 @@ module Unitsml
       def message_for(reason, value)
         case reason
         when :non_integer_float
-          "[unitsml] Non-integer Float power: #{value.inspect} — use a " \
+          "[unitsml] Non-integer Float power: #{describe(value)} — use a " \
           "Rational (e.g. Rational(1, 2)) for a fractional exponent."
         when :invalid_number
-          "[unitsml] Invalid Number power: #{value.inspect} — a Number " \
+          "[unitsml] Invalid Number power: #{describe(value)} — a Number " \
           "exponent must hold an integer or n/m fraction (e.g. \"2\", \"1/2\")."
         when :unsupported_storage
-          "[unitsml] Cannot store #{value.inspect} as an exponent — " \
+          "[unitsml] Cannot store #{describe(value)} as an exponent — " \
           "expected a Numeric, Unitsml::Number, or Unitsml::Fenced."
         else
-          "[unitsml] Unsupported power: #{value.inspect} — expected an " \
+          "[unitsml] Unsupported power: #{describe(value)} — expected an " \
           "Integer, Rational, Float or Unitsml::Number."
         end
       end

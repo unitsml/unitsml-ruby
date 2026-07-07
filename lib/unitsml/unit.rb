@@ -130,11 +130,12 @@ module Unitsml
     # them); nil is not a sentinel and fails fast rather than silently building
     # a broken unit. Raises for anything unresolvable.
     def resolve_ref(ref)
-      raise Errors::UnknownUnitError.new(value: ref) if ref.nil?
+      raise Errors::UnknownUnitError.new(value: ref) if Compose.type?(NilClass, ref)
 
-      ref = ref.to_s
-      return ref if ref.empty? || ref == Utility::UNKNOWN
-      return ref if Unitsdb.units.find_by_symbol_id(ref)
+      string = Compose.safe_string(ref)
+      raise Errors::UnknownUnitError.new(value: ref) if string.nil?
+      return string if string.empty? || string == Utility::UNKNOWN
+      return string if Unitsdb.units.find_by_symbol_id(string)
 
       raise Errors::UnknownUnitError.new(value: ref)
     end
@@ -143,16 +144,18 @@ module Unitsml
     # parser keeps its lazy resolution. A string/symbol prefix (the builder) is
     # validated eagerly and wrapped.
     def coerce_prefix(prefix)
-      return prefix if prefix.nil? || prefix.is_a?(Prefix)
+      return prefix if Compose.type_any?([NilClass, Prefix], prefix)
 
-      name = prefix.to_s
+      name = Compose.safe_string(prefix)
+      raise Errors::UnknownPrefixError.new(value: prefix) if name.nil?
+
       # A blank prefix means "no prefix", and the UNKNOWN sentinel from internal
       # decomposition (combine_prefixes for da-/h-prefixed derived units, whose
       # unit is dropped before rendering) both resolve to nil rather than an
       # unvalidated bare string that would crash at render time.
       return if name.strip.empty? || name == Utility::UNKNOWN
       unless Unitsdb.prefixes.find_by_symbol_name(name)
-        raise Errors::UnknownPrefixError.new(value: name)
+        raise Errors::UnknownPrefixError.new(value: prefix)
       end
 
       Prefix.new(name)

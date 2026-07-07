@@ -55,9 +55,15 @@ module Unitsml
       end
 
       def quantity_instance(id)
-        return if id.nil?
+        # A quantity is resolved and silently dropped when unresolvable, so a
+        # pathological id (BasicObject, or a #to_s that raises/returns nil or a
+        # non-String) normalizes to nil here rather than leaking a raw
+        # exception through the render path.
+        string = Compose.safe_string(id)
+        return if string.nil? || string.strip.empty?
 
-        Unitsdb.quantities.find_by_id(id) || Unitsdb.quantities.find_by_name(id)
+        Unitsdb.quantities.find_by_id(string) ||
+          Unitsdb.quantities.find_by_name(string)
       end
 
       def units2dimensions(units)

@@ -11,12 +11,23 @@ module Unitsml
     # TermTree; leaf text lives on Unit/Dimension.
     module Builder
       class << self
-        # Combine a left term list with the right operand's terms, interleaving
-        # multiplication. `/` inverts every right-hand leaf's power.
+        # Combine a left term list with the right operand's terms. The operator
+        # glyph itself joins the two sides (like the parser: `a / b` keeps the
+        # "/" and inverts b's power; `a * b` keeps "*"). An explicit trailing
+        # extender on the left (from #extender) already is the join, so no glyph
+        # is inserted after it — but `/` still inverts the right-hand side.
         def build_product(left_terms, right_terms, operator)
           left = build_terms(left_terms, invert: false)
           right = build_terms(right_terms, invert: operator == "/")
-          build_root_formula(left + [mul_extender] + right)
+          joiner = left.last.is_a?(Extender) ? [] : [Extender.new(operator)]
+          build_root_formula(left + joiner + right)
+        end
+
+        # Append an explicit (pre-validated) separator glyph to the term list,
+        # exactly as the parser stores it. Glyph-only: no transformation.
+        def append_extender(terms, symbol)
+          left = build_terms(terms, invert: false)
+          build_root_formula(left + [Extender.new(symbol)])
         end
 
         # Build a root Formula from an ordered list of unit/dimension operands,
@@ -171,31 +182,11 @@ module Unitsml
         end
 
         def build_metadata(quantity, name, multiplier)
-          validate_name!(name)
-          validate_multiplier!(multiplier)
+          Compose.validate_name!(name)
+          Compose.validate_multiplier!(multiplier)
           metadata = { quantity: quantity, name: name,
                        multiplier: multiplier }.compact
           metadata.empty? ? nil : metadata
-        end
-
-        # name is embedded directly into <UnitName>, so it must be a plain
-        # String/Symbol; a Hash/other would serialize as garbage. (quantity is
-        # resolved and dropped silently when unresolvable, so needs no guard.)
-        def validate_name!(name)
-          return if name.nil? || name.is_a?(String) || name.is_a?(Symbol)
-
-          raise Errors::InvalidUnitEntryError.new(value: name, field: :name)
-        end
-
-        # The multiplier is a render separator: nil, a String, or :space/
-        # :nospace. Reject anything else at the compose boundary so a bad value
-        # fails as an Errors::* instead of leaking at render.
-        def validate_multiplier!(multiplier)
-          return if multiplier.nil? || multiplier.is_a?(String)
-          return if %i[space nospace].include?(multiplier)
-
-          raise Errors::InvalidUnitEntryError.new(value: multiplier,
-                                                  field: :multiplier)
         end
 
         def mul_extender

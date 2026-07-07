@@ -10,13 +10,26 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     Unitsml::Unit.new(name, power, prefix: prefix)
   end
 
+  # to_plurimath is intentionally excluded: exercising it loads the plurimath
+  # gem process-wide, which pollutes the "plurimath not installed" spec.
+  def all_formats
+    %i[to_latex to_asciimath to_unicode to_html to_xml to_mathml]
+  end
+
   describe "operator DSL" do
-    it "composes W/m/sr identically to the parsed expression" do
-      formula = unit("W") / unit("m") / unit("sr")
-      parsed = Unitsml.parse("W*m^-1*sr^-1")
-      formats = %i[to_latex to_asciimath to_unicode to_html to_xml to_mathml]
-      formats.each do |fmt|
+    it "keeps the / glyph and matches the parser for a single division" do
+      formula = unit("W") / unit("m")
+      parsed = Unitsml.parse("W/m")
+      all_formats.each do |fmt|
         expect(formula.public_send(fmt)).to eq(parsed.public_send(fmt))
+      end
+    end
+
+    it "chains division with / glyphs, like repeated explicit extenders" do
+      formula = unit("W") / unit("m") / unit("sr")
+      explicit = unit("W").ext("/").unit("m", -1).ext("/").unit("sr", -1)
+      all_formats.each do |fmt|
+        expect(formula.public_send(fmt)).to eq(explicit.public_send(fmt))
       end
     end
 
@@ -26,7 +39,10 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
 
     it "takes powers from the constructor (m/s^2)" do
       formula = unit("m") / unit("s", 2)
-      expect(formula.to_latex).to eq(Unitsml.parse("m*s^-2").to_latex)
+      parsed = Unitsml.parse("m/s^2")
+      all_formats.each do |fmt|
+        expect(formula.public_send(fmt)).to eq(parsed.public_send(fmt))
+      end
     end
 
     it "does not mutate its operands" do
@@ -421,6 +437,263 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
   end
 
+  describe "explicit extenders (#extender / #ext)" do
+    def expect_parity(built, string)
+      parsed = Unitsml.parse(string)
+      fmts = %i[to_latex to_asciimath to_unicode to_html to_xml to_mathml]
+      fmts.each do |fmt|
+        expect(built.public_send(fmt)).to eq(parsed.public_send(fmt)), fmt.to_s
+      end
+    end
+
+    it "reproduces a parsed division byte-for-byte in every format" do
+      built = Unitsml::Unit.new("W").extender("/").unit("m", -1)
+      expect_parity(built, "W/m")
+    end
+
+    it "reproduces mixed separators (W*m/W) in every format" do
+      built = Unitsml::Unit.new("W").ext("*").unit("m").ext("/").unit("W", -1)
+      expect_parity(built, "W*m/W")
+    end
+
+    it "supports the double-slash extender" do
+      built = Unitsml::Unit.new("m").ext("//").unit("s", -1)
+      expect_parity(built, "m//s")
+    end
+
+    it "matches the parser's chained-division output" do
+      built = Unitsml::Unit.new("W").ext("/").unit("m", -1).ext("/").unit("s")
+      expect_parity(built, "W/m/s")
+    end
+
+    it "keeps dimensions glyph-only, like the parser" do
+      built = Unitsml::Dimension.new("dim_M").ext("/").dimension("dim_L")
+      expect_parity(built, "dim_M/dim_L")
+    end
+
+    it "lets the / operator negate after an explicit extender" do
+      built = Unitsml::Unit.new("W").ext("/") / Unitsml::Unit.new("m")
+      expect_parity(built, "W/m")
+    end
+
+    it "does not insert an implicit * after an explicit extender" do
+      ascii = Unitsml::Unit.new("W").ext("/").unit("m", -1).to_asciimath
+      expect(ascii).to eq("W/m^-1")
+    end
+
+    it "rejects any glyph outside the parser grammar" do
+      w = Unitsml::Unit.new("W")
+      ["x", "·", nil, ""].each do |bad|
+        expect { w.ext(bad) }
+          .to raise_error(Unitsml::Errors::InvalidUnitEntryError,
+                          /render option/)
+      end
+      expect(w.ext(:*).unit("m").to_asciimath).to eq("W*m")
+    end
+
+    it "does not mutate an intermediate chain value" do
+      partial = Unitsml::Unit.new("W") / Unitsml::Unit.new("m")
+      before = partial.to_asciimath
+      partial.unit("sr")
+      expect(partial.to_asciimath).to eq(before)
+    end
+
+    it "leaves a dangling extender buildable but not renderable" do
+      partial = Unitsml::Unit.new("W").ext("/")
+      expect(partial.value.last).to be_a(Unitsml::Extender)
+      # a dangling separator has no valid rendering...
+      expect { partial.to_asciimath }
+        .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+      # ...but the chain can still be completed
+      expect(partial.unit("m", -1).to_asciimath).to eq("W/m^-1")
+    end
+
+    it "rejects a rendered expression that ends in an extender" do
+      %i[to_latex to_asciimath to_unicode to_html to_xml to_mathml
+         to_plurimath].each do |fmt|
+        expect { Unitsml::Unit.new("W").ext("/").public_send(fmt) }
+          .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+      end
+    end
+
+    it "rejects two adjacent extenders" do
+      expect { Unitsml::Unit.new("W").ext("/").ext("*").to_asciimath }
+        .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+      expect { (Unitsml::Unit.new("W") / Unitsml::Unit.new("m").ext("/")).to_xml }
+        .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+    end
+
+    it "guards a misplaced extender nested inside a group" do
+      inner = Unitsml::Formula.new([unit("m"), Unitsml::Extender.new("/")])
+      nested = Unitsml::Formula.new([unit("W"), Unitsml::Extender.new("*"),
+                                     inner], root: true)
+      # to_xml (dimension/unit extraction) and the non-root to_mathml branch
+      # both recurse structurally — the guard must reach the nested group.
+      expect { nested.to_xml }
+        .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+      expect { nested.to_mathml }
+        .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+    end
+
+    it "guards a bare separator wrapped in a group" do
+      fenced = Unitsml::Fenced.new("(", Unitsml::Extender.new("/"), ")")
+      sqrt = Unitsml::Sqrt.new(Unitsml::Extender.new("*"))
+      [fenced, sqrt].each do |inner|
+        f = Unitsml::Formula.new([unit("W"), inner], root: true)
+        expect { f.to_asciimath }
+          .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+      end
+    end
+
+    it "still guards a units/dimensions mix through an extender" do
+      expect { Unitsml::Unit.new("W").ext("/").dimension("dim_L") }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+    end
+
+    it "accepts an Extender object as the glyph" do
+      built = Unitsml::Unit.new("W").ext(Unitsml::Extender.new("/"))
+      expect_parity(built.unit("m", -1), "W/m")
+    end
+
+    it "accepts an Extender object as an operator operand" do
+      slash = Unitsml::Extender.new("/")
+      built = Unitsml::Unit.new("W") * slash * Unitsml::Unit.new("m", -1)
+      expect_parity(built, "W/m")
+    end
+
+    it "rejects an Extender object carrying an out-of-grammar glyph" do
+      expect { Unitsml::Unit.new("W").ext(Unitsml::Extender.new("x")) }
+        .to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+    end
+  end
+
+  describe "compose input hardening" do
+    # Every failure through the compose surface must be an Errors::BaseError,
+    # even for pathological inputs whose #to_s / #inspect raises or is absent.
+    def hostile
+      Class.new do
+        def to_s = raise("boom")
+        def inspect = raise("boom")
+      end.new
+    end
+
+    def non_string_to_s
+      Class.new { def to_s = 5 }.new
+    end
+
+    def hostile_inspect
+      Class.new do
+        def to_s = "ok"
+        def inspect = BasicObject.new
+      end.new
+    end
+
+    it "raises BaseError (never a raw exception) for a hostile extender" do
+      expect { Unitsml::Unit.new("W").ext(hostile) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml::Unit.new("W").ext(BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for a hostile unit/dimension reference" do
+      expect { Unitsml::Unit.new("W").unit(hostile) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml::Dimension.new("dim_M").dimension(hostile) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for a BasicObject operand of * or /" do
+      expect { Unitsml::Unit.new("W") * BasicObject.new }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml::Unit.new("W") / BasicObject.new }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for a reference whose #to_s returns a non-String" do
+      bad = non_string_to_s
+      expect { Unitsml::Unit.new("W").unit(bad) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml.compose(units: [{ unit: bad }]) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for a BasicObject prefix or power" do
+      expect { Unitsml::Unit.new("W").unit("s", prefix: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml::Unit.new("W").unit("s", BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml::Unit.new("m", BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for BasicObject render metadata" do
+      formula = Unitsml::Unit.new("W") / Unitsml::Unit.new("m")
+      expect { formula.name(BasicObject.new).to_xml }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { formula.multiplier(BasicObject.new).to_xml }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for a BasicObject through the raw constructors" do
+      expect { Unitsml::Unit.new(BasicObject.new).to_xml }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml::Dimension.new(BasicObject.new).to_xml }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError for a non-enumerable units:/dimensions: value" do
+      expect { Unitsml.compose(units: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { Unitsml.compose(dimensions: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "silently drops a pathological quantity instead of leaking" do
+      [BasicObject.new, non_string_to_s, hostile].each do |bad|
+        expect { Unitsml.compose(units: ["W"], quantity: bad).to_xml }
+          .not_to raise_error
+      end
+    end
+
+    it "still resolves a valid quantity (String or Symbol)" do
+      expect(Unitsml.compose(units: ["W"], quantity: "radiance").to_xml)
+        .to include("Quantity")
+      expect(Unitsml.compose(units: ["W"], quantity: :radiance).to_xml)
+        .to include("Quantity")
+    end
+
+    it "raises BaseError for a hostile name:/multiplier: render option" do
+      formula = Unitsml.compose(units: ["W", "m"])
+      expect { formula.to_xml(name: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      expect { formula.to_asciimath(multiplier: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+      # the same validation guards a parsed formula's render options
+      expect { Unitsml.parse("W*m").to_xml(multiplier: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "validates render options on a non-root formula too" do
+      nested = Unitsml::Formula.new(
+        [unit("W"), Unitsml::Extender.new("*"), unit("m")], root: false
+      )
+      expect { nested.to_asciimath(multiplier: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises BaseError when an operand's #inspect returns a non-String" do
+      expect { Unitsml::Unit.new("W") * hostile_inspect }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "raises UnknownDimensionError for an unknown or nil Dimension name" do
+      expect { Unitsml::Dimension.new("dim_NOPE") }
+        .to raise_error(Unitsml::Errors::UnknownDimensionError)
+      expect { Unitsml::Dimension.new(nil) }
+        .to raise_error(Unitsml::Errors::UnknownDimensionError)
+    end
+  end
+
   describe "regressions" do
     it "does not break parsing of da-/h-prefixed derived units" do
       expect { Unitsml.parse("hPa").to_xml }.not_to raise_error
@@ -428,8 +701,9 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
 
     it "renders division by an inverse term without a spurious ^1" do
       formula = Unitsml::Unit.new("W") / Unitsml::Unit.new("A", -1)
-      expect(formula.to_xml).to eq(Unitsml.parse("W*A").to_xml)
-      expect(formula.to_asciimath).to eq(Unitsml.parse("W*A").to_asciimath)
+      # dividing by A^-1 leaves A with no exponent (never "^1"), joined by "/"
+      expect(formula.value.last.power_numerator).to be_nil
+      expect(formula.to_asciimath).to eq("W/A")
     end
 
     it "fails fast on a blank or missing unit reference" do
