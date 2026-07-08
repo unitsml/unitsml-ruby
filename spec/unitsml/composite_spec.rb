@@ -343,6 +343,8 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     it "validates a Prefix object at construction" do
       expect { Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("zz")) }
         .to raise_error(Unitsml::Errors::UnknownPrefixError)
+      expect { Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new(BasicObject.new)) }
+        .to raise_error(Unitsml::Errors::BaseError)
     end
 
     it "validates the power of a pre-built Unit entry" do

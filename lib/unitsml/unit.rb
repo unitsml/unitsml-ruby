@@ -170,7 +170,8 @@ module Unitsml
     # its lazy resolution; a directly-constructed one carrying an unresolvable
     # name is rejected here rather than crashing at render.
     def validate_prefix_object(prefix)
-      name = prefix.prefix_name.to_s
+      name = Compose.safe_string(prefix.prefix_name)
+      raise Errors::UnknownPrefixError.new(value: prefix) if name.nil?
       return prefix if name.strip.empty? || name == Utility::UNKNOWN
       return prefix if Unitsdb.prefixes.find_by_symbol_name(name)
 
