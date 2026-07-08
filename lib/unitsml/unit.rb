@@ -144,8 +144,13 @@ module Unitsml
     # parser keeps its lazy resolution. A string/symbol prefix (the builder) is
     # validated eagerly and wrapped.
     def coerce_prefix(prefix)
-      return prefix if Compose.type_any?([NilClass, Prefix], prefix)
+      return prefix if Compose.type?(NilClass, prefix)
+      return validate_prefix_object(prefix) if Compose.type?(Prefix, prefix)
 
+      coerce_prefix_string(prefix)
+    end
+
+    def coerce_prefix_string(prefix)
       name = Compose.safe_string(prefix)
       raise Errors::UnknownPrefixError.new(value: prefix) if name.nil?
 
@@ -159,6 +164,17 @@ module Unitsml
       end
 
       Prefix.new(name)
+    end
+
+    # A pre-built Prefix (the parse path) is kept as-is so the parser retains
+    # its lazy resolution; a directly-constructed one carrying an unresolvable
+    # name is rejected here rather than crashing at render.
+    def validate_prefix_object(prefix)
+      name = prefix.prefix_name.to_s
+      return prefix if name.strip.empty? || name == Utility::UNKNOWN
+      return prefix if Unitsdb.prefixes.find_by_symbol_name(name)
+
+      raise Errors::UnknownPrefixError.new(value: prefix)
     end
 
     def display_exp

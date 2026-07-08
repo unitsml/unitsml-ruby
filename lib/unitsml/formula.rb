@@ -44,7 +44,7 @@ module Unitsml
 
         generated_math.force_encoding("UTF-8")
       else
-        value.map { |obj| obj.to_mathml(options) }
+        value.map { |obj| obj.to_mathml(update_options(options)) }
       end
     end
 
@@ -130,9 +130,9 @@ module Unitsml
     end
 
     def reject_misplaced_extenders!(terms)
-      return unless terms.last.is_a?(Extender) || adjacent_extenders?(terms)
-
-      raise Errors::MisplacedExtenderError
+      misplaced = terms.first.is_a?(Extender) ||
+        terms.last.is_a?(Extender) || adjacent_extenders?(terms)
+      raise Errors::MisplacedExtenderError if misplaced
     end
 
     def adjacent_extenders?(terms)

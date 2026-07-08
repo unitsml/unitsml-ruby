@@ -340,9 +340,8 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect(sym.to_xml).to eq(str.to_xml)
     end
 
-    it "validates the prefix of a pre-built Unit entry" do
-      bad = Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("zz"))
-      expect { Unitsml.compose(units: [bad]) }
+    it "validates a Prefix object at construction" do
+      expect { Unitsml::Unit.new("m", prefix: Unitsml::Prefix.new("zz")) }
         .to raise_error(Unitsml::Errors::UnknownPrefixError)
     end
 
@@ -713,6 +712,34 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::UnknownDimensionError)
       expect { Unitsml::Dimension.new(nil) }
         .to raise_error(Unitsml::Errors::UnknownDimensionError)
+    end
+
+    it "rejects a numeric power the parser can't express" do
+      require "bigdecimal"
+      expect { Unitsml::Unit.new("m", BigDecimal("1.5")) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+      expect { Unitsml::Unit.new("m", Complex(2, 0)) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    it "raises MisplacedExtenderError for a leading separator" do
+      formula = Unitsml::Formula.new(
+        [Unitsml::Extender.new("*"), Unitsml::Unit.new("m")], root: true
+      )
+      expect { formula.to_latex }
+        .to raise_error(Unitsml::Errors::MisplacedExtenderError)
+    end
+
+    it "validates a render option on a non-root to_mathml" do
+      nested = Unitsml::Formula.new([Unitsml::Unit.new("W")], root: false)
+      expect { nested.to_mathml(multiplier: BasicObject.new) }
+        .to raise_error(Unitsml::Errors::BaseError)
+    end
+
+    it "drops a pathological quantity through find_by_name too" do
+      hostile = Class.new { def to_s = raise("boom") }.new
+      expect { Unitsml.compose(units: ["W"], quantity: hostile).to_xml }
+        .not_to raise_error
     end
   end
 

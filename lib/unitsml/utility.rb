@@ -394,7 +394,10 @@ module Unitsml
         # than leaking the raw reference as an xml:id.
         return if instance && record.nil?
 
-        id = canonical_nist_id(record) || unit.quantity_references&.first&.id
+        # unit is nil for a composite; fall back to the record's own identifier
+        # so a quantity without a NIST id still emits a usable xml:id.
+        id = canonical_nist_id(record) || quantity_reference_id(unit) ||
+          record_identifier_id(record)
         model_quantity_xml(id, quantity_dimension_url(unit, dims),
                            record&.quantity_type)
       end
@@ -410,6 +413,18 @@ module Unitsml
 
       def canonical_nist_id(record)
         record&.identifiers&.find { |identifier| identifier.type == "nist" }&.id
+      end
+
+      def quantity_reference_id(unit)
+        return unless unit
+
+        unit.quantity_references&.first&.id
+      end
+
+      def record_identifier_id(record)
+        return unless record
+
+        record.identifiers&.first&.id
       end
 
       def unit_nist_id(unit)

@@ -13,9 +13,10 @@ module Unitsml
       # case-insensitive. Non-English synonyms are skipped (some contain
       # commas the parser's comma-metadata handling would truncate).
       def find_by_name(name)
-        return if name.to_s.strip.empty?
+        string = Compose.safe_string(name)
+        return if string.nil? || string.strip.empty?
 
-        key = name.to_s.downcase
+        key = string.downcase
         quantities.find { |quantity| name_matches?(quantity, key) }
       end
 

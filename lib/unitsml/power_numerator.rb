@@ -20,7 +20,10 @@ module Unitsml
 
     def coerce_power_type(power)
       return power if Compose.type_any?([NilClass, Number, Fenced], power)
-      if Compose.type?(Numeric, power)
+      # Only the numeric types the parser can express (Integer, Rational, whole
+      # Float) coerce; other Numerics (BigDecimal, Complex, ...) are rejected
+      # rather than stringified into a non-parser exponent.
+      if Compose.type_any?([Integer, Rational, Float], power)
         return Number.new(Compose.numeric_exponent_string(power))
       end
 
