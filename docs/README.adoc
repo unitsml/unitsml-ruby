@@ -254,10 +254,12 @@ formula = Unitsml.compose(units: ["W", { unit: "m", power: -1 }])
 formula.to_xml(quantity: "radiance") # emits a <Quantity> element
 ----
 
-Composed terms are always joined with `*` (division becomes a negative
-exponent), so a composed `Formula` renders like `W*m^-1`, not `W/m`. The
-separator is a display choice — pass the `multiplier:` argument to any `to_*`
-method (`:space`, `:nospace`, or a custom string such as `"·"`) to change it:
+The fluent `#unit`/`#dimension` chain and the keyword form join terms with `*`,
+turning division into a negative exponent, so they render like `W*m^-1`. (The
+`/` operator and explicit `#extender`/`#ext` separators keep their glyph
+instead — see above.) Where terms are `*`-joined, the separator is a display
+choice — pass the `multiplier:` argument to any `to_*` method (`:space`,
+`:nospace`, or a custom string such as `"·"`) to change it:
 
 [source,ruby]
 ----

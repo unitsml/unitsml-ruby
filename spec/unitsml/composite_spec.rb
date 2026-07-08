@@ -48,7 +48,7 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     it "does not mutate its operands" do
       squared = unit("s", 2)
       unit("m") / squared
-      expect(squared.power_numerator).to eq(2)
+      expect(squared.power_numerator).to eq(Unitsml::Number.new("2"))
     end
 
     it "raises when units and dimensions are mixed" do
@@ -198,14 +198,36 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
 
-    it "stores supported power types as given (no coercion)" do
-      expect(Unitsml::Unit.new("m", 2).power_numerator).to eq(2)
-      expect(Unitsml::Unit.new("m", Rational(1, 2)).power_numerator)
-        .to eq(Rational(1, 2))
-      expect(Unitsml::Unit.new("m", 1.5).power_numerator).to eq(1.5)
+    it "coerces a numeric power into a Unitsml::Number" do
+      expect(Unitsml::Unit.new("m", 2).power_numerator)
+        .to eq(Unitsml::Number.new("2"))
+      expect(Unitsml::Dimension.new("dim_L", 2).power_numerator)
+        .to eq(Unitsml::Number.new("2"))
+    end
+
+    it "stores a numeric power in the parser's exponent format" do
+      # a Rational keeps its fraction form; whole values (incl. Float) reduce
+      expect(Unitsml::Unit.new("m", Rational(1, 2)).power_numerator.raw_value)
+        .to eq("1/2")
+      expect(Unitsml::Unit.new("m", Rational(4, 2)).power_numerator.raw_value)
+        .to eq("2")
+      expect(Unitsml::Unit.new("m", 2.0).power_numerator.raw_value).to eq("2")
+    end
+
+    it "keeps a passed-in Number or Fenced exponent as-is" do
       number = Unitsml::Number.new("3")
       expect(Unitsml::Unit.new("m", number).power_numerator).to be(number)
-      expect(Unitsml::Dimension.new("dim_L", 2).power_numerator).to eq(2)
+      fenced = Unitsml::Fenced.new("(", Unitsml::Number.new("1/2"), ")")
+      expect(Unitsml::Unit.new("m", fenced).power_numerator).to be(fenced)
+      expect(Unitsml::Dimension.new("dim_L", fenced).power_numerator)
+        .to be(fenced)
+    end
+
+    it "rejects a decimal power (no parser representation)" do
+      expect { Unitsml::Unit.new("m", 0.5) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+      expect { Unitsml::Unit.new("m", 1.5) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
 
     it "keeps the parser's Fenced exponent storable" do

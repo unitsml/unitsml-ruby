@@ -124,9 +124,18 @@ module Unitsml
             unit_name = Unitsdb.units.find_by_id(k.unit_reference.id).symbols.first.id
             exponent = (k.power&.to_i || 1) * (u.power_numerator&.to_f || 1)
             object << { prefix: prefix,
-                        unit: Unit.new(unit_name, exponent, prefix: prefix) }
+                        unit: dimension_base_unit(unit_name, exponent, prefix) }
           end
         end
+      end
+
+      # A throwaway unit used only to compute the dimension vector. Its exponent
+      # is kept as the raw Numeric (bypassing Number coercion) so the vector
+      # still stringifies to a Unitsdb-matchable value; it is never rendered.
+      def dimension_base_unit(unit_name, exponent, prefix)
+        unit = Unit.new(unit_name, prefix: prefix)
+        unit.instance_variable_set(:@power_numerator, exponent)
+        unit
       end
 
       def gather_units(units)

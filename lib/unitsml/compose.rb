@@ -97,6 +97,31 @@ module Unitsml
       nil
     end
 
+    # A raw Numeric exponent, rendered in the parser's string form (a whole
+    # integer, or an n/m fraction from a Rational). A decimal (non-integer
+    # Float) has no parser representation and is rejected — nothing beyond what
+    # the parser accepts is introduced.
+    def numeric_exponent_string(numeric)
+      case numeric
+      when Rational then rational_exponent_string(numeric)
+      when Float then integer_float_string(numeric)
+      else numeric.to_s # Integer (and any other whole Numeric)
+      end
+    end
+
+    def rational_exponent_string(rational)
+      rational.denominator == 1 ? rational.numerator.to_s : rational.to_s
+    end
+
+    def integer_float_string(float)
+      unless float.finite? && float == float.to_i
+        raise Errors::InvalidPowerError.new(value: float,
+                                            reason: :non_integer_float)
+      end
+
+      float.to_i.to_s
+    end
+
     # Class-membership test via Module#=== rather than #is_a?, so a compose
     # input that is a BasicObject (which has no #is_a?/#nil?) is rejected as a
     # typed Errors::* instead of the check itself raising a raw NoMethodError.

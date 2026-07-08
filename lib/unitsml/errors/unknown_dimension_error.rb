@@ -2,8 +2,9 @@
 
 module Unitsml
   module Errors
-    # Raised when a dimension reference cannot be resolved. Dimension.new has no
-    # existence check, so compose validates eagerly to stay fail-fast.
+    # Raised when a dimension reference cannot be resolved — by Dimension.new
+    # (which validates its name against the parsable ids) or by the compose
+    # validators, which fail fast with the same error before construction.
     class UnknownDimensionError < Unitsml::Errors::BaseError
       attr_reader :value
 
