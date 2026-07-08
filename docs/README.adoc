@@ -274,9 +274,9 @@ and metadata value and raise a `Unitsml::Errors::*` (all subclasses of
 `Unitsml::Errors::BaseError`) for anything they cannot resolve: an unknown unit,
 dimension or prefix, a units/dimensions mix, an empty composition, a power the
 parser cannot express (a decimal exponent — use a `Rational`), or a non-string
-`name`/`multiplier`. The operator DSL composes the objects you construct, so —
-as with rendering a `Unit` or `Dimension` directly — a hand-built object
-carrying an unresolvable prefix or dimension name is the caller's responsibility.
+`name`/`multiplier`. `Unit.new`/`Dimension.new` validate their own reference,
+prefix and power on construction too, so an unresolvable value raises
+immediately whichever surface you use.
 
 
 === Format representation
