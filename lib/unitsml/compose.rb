@@ -59,9 +59,9 @@ module Unitsml
       raise Errors::UnknownUnitError.new(value: reference)
     end
 
-    # Validate a dimension reference (Dimension.new does not), so the keyword
-    # form and the fluent #dimension chain both fail fast with the same
-    # Errors::UnknownDimensionError instead of crashing at render.
+    # Normalize and validate a dimension reference at the shared compose
+    # boundary, so the keyword form, fluent #dimension chain, and Dimension.new
+    # all fail fast with the same Errors::UnknownDimensionError behavior.
     def dimension_ref(reference)
       string = safe_string(reference)
       return string if string && Unitsdb.dimensions.parsables.key?(string)

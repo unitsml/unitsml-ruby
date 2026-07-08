@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
 module Unitsml
-  # Storage for the power_numerator exponent shared by Unit and Dimension. The
-  # stored value is always a Unitsml::Number (or a Fenced exponent for the
-  # parser's m^((1/2)) form, or nil for none) — never a bare Numeric: a Numeric
-  # (e.g. a Float from unit decomposition, or Unit.new("m", 2) from the public
-  # API) is coerced into a Number so every render/compare/decomposition path can
-  # rely on the Number interface (raw_value/to_latex/to_i/to_f). Anything else
-  # (a String, a Hash, a BasicObject) raises instead of being stored and
-  # crashing later at render.
+  # Storage for the power_numerator exponent shared by Unit and Dimension.
+  # Values assigned through #power_numerator= are always a Unitsml::Number (or a
+  # Fenced exponent for the parser's m^((1/2)) form, or nil for none) -- never a
+  # bare Numeric: public Numeric inputs like Unit.new("m", 2) are coerced into a
+  # Number so render/compare paths can rely on raw_value/to_latex/to_i/to_f.
+  # Internal dimension-vector throwaway units may bypass this setter and keep a
+  # raw Numeric in @power_numerator; those objects are never rendered.
+  # Anything else (a String, a Hash, a BasicObject) raises instead of being
+  # stored and crashing later at render.
   module PowerNumerator
     attr_reader :power_numerator
 
