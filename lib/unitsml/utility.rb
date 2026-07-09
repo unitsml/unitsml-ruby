@@ -87,10 +87,11 @@ module Unitsml
         return nil if dims.nil? || dims.empty?
 
         dim_hash = dims.to_h { |h| [h[:dimension], h] }
-        dims_vector = DIMS_VECTOR.map do |h|
-          dim_hash.dig(h, :exponent)
-        end.join(":")
-        id = Unitsdb.dimensions.find_by_vector(dims_vector)&.id and return id.to_s
+        dims_vector = dimension_vector(dim_hash)
+        if dims_vector
+          id = Unitsdb.dimensions.find_by_vector(dims_vector)&.id
+          return id.to_s if id
+        end
 
         "D_" + dims.map do |d|
           (U2D.dig(d[:unit], :symbol) || DIM2D.dig(d[:id], :symbol)) +
@@ -101,7 +102,7 @@ module Unitsml
       def to_i_value(object)
         case object
         when Integer, Float then object
-        when Number, Fenced then object.to_i
+        when Number, Fenced, PowerNumerator then object.to_i
         end
       end
 
@@ -130,12 +131,10 @@ module Unitsml
       end
 
       # A throwaway unit used only to compute the dimension vector. Its exponent
-      # is kept as the raw Numeric (bypassing Number coercion) so the vector
-      # still stringifies to a Unitsdb-matchable value; it is never rendered.
+      # keeps the exact numeric vector component while remaining renderable.
       def dimension_base_unit(unit_name, exponent, prefix)
-        unit = Unit.new(unit_name, prefix: prefix)
-        unit.instance_variable_set(:@power_numerator, exponent)
-        unit
+        Unit.new(unit_name, PowerNumerator.for_dimension_vector(exponent),
+                 prefix: prefix)
       end
 
       def gather_units(units)
@@ -143,7 +142,8 @@ module Unitsml
           if m.empty? || m[-1][:unit]&.unit_name != k[:unit]&.unit_name
             m << k
           else
-            m[-1][:unit]&.power_numerator = Number.new(numerator_value(k, m))
+            m[-1][:unit]&.power_numerator =
+              PowerNumerator.from_raw_value(numerator_value(k, m))
             m[-1] = {
               prefix: combine_prefixes(m[-1][:prefix], k[:prefix]),
               unit: m[-1][:unit],
@@ -262,9 +262,31 @@ module Unitsml
         case float
         when Integer, Float
           float.to_f.round(1).to_s.sub(/\.0$/, "")
-        when Number, Fenced
+        when Number, Fenced, PowerNumerator
           float.float_to_display
         end
+      end
+
+      def dimension_vector(dim_hash)
+        vector = []
+        DIMS_VECTOR.each do |dimension|
+          exponent = dim_hash.dig(dimension, :exponent)
+          return unless dimension_vector_matchable?(exponent)
+
+          vector << dimension_vector_value(exponent)
+        end
+        vector.join(":")
+      end
+
+      def dimension_vector_matchable?(exponent)
+        !exponent.is_a?(PowerNumerator) ||
+          !exponent.dimension_vector_value.nil?
+      end
+
+      def dimension_vector_value(exponent)
+        return exponent.dimension_vector_value if exponent.is_a?(PowerNumerator)
+
+        exponent
       end
 
       def dimid2dimensions(normtext)
@@ -347,7 +369,7 @@ module Unitsml
         enum_root_units = units.map do |unit|
           attributes = { unit: unit.enumerated_name }
           attributes[:prefix] = unit.prefix_name if unit.prefix
-          unit.power_numerator && unit.power_numerator != "1" and
+          unit.power_numerator && !unit.power_numerator.one? and
             attributes[:power_numerator] = unit.power_numerator.raw_value
           Model::Units::EnumeratedRootUnit.new(
             **attributes,

@@ -35,7 +35,9 @@ RSpec.describe Unitsml::Unit do
     end
 
     context "with a power numerator" do
-      let(:unit) { described_class.new("m", Unitsml::Number.new("2")) }
+      let(:unit) do
+        described_class.new("m", Unitsml::PowerNumerator.from_raw_value("2"))
+      end
 
       it "returns an msup method_name" do
         expect(result[:method_name]).to eq(:msup)

@@ -72,8 +72,8 @@ module Unitsml
       # units:, or a Unit in dimensions:, is rejected). It is then rebuilt
       # through the same validated path as a Hash entry so its name, power and
       # prefix are normalized/validated — otherwise a Symbol name, an invalid
-      # Number power, or an unresolved Prefix object slips through and crashes
-      # (or renders non-parseably) at render time.
+      # exponent, or an unresolved Prefix object slips through and crashes (or
+      # renders non-parseably) at render time.
       def typed_entry(entry)
         unless entry.is_a?(expected_class)
           raise Errors::InvalidUnitEntryError.new(value: entry, field: @kind)

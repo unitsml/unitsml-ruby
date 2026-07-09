@@ -48,7 +48,8 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     it "does not mutate its operands" do
       squared = unit("s", 2)
       unit("m") / squared
-      expect(squared.power_numerator).to eq(Unitsml::Number.new("2"))
+      expect(squared.power_numerator)
+        .to eq(Unitsml::PowerNumerator.from_raw_value("2"))
     end
 
     it "raises when units and dimensions are mixed" do
@@ -198,11 +199,14 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
 
-    it "coerces a numeric power into a Unitsml::Number" do
+    it "coerces a numeric power into a Unitsml::PowerNumerator" do
       expect(Unitsml::Unit.new("m", 2).power_numerator)
-        .to eq(Unitsml::Number.new("2"))
+        .to be_a(Unitsml::PowerNumerator)
+      expect(Unitsml::Unit.new("m", 2).power_numerator)
+        .to eq(Unitsml::PowerNumerator.from_raw_value("2"))
+      expect(Unitsml::Unit.new("m", 2).power_numerator).to eq(2)
       expect(Unitsml::Dimension.new("dim_L", 2).power_numerator)
-        .to eq(Unitsml::Number.new("2"))
+        .to eq(Unitsml::PowerNumerator.from_raw_value("2"))
     end
 
     it "stores a numeric power in the parser's exponent format" do
@@ -214,12 +218,12 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect(Unitsml::Unit.new("m", 2.0).power_numerator.raw_value).to eq("2")
     end
 
-    it "keeps a passed-in Number or Fenced exponent as-is" do
+    it "wraps a passed-in Number or Fenced exponent without replacing it" do
       number = Unitsml::Number.new("3")
-      expect(Unitsml::Unit.new("m", number).power_numerator).to be(number)
+      expect(Unitsml::Unit.new("m", number).power_numerator.value).to be(number)
       fenced = Unitsml::Fenced.new("(", Unitsml::Number.new("1/2"), ")")
-      expect(Unitsml::Unit.new("m", fenced).power_numerator).to be(fenced)
-      expect(Unitsml::Dimension.new("dim_L", fenced).power_numerator)
+      expect(Unitsml::Unit.new("m", fenced).power_numerator.value).to be(fenced)
+      expect(Unitsml::Dimension.new("dim_L", fenced).power_numerator.value)
         .to be(fenced)
     end
 
@@ -301,17 +305,17 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
   end
 
   describe "adversarial hardening (bug-hunt findings)" do
-    it "rejects a fractional pre-built Number power like a Float" do
-      half = Unitsml::Number.new("0.5")
+    it "rejects a fractional pre-built PowerNumerator like a Float" do
+      half = Unitsml::PowerNumerator.from_raw_value("0.5")
       expect { Unitsml.compose(units: [{ unit: "m", power: half }]) }
         .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
 
-    it "still accepts an integer or fraction pre-built Number power" do
-      three = Unitsml::Number.new("3")
+    it "still accepts an integer or fraction pre-built PowerNumerator power" do
+      three = Unitsml::PowerNumerator.from_raw_value("3")
       expect(Unitsml.compose(units: [{ unit: "m", power: three }]).to_latex)
         .to eq(Unitsml.parse("m^3").to_latex)
-      half = Unitsml::Number.new("1/2")
+      half = Unitsml::PowerNumerator.from_raw_value("1/2")
       expect(Unitsml.compose(units: [{ unit: "m", power: half }]).to_latex)
         .to match(%r{\^1/2$})
     end
@@ -348,14 +352,17 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
 
     it "validates the power of a pre-built Unit entry" do
-      bad = Unitsml::Unit.new("m", Unitsml::Number.new("abc"))
+      bad = Unitsml::Unit.new(
+        "m",
+        Unitsml::PowerNumerator.from_raw_value("abc"),
+      )
       expect { Unitsml.compose(units: [bad]) }
         .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
 
-    it "accepts slashed Number exponents the parser accepts" do
+    it "accepts slashed PowerNumerator exponents the parser accepts" do
       %w[1/-2 1//2].each do |raw|
-        pow = Unitsml::Number.new(raw)
+        pow = Unitsml::PowerNumerator.from_raw_value(raw)
         got = Unitsml.compose(units: [{ unit: "m", power: pow }]).to_latex
         expect(got).to eq(Unitsml.parse("m^(#{raw})").to_latex)
       end
@@ -750,6 +757,21 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect { Unitsml.parse("hPa").to_xml }.not_to raise_error
     end
 
+    it "keeps decomposition exponents renderable with a vector component" do
+      raw = Unitsml::Utility.dimension_base_unit("s", -1.0, nil).power_numerator
+      expect(raw).to be_a(Unitsml::PowerNumerator)
+      expect(raw.value).to be_a(Unitsml::Number)
+      expect(raw.raw_value).to eq("-1.0")
+      expect(raw.dimension_vector_value).to eq("-1.0")
+      expect(raw.to_latex({})).to eq("-1.0")
+    end
+
+    it "keeps decomposition dim-id parity" do
+      expect(Unitsml.parse("Hz").to_xml).to include('dimensionURL="#NISTd101"')
+      expect(Unitsml.parse("kg*s^-2").to_xml)
+        .to include('dimensionURL="#D_MT-2"')
+    end
+
     it "renders division by an inverse term without a spurious ^1" do
       formula = Unitsml::Unit.new("W") / Unitsml::Unit.new("A", -1)
       # dividing by A^-1 leaves A with no exponent (never "^1"), joined by "/"
@@ -819,11 +841,11 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       end
     end
 
-    it "explains an invalid Number power without mentioning Float" do
-      bad = Unitsml::Number.new("abc")
+    it "explains an invalid PowerNumerator power without mentioning Float" do
+      bad = Unitsml::PowerNumerator.from_raw_value("abc")
       expect { Unitsml.compose(units: [{ unit: "m", power: bad }]) }
         .to raise_error(Unitsml::Errors::InvalidPowerError,
-                        /Invalid Number power/)
+                        /Invalid exponent power/)
     end
   end
 end

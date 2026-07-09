@@ -75,15 +75,17 @@ module Unitsml
       type?(Prefix, prefix) ? prefix.prefix_name : prefix
     end
 
-    # A Number power must still be a parser-valid exponent (integer or n/m,
-    # optionally signed / double-slashed); a decimal ("0.5") or garbage ("abc")
-    # has no parsed equivalent and is rejected. Other types (Integer/Rational/
-    # Float/nil) are validated by Builder during assembly.
+    # A power supplied at the compose boundary is normalized to PowerNumerator
+    # and must still be parser-valid (integer or n/m, optionally signed /
+    # double-slashed); a decimal ("0.5") or garbage ("abc") has no parsed
+    # equivalent and is rejected.
     def power(value)
-      return value unless type?(Number, value)
-      return value if value.raw_value.match?(%r{\A-?\d+(//?-?\d+)?\z})
+      return nil if type?(NilClass, value)
 
-      raise Errors::InvalidPowerError.new(value: value,
+      power = PowerNumerator.coerce(value)
+      return power if power.raw_value.match?(%r{\A-?\d+(//?-?\d+)?\z})
+
+      raise Errors::InvalidPowerError.new(value: power,
                                           reason: :invalid_number)
     end
 

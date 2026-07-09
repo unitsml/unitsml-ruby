@@ -95,8 +95,8 @@ require "unitsml/compose/term_tree"
 require "unitsml/compose/builder"
 require "unitsml/compose/composable"
 require "unitsml/compose/composite"
-# PowerNumerator must be defined before Unit/Dimension include it (no lazy
-# autoload under Opal).
+# PowerNumerator must be defined before Unit/Dimension include its storage mixin
+# (no lazy autoload under Opal).
 require "unitsml/power_numerator"
 require "unitsml/dimension"
 require "unitsml/extender"

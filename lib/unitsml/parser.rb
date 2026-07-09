@@ -30,27 +30,40 @@ module Unitsml
 
     def update_units_exponents(array, inverse, sqrt = false)
       array.each do |object|
-        if object.is_a?(Sqrt)
-          object = object.value
-          if object.is_a?(Unit)
-            object.power_numerator = Number.new("0.5")
-          else
-            update_units_exponents([object], inverse, true)
-          end
-        end
+        object = prepare_sqrt_object(object, inverse)
 
         case object
         when Unit
-          next object.power_numerator = Number.new("0.5") if sqrt
+          if sqrt
+            assign_sqrt_power(object)
+            next
+          end
           next unless inverse
 
-          inverse ? object.inverse_power_numerator : object.power_numerator
-        when Dimension then object.power_numerator = Number.new("0.5") if sqrt
+          object.inverse_power_numerator
+        when Dimension
+          assign_sqrt_power(object) if sqrt
         when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
         when Formula then update_units_exponents(object.value, inverse)
         when Fenced then update_units_exponents([object.value], inverse, sqrt)
         end
       end
+    end
+
+    def prepare_sqrt_object(object, inverse)
+      return object unless object.is_a?(Sqrt)
+
+      value = object.value
+      if value.is_a?(Unit)
+        assign_sqrt_power(value)
+      else
+        update_units_exponents([value], inverse, true)
+      end
+      value
+    end
+
+    def assign_sqrt_power(object)
+      object.power_numerator = PowerNumerator.from_raw_value("0.5")
     end
 
     def post_extras

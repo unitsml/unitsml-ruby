@@ -55,18 +55,22 @@ module Unitsml
 
     rule(unit: simple(:unit),
          power_numerator: simple(:power_numerator)) do
-      Unit.new(unit.to_s, power_numerator)
+      Unit.new(unit.to_s, PowerNumerator.coerce(power_numerator))
     end
 
     rule(dimension: simple(:dimension),
          power_numerator: simple(:power_numerator)) do
-      Dimension.new(dimension.to_s, power_numerator)
+      Dimension.new(dimension.to_s, PowerNumerator.coerce(power_numerator))
     end
 
     rule(prefix: simple(:prefix),
          unit: simple(:unit),
          power_numerator: simple(:power_numerator)) do
-      Unit.new(unit.to_s, power_numerator, prefix: Prefix.new(prefix.to_s))
+      Unit.new(
+        unit.to_s,
+        PowerNumerator.coerce(power_numerator),
+        prefix: Prefix.new(prefix.to_s),
+      )
     end
 
     rule(first_set: simple(:first_set),
@@ -155,7 +159,7 @@ module Unitsml
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Unit.new(unit.to_s, power_numerator),
+          Unit.new(unit.to_s, PowerNumerator.coerce(power_numerator)),
           Extender.new(ext.to_s),
           sequence,
         ],
@@ -168,7 +172,10 @@ module Unitsml
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Dimension.new(dimension.to_s, power_numerator),
+          Dimension.new(
+            dimension.to_s,
+            PowerNumerator.coerce(power_numerator),
+          ),
           Extender.new(ext.to_s),
           sequence,
         ],
@@ -195,7 +202,11 @@ module Unitsml
          sequence: simple(:sequence)) do
       Formula.new(
         [
-          Unit.new(unit.to_s, power_numerator, prefix: Prefix.new(prefix.to_s)),
+          Unit.new(
+            unit.to_s,
+            PowerNumerator.coerce(power_numerator),
+            prefix: Prefix.new(prefix.to_s),
+          ),
           Extender.new(ext.to_s),
           sequence,
         ],

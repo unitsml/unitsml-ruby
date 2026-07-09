@@ -4,7 +4,7 @@ module Unitsml
   class Unit
     include MathmlHelper
     include Compose::Composable
-    include PowerNumerator
+    include PowerNumerator::Storage
 
     attr_accessor :unit_name, :prefix
 
@@ -118,7 +118,7 @@ module Unitsml
       if power_numerator
         power_numerator.update_negative_sign
       else
-        @power_numerator = Number.new("-1")
+        self.power_numerator = PowerNumerator.from_raw_value("-1")
       end
     end
 

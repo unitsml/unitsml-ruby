@@ -83,44 +83,34 @@ module Unitsml
           copy
         end
 
-        # The leaf's final exponent as a fresh Number (or nil). For division the
-        # exponent is negated; a negation that resolves to +1 (dividing by a
-        # ^-1 term) renders as no exponent, matching the parser, so it is
-        # dropped. A non-inverted explicit ^1 is preserved.
+        # The leaf's final exponent as a fresh PowerNumerator (or nil). For
+        # division the exponent is negated; a negation that resolves to +1
+        # (dividing by a ^-1 term) renders as no exponent, matching the parser,
+        # so it is dropped. A non-inverted explicit ^1 is preserved.
         def final_power(power, invert)
           raw = power_string(power)
-          return raw && Number.new(raw) unless invert
+          return raw && PowerNumerator.from_raw_value(raw) unless invert
 
           negated = negate_string(raw)
-          negated == "1" ? nil : Number.new(negated)
+          negated == "1" ? nil : PowerNumerator.from_raw_value(negated)
         end
 
-        # A builder-supplied power as a parser-style exponent string (or nil):
-        # 1 -> "1", 1/2 -> "1/2", 2.0 -> "2". A non-integer Float is rejected
-        # (the parser has no decimal exponent); an existing Number is read by
-        # value, never shared.
+        # A stored leaf power as a parser-style exponent string (or nil).
+        # Earlier boundaries normalize all non-nil powers to PowerNumerator.
         def power_string(power)
           case power
           when nil then nil
-          when Number then power.raw_value
-          when Integer then power.to_s
-          when Rational then rational_string(power)
-          when Float then float_string(power)
+          when PowerNumerator then object_power_string(power)
           else raise Errors::InvalidPowerError.new(value: power)
           end
         end
 
-        def float_string(power)
-          unless power.finite? && power == power.to_i
-            raise Errors::InvalidPowerError.new(value: power,
-                                                reason: :non_integer_float)
+        def object_power_string(power)
+          if power.fenced?
+            raise Errors::InvalidPowerError.new(value: power.value)
           end
 
-          power.to_i.to_s
-        end
-
-        def rational_string(power)
-          power.denominator == 1 ? power.numerator.to_s : power.to_s
+          power.raw_value
         end
 
         # Negate an exponent string: nil (no exponent) -> "-1", else flip sign.

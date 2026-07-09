@@ -4,7 +4,7 @@ module Unitsml
   class Dimension
     include MathmlHelper
     include Compose::Composable
-    include PowerNumerator
+    include PowerNumerator::Storage
 
     attr_accessor :dimension_name
 
