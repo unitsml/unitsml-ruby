@@ -120,6 +120,16 @@ module Unitsml
       @dimension_vector_value = raw_value if dimension_vector_value
     end
 
+    # A fresh wrapper with the sign flipped. Never mutates self or its payload,
+    # so a PowerNumerator shared across units (or a caller's operand) stays
+    # independent — inversion replaces the exponent rather than editing it.
+    def negated
+      payload = copy_payload
+      payload.update_negative_sign
+      vector = dimension_vector_value && payload.raw_value
+      self.class.new(payload, dimension_vector_value: vector)
+    end
+
     def one?
       raw_value == "1"
     end
@@ -129,6 +139,17 @@ module Unitsml
     end
 
     private
+
+    # A payload copy whose #update_negative_sign won't reach the original: a
+    # Number reassigns its own @value (a shallow dup suffices); a Fenced is
+    # rebuilt with a recursively copied inner payload so even a nested Fenced
+    # shares nothing with the source.
+    def copy_payload(payload = value)
+      return payload.dup unless payload.is_a?(Fenced)
+
+      Fenced.new(payload.open_paren, copy_payload(payload.value),
+                 payload.close_paren)
+    end
 
     def equivalent_power_numerator?(other)
       value == other.value

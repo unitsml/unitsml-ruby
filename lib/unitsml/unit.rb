@@ -115,11 +115,11 @@ module Unitsml
     end
 
     def inverse_power_numerator
-      if power_numerator
-        power_numerator.update_negative_sign
-      else
-        self.power_numerator = PowerNumerator.from_raw_value("-1")
-      end
+      self.power_numerator = if power_numerator
+                               power_numerator.negated
+                             else
+                               PowerNumerator.from_raw_value("-1")
+                             end
     end
 
     private

@@ -267,6 +267,25 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to eq(Unitsml.parse("m^3").to_latex)
     end
 
+    it "inverts without mutating a PowerNumerator shared across units" do
+      power = Unitsml::PowerNumerator.from_raw_value("2")
+      inverted = Unitsml::Unit.new("m", power)
+      other = Unitsml::Unit.new("s", power)
+      inverted.inverse_power_numerator
+      expect(inverted.power_numerator.raw_value).to eq("-2")
+      expect(other.power_numerator.raw_value).to eq("2")
+      expect(power.raw_value).to eq("2")
+    end
+
+    it "#negated deep-copies a (nested) Fenced payload, leaving the source" do
+      fenced = Unitsml::Fenced.new(
+        "(", Unitsml::Fenced.new("(", Unitsml::Number.new("1/2"), ")"), ")"
+      )
+      source = Unitsml::PowerNumerator.new(fenced)
+      expect(source.negated.raw_value).to eq("-1/2")
+      expect(source.raw_value).to eq("1/2")
+    end
+
     it "keeps an explicit exponent of 1, treats nil as no exponent" do
       expect(latex_for(1)).to eq(Unitsml.parse("m^1").to_latex)
       expect(latex_for(nil)).to eq(Unitsml.parse("m").to_latex)
