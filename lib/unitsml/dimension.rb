@@ -3,12 +3,14 @@
 module Unitsml
   class Dimension
     include MathmlHelper
+    include Compose::Composable
+    include PowerNumerator
 
-    attr_accessor :dimension_name, :power_numerator
+    attr_accessor :dimension_name
 
     def initialize(dimension_name, power_numerator = nil)
-      @dimension_name = dimension_name
-      @power_numerator = power_numerator
+      @dimension_name = safe_dimension_name(dimension_name)
+      self.power_numerator = power_numerator
     end
 
     def ==(other)
@@ -79,7 +81,32 @@ module Unitsml
       value&.split("_")&.map(&:capitalize)&.join
     end
 
+    # Parser-style source text for the dimension, e.g. "dim_L" or "dim_L^2".
+    # Mirrors Unit#xml_postprocess_name so composed text is built the same way.
+    def xml_postprocess_name
+      "#{dimension_name}#{display_exp}"
+    end
+
     private
+
+    # Resolve a dimension reference to a known parsable id, as Unit#resolve_ref
+    # does for units: a pathological name (BasicObject / bad #to_s) or an
+    # unresolvable one fails fast as UnknownDimensionError instead of crashing
+    # at render on a nil dim_instance. The parser only ever supplies ids the
+    # grammar produced, so valid names pass through unchanged.
+    def safe_dimension_name(name)
+      string = Compose.safe_string(name)
+      return string if string && Unitsdb.dimensions.parsables.key?(string)
+
+      raise Errors::UnknownDimensionError.new(value: name)
+    end
+
+    def display_exp
+      return unless power_numerator
+
+      exp = power_numerator.raw_value
+      "^#{exp}" if exp != "1"
+    end
 
     def html_numerator_conversion(options)
       "<sup>#{power_numerator.to_html(options)}</sup>"

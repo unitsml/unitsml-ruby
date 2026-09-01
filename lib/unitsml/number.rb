@@ -9,7 +9,11 @@ module Unitsml
     alias raw_value value
 
     def initialize(value)
-      @value = value
+      # Number always holds a String representation; the render/compare helpers
+      # (to_html, negative?, update_negative_sign, ...) assume String, so a
+      # numeric value (e.g. a Float exponent from unit decomposition) is
+      # normalized here rather than crashing later.
+      @value = value.to_s
     end
 
     def ==(other)

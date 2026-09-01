@@ -3,8 +3,10 @@
 module Unitsml
   class Unit
     include MathmlHelper
+    include Compose::Composable
+    include PowerNumerator
 
-    attr_accessor :unit_name, :power_numerator, :prefix
+    attr_accessor :unit_name, :prefix
 
     SI_UNIT_SYSTEM = %w[si_base si_derived_special
                         si_derived_non_special].freeze
@@ -12,9 +14,9 @@ module Unitsml
     def initialize(unit_name,
                    power_numerator = nil,
                    prefix: nil)
-      @prefix = prefix
-      @unit_name = unit_name
-      @power_numerator = power_numerator
+      @prefix = coerce_prefix(prefix)
+      @unit_name = resolve_ref(unit_name)
+      self.power_numerator = power_numerator
     end
 
     def ==(other)
@@ -121,6 +123,60 @@ module Unitsml
     end
 
     private
+
+    # Resolve a unit reference to a canonical symbol id, exactly like the parser
+    # (symbol ids only — no short-name resolution). The empty string and the
+    # UNKNOWN sentinel are passed through untouched (internal callers rely on
+    # them); nil is not a sentinel and fails fast rather than silently building
+    # a broken unit. Raises for anything unresolvable.
+    def resolve_ref(ref)
+      raise Errors::UnknownUnitError.new(value: ref) if Compose.type?(NilClass, ref)
+
+      string = Compose.safe_string(ref)
+      raise Errors::UnknownUnitError.new(value: ref) if string.nil?
+      return string if string.empty? || string == Utility::UNKNOWN
+      return string if Unitsdb.units.find_by_symbol_id(string)
+
+      raise Errors::UnknownUnitError.new(value: ref)
+    end
+
+    # A pre-built Prefix (the parse path) is passed through untouched, so the
+    # parser keeps its lazy resolution. A string/symbol prefix (the builder) is
+    # validated eagerly and wrapped.
+    def coerce_prefix(prefix)
+      return prefix if Compose.type?(NilClass, prefix)
+      return validate_prefix_object(prefix) if Compose.type?(Prefix, prefix)
+
+      coerce_prefix_string(prefix)
+    end
+
+    def coerce_prefix_string(prefix)
+      name = Compose.safe_string(prefix)
+      raise Errors::UnknownPrefixError.new(value: prefix) if name.nil?
+
+      # A blank prefix means "no prefix", and the UNKNOWN sentinel from internal
+      # decomposition (combine_prefixes for da-/h-prefixed derived units, whose
+      # unit is dropped before rendering) both resolve to nil rather than an
+      # unvalidated bare string that would crash at render time.
+      return if name.strip.empty? || name == Utility::UNKNOWN
+      unless Unitsdb.prefixes.find_by_symbol_name(name)
+        raise Errors::UnknownPrefixError.new(value: prefix)
+      end
+
+      Prefix.new(name)
+    end
+
+    # A pre-built Prefix (the parse path) is kept as-is so the parser retains
+    # its lazy resolution; a directly-constructed one carrying an unresolvable
+    # name is rejected here rather than crashing at render.
+    def validate_prefix_object(prefix)
+      name = Compose.safe_string(prefix.prefix_name)
+      raise Errors::UnknownPrefixError.new(value: prefix) if name.nil?
+      return prefix if name.strip.empty? || name == Utility::UNKNOWN
+      return prefix if Unitsdb.prefixes.find_by_symbol_name(name)
+
+      raise Errors::UnknownPrefixError.new(value: prefix)
+    end
 
     def display_exp
       return unless power_numerator

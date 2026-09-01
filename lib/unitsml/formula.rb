@@ -6,6 +6,7 @@ require "htmlentities"
 module Unitsml
   class Formula
     include MathmlHelper
+    include Compose::Composable
 
     attr_accessor :value, :explicit_value, :root
 
@@ -29,6 +30,7 @@ module Unitsml
     end
 
     def to_mathml(options = {})
+      guard_renderable!
       if root
         options = update_options(options)
         math = mml_v4_new(:math, display: "block")
@@ -42,27 +44,32 @@ module Unitsml
 
         generated_math.force_encoding("UTF-8")
       else
-        value.map { |obj| obj.to_mathml(options) }
+        value.map { |obj| obj.to_mathml(update_options(options)) }
       end
     end
 
     def to_latex(options = {})
+      guard_renderable!
       value.map { |obj| obj.to_latex(update_options(options)) }.join
     end
 
     def to_asciimath(options = {})
+      guard_renderable!
       value.map { |obj| obj.to_asciimath(update_options(options)) }.join
     end
 
     def to_html(options = {})
+      guard_renderable!
       value.map { |obj| obj.to_html(update_options(options)) }.join
     end
 
     def to_unicode(options = {})
+      guard_renderable!
       value.map { |obj| obj.to_unicode(update_options(options)) }.join
     end
 
     def to_xml(options = {})
+      guard_renderable!
       options = update_options(options)
       if (dimensions_array = extract_dimensions(value)).any?
         dimensions(sort_dims(dimensions_array), options)
@@ -74,6 +81,7 @@ module Unitsml
     end
 
     def to_plurimath(options = {})
+      guard_renderable!
       ensure_plurimath_defined!
       options = update_options(options)
       if @orig_text.match?(/-$/)
@@ -89,7 +97,53 @@ module Unitsml
       extract_dimensions(value)
     end
 
+    # A composed Formula contributes its already-interleaved term list (the
+    # Composable default of [self] is only right for a single leaf).
+    def composable_terms
+      value
+    end
+
     private
+
+    # A composed term list must not dangle on a separator or place two
+    # separators together ("W/", "W/*"); such a term list has no valid
+    # rendering. The parser never builds these — only a raw extender chain
+    # (#extender/#ext or an Extender operand) can — so this only ever fires on
+    # compose misuse. Walks nested Formula/Fenced/Sqrt so a separator misplaced
+    # inside a group is caught too, regardless of the render path taken.
+    def guard_renderable!(node = value)
+      if node.is_a?(Array)
+        reject_misplaced_extenders!(node)
+        node.each { |term| guard_renderable!(term) }
+      elsif renderable_container?(node)
+        guard_container!(node.value)
+      end
+    end
+
+    # A group (Fenced/Sqrt) wrapping a bare separator — Fenced.new("(", ext) —
+    # is as unrenderable as a dangling one; its value is never a lone Extender
+    # in valid parser/compose output.
+    def guard_container!(inner)
+      raise Errors::MisplacedExtenderError if inner.is_a?(Extender)
+
+      guard_renderable!(inner)
+    end
+
+    def reject_misplaced_extenders!(terms)
+      misplaced = terms.first.is_a?(Extender) ||
+        terms.last.is_a?(Extender) || adjacent_extenders?(terms)
+      raise Errors::MisplacedExtenderError if misplaced
+    end
+
+    def adjacent_extenders?(terms)
+      terms.each_cons(2).any? do |left, right|
+        left.is_a?(Extender) && right.is_a?(Extender)
+      end
+    end
+
+    def renderable_container?(node)
+      node.is_a?(Formula) || node.is_a?(Fenced) || node.is_a?(Sqrt)
+    end
 
     def extract_dimensions(formula)
       formula.each_with_object([]) do |term, dimensions|
@@ -135,10 +189,12 @@ module Unitsml
       dims = Utility.units2dimensions(extract_units(value))
       [
         Utility.unit(all_units, self, dims, norm_text,
-                     explicit_value&.dig(:name), options),
+                     options[:name] || explicit_value&.dig(:name), options),
         Utility.prefixes(all_units, options),
         *unique_dimensions(dims, norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text,
+                         options[:quantity] || explicit_value&.dig(:quantity),
+                         dims),
       ].join
     end
 
@@ -173,7 +229,8 @@ module Unitsml
       [
         Utility.prefixes([prefix_object], options),
         Utility.dimension(norm_text),
-        Utility.quantity(norm_text, explicit_value&.dig(:quantity)),
+        Utility.quantity(norm_text,
+                         options[:quantity] || explicit_value&.dig(:quantity)),
       ].join
     end
 
@@ -210,6 +267,10 @@ module Unitsml
     end
 
     def update_options(options)
+      # Validate render options on every path (a directly-rendered non-root
+      # Formula would otherwise skip this and leak at the extender).
+      Compose.validate_name!(options[:name])
+      Compose.validate_multiplier!(options[:multiplier])
       return options unless root
 
       multiplier = options[:multiplier] || explicit_value&.dig(:multiplier)
