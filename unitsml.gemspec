@@ -37,5 +37,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "mml", "~> 2.4.0"
   spec.add_dependency "ox"
   spec.add_dependency "parslet"
-  spec.add_dependency "unitsdb", "~> 2.2.4"
+  spec.add_dependency "unitsdb", "~> 2.2.5"
 end
