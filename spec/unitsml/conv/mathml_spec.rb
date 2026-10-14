@@ -9,6 +9,21 @@ RSpec.describe Unitsml::Parser do
 
   let(:formula) { described_class.new(exp).parse }
 
+  context "contains decibel input from unitsml/unitsml-ruby#77" do
+    let(:exp) { "unitsml(dB)" }
+    let(:expected_value) do
+      <<~MATHML
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+          <mi mathvariant="normal">dB</mi>
+        </math>
+      MATHML
+    end
+
+    it "renders the database's decibel symbol" do
+      expect(mathml).to be_xml_equivalent_to(expected_value)
+    end
+  end
+
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^((-2)))" }
 

@@ -1,9 +1,81 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "parslet"
 
 RSpec.describe Unitsml::Parser do
   subject(:formula) { described_class.new(exp).parse }
+
+  context "contains decibel input from unitsml/unitsml-ruby#77" do
+    let(:exp) { "unitsml(dB)" }
+    let(:expected_value) do
+      Unitsml::Formula.new(
+        [Unitsml::Unit.new("dB")],
+        explicit_value: nil,
+        norm_text: "dB",
+        orig_text: "dB",
+        root: true,
+      )
+    end
+
+    it "parses the database's decibel symbol" do
+      expect(formula).to eq(expected_value)
+    end
+
+    it "renders the decibel symbol in LaTeX" do
+      expect(formula.to_latex).to eq('\ensuremath{\mathrm{dB}}')
+    end
+  end
+
+  context "contains a product with the decibel symbol" do
+    let(:exp) { "unitsml(dB*m)" }
+    let(:expected_value) do
+      Unitsml::Formula.new(
+        [Unitsml::Unit.new("dB"), Unitsml::Extender.new("*"), Unitsml::Unit.new("m")],
+        explicit_value: nil,
+        norm_text: "dB*m",
+        orig_text: "dB*m",
+        root: true,
+      )
+    end
+
+    it "parses the decibel symbol in a composite expression" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "contains a power of the decibel symbol" do
+    let(:exp) { "unitsml(dB^2)" }
+    let(:expected_value) do
+      Unitsml::Formula.new(
+        [Unitsml::Unit.new("dB", Unitsml::Number.new("2"))],
+        explicit_value: nil,
+        norm_text: "dB^2",
+        orig_text: "dB^2",
+        root: true,
+      )
+    end
+
+    it "keeps the power on the prefixed alias" do
+      expect(formula).to eq(expected_value)
+    end
+  end
+
+  context "contains a prefixed alias without a separator before another unit" do
+    let(:exp) { "unitsml(dBkg)" }
+
+    it "rejects malformed adjacency instead of returning an unresolved model" do
+      expect { formula }.to raise_error(Parslet::ParseFailed)
+    end
+  end
+
+  context "contains an extra prefix before a prefixed alias" do
+    let(:exp) { "unitsml(kdB)" }
+
+    it "rejects a prefix on the already-prefixed decibel alias" do
+      expect { formula }.to raise_error(Parslet::ParseFailed)
+    end
+  end
 
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(K/(kg*m))" }
