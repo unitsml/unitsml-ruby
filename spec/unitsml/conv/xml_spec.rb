@@ -1,11 +1,32 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "nokogiri"
 
 RSpec.describe Unitsml::Parser do
   subject(:formula) { described_class.new(exp).parse }
 
   before(:all) { Lutaml::Model::Config.xml_adapter_type = :ox }
+
+  it "retains the registered decibel identity in XML" do
+    xml = described_class.new("dB").parse.to_xml
+    document = Nokogiri::XML("<wrapper>#{xml}</wrapper>") { |config| config.strict.nonet }
+    unit = document.at_xpath('.//*[local-name()="Unit"]')
+
+    expect(unit["xml:id"]).to eq("U_NISTu155")
+    expect(unit.at_xpath('./*[local-name()="UnitName"]').text).to eq("decibel")
+  end
+
+  it "preserves the existing explicitly composed decibel XML" do
+    xml = described_class.new("dbel_B").parse.to_xml
+    document = Nokogiri::XML("<wrapper>#{xml}</wrapper>") { |config| config.strict.nonet }
+    unit = document.at_xpath('.//*[local-name()="Unit"]')
+    root = unit.at_xpath('./*[local-name()="RootUnits"]/*[local-name()="EnumeratedRootUnit"]')
+
+    expect(unit["xml:id"]).to eq("U_dbel_B")
+    expect(root["unit"]).to eq("bel")
+    expect(root["prefix"]).to eq("d")
+  end
 
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^((-2)))" }

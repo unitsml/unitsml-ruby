@@ -77,6 +77,27 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
+  describe "incomplete unit expressions" do
+    ["dB*", "dB/", "dB//", "dB*m*", "dB/m/", "(dB)*", "(dB)/",
+     "m*dB*", "m/dB/", "dB m*", "m*", "m/",
+     "dbel_B*", "dbel_B/"].each do |input|
+      it "rejects #{input.inspect} during parsing" do
+        expect { described_class.new(input).parse }
+          .to raise_error(Parslet::ParseFailed)
+      end
+    end
+  end
+
+  it "keeps registered decibel distinct from explicit prefix composition" do
+    registered = described_class.new("dB").parse.value.first
+    composed = described_class.new("dbel_B").parse.value.first
+
+    expect(registered).to eq(Unitsml::Unit.new("dB"))
+    expect(composed).to eq(
+      Unitsml::Unit.new("bel_B", prefix: Unitsml::Prefix.new("d")),
+    )
+  end
+
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(K/(kg*m))" }
     let(:expected_value) do

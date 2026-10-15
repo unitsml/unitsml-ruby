@@ -35,9 +35,9 @@ module Unitsml
 
     rule(:prefixes_units_int_exp) do
       (implicit_extended.as(:implicit_extended) >> spaces? >> prefixes_units_int_exp.as(:sequence).maybe) |
-        (implicit_extended.as(:implicit_extended) >> spaces? >> extender >> spaces? >> prefixes_units_int_exp.as(:sequence).maybe) |
-        (int_exp_prefixes_units >> spaces? >> extender >> spaces? >> prefixes_units_int_exp.as(:sequence).maybe) |
-        (prefixes_units >> spaces? >> extender >> spaces? >> prefixes_units_int_exp.as(:sequence).maybe) |
+        (implicit_extended.as(:implicit_extended) >> spaces? >> extender >> spaces? >> prefixes_units_int_exp.as(:sequence)) |
+        (int_exp_prefixes_units >> spaces? >> extender >> spaces? >> prefixes_units_int_exp.as(:sequence)) |
+        (prefixes_units >> spaces? >> extender >> spaces? >> prefixes_units_int_exp.as(:sequence)) |
         (int_exp_prefixes_units >> prefixes_units_int_exp.as(:sequence).maybe) |
         (prefixes_units >> prefixes_units_int_exp.as(:sequence).maybe)
     end
