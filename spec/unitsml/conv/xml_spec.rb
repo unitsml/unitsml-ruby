@@ -54,7 +54,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="metre" prefix="m"/>
+            <EnumeratedRootUnit unit="meter" prefix="m"/>
             <EnumeratedRootUnit unit="second" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -92,7 +92,7 @@ RSpec.describe Unitsml::Parser do
         </math>
         </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="metre" prefix="u"/>
+            <EnumeratedRootUnit unit="meter" prefix="u"/>
           </RootUnits>
         </Unit>
 
@@ -656,7 +656,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(J/kg*K)" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu13.u27p10_3e-1/1.u5e-1/1" dimensionURL="#D_L2M0T-2Theta-1">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="EncodedUnit_555f4e4953547531332e7532377031305f33652d312f312e7535652d312f31" dimensionURL="#D_L2M0T-2Theta-1">
           <UnitSystem name="SI" type="SI_derived" xml:lang="en"/>
           <UnitName xml:lang="en">joule per kilogram kelvin</UnitName>
           <UnitSymbol type="HTML">J&#x22c5;kg<sup>&#x2212;1</sup>&#x22c5;K<sup>&#x2212;1</sup></UnitSymbol>
@@ -829,7 +829,7 @@ RSpec.describe Unitsml::Parser do
           </UnitSymbol>
           <RootUnits>
             <EnumeratedRootUnit unit="watt" prefix="m"/>
-            <EnumeratedRootUnit unit="metre" prefix="c" powerNumerator="-2"/>
+            <EnumeratedRootUnit unit="meter" prefix="c" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
 
@@ -955,7 +955,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="metre" prefix="m" powerNumerator="0.5"/>
+            <EnumeratedRootUnit unit="meter" prefix="m" powerNumerator="1" powerDenominator="2"/>
           </RootUnits>
         </Unit>
 
@@ -1031,7 +1031,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml(m^(-2))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="EncodedUnit_555f4e4953547531652d322f31" dimensionURL="#D_L-2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
@@ -1093,7 +1093,7 @@ RSpec.describe Unitsml::Parser do
           <RootUnits>
             <EnumeratedRootUnit unit="candela"/>
             <EnumeratedRootUnit unit="steradian"/>
-            <EnumeratedRootUnit unit="metre" powerNumerator="-2"/>
+            <EnumeratedRootUnit unit="meter" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
 
@@ -1171,7 +1171,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="metre"/>
+            <EnumeratedRootUnit unit="meter"/>
             <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -1209,7 +1209,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="metre"/>
+            <EnumeratedRootUnit unit="meter"/>
             <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -1247,7 +1247,7 @@ RSpec.describe Unitsml::Parser do
             </math>
           </UnitSymbol>
           <RootUnits>
-            <EnumeratedRootUnit unit="metre"/>
+            <EnumeratedRootUnit unit="meter"/>
             <EnumeratedRootUnit unit="gram" prefix="k" powerNumerator="-2"/>
           </RootUnits>
         </Unit>
@@ -1282,7 +1282,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml((((m^-2))))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="EncodedUnit_555f4e4953547531652d322f31" dimensionURL="#D_L-2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">(m<sup>&#x2212;2</sup>)</UnitSymbol>
@@ -1342,7 +1342,7 @@ RSpec.describe Unitsml::Parser do
     let(:exp) { "unitsml((m^((-2))))" }
     let(:expected_value) do
       <<~XML
-        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="U_NISTu1e-2/1" dimensionURL="#D_L-2">
+        <Unit xmlns="https://schema.unitsml.org/unitsml/1.0" xml:id="EncodedUnit_555f4e4953547531652d322f31" dimensionURL="#D_L-2">
           <UnitSystem name="SI" type="SI_base" xml:lang="en"/>
           <UnitName xml:lang="en">meter to the power minus two</UnitName>
           <UnitSymbol type="HTML">m<sup>&#x2212;2</sup></UnitSymbol>
