@@ -41,6 +41,15 @@ module Unitsml
       Time
     ].freeze
 
+    # XML 1.0 NameChar ranges excluding ASCII and colon. Generated IDs start U_.
+    XML_NAME_CHARACTER_RANGES = [
+      0xB7..0xB7, 0xC0..0xD6, 0xD8..0xF6, 0xF8..0x37D,
+      0x37F..0x1FFF, 0x200C..0x200D, 0x203F..0x2040,
+      0x2070..0x218F, 0x2C00..0x2FEF, 0x3001..0xD7FF,
+      0xF900..0xFDCF, 0xFDF0..0xFFFD, 0x10000..0xEFFFF
+    ].freeze
+    ENCODED_UNIT_ID_PREFIX = "EncodedUnit_"
+
     UNKNOWN = "unknown"
     PREFIX_SYMBOL_METHODS = {
       ASCII: :to_asciimath,
@@ -163,7 +172,7 @@ module Unitsml
 
       def unit(units, formula, dims, norm_text, name, options)
         attributes = {
-          id: unit_id(norm_text),
+          id: unit_id(norm_text, quantity_id: formula.explicit_value&.[](:quantity)),
           system: unitsystem(units),
           name: unitname(norm_text, name),
           symbol: unitsymbols(formula, options),
@@ -266,7 +275,7 @@ module Unitsml
       end
 
       def prefixes(units, options)
-        uniq_prefixes = units.filter_map(&:prefix).uniq(&:prefix_name)
+        uniq_prefixes = xml_root_values(units).filter_map(&:prefix).uniq(&:prefix_name)
         uniq_prefixes.map do |prefix|
           prefix_xml(prefix, options)
         end.join("\n")
@@ -327,11 +336,10 @@ module Unitsml
       def rootunits(units)
         return if units.size == 1 && !units[0].prefix
 
-        enum_root_units = units.map do |unit|
-          attributes = { unit: unit.enumerated_name }
+        enum_root_units = xml_root_values(units).map do |unit|
+          attributes = { unit: unit.unit_instance.short }
           attributes[:prefix] = unit.prefix_name if unit.prefix
-          unit.power_numerator && unit.power_numerator != "1" and
-            attributes[:power_numerator] = unit.power_numerator.raw_value
+          attributes.merge!(xml_root_power(unit.power_numerator))
           Model::Units::EnumeratedRootUnit.new(
             **attributes,
             lutaml_register: Configuration.context.id,
@@ -343,12 +351,96 @@ module Unitsml
         )
       end
 
-      def unit_id(text)
+      def xml_root_values(units)
+        return units if units.size == 1 && !units.first.prefix
+
+        units.flat_map do |unit|
+          next unit if unit.prefix
+
+          record = unit.unit_instance
+          next unit unless record&.prefixed
+
+          roots = record.root_units
+          if roots.nil? || roots.empty?
+            next unit if record.root
+
+            raise ArgumentError, "Registered prefixed unit #{unit.unit_name} has no roots"
+          end
+
+          roots.map { |root| xml_root_unit(root, unit) }
+        end
+      end
+
+      def xml_root_unit(root, unit)
+        base = Unitsdb.units.find_by_id(root.unit_reference.id)
+        prefix = PrefixAdapter.wrap(root.prefix_reference).prefix_name
+        unless base && (!root.prefix_reference || prefix)
+          raise ArgumentError, "Unresolved root for #{unit.unit_name}"
+        end
+
+        power = unit.power_numerator
+        if root.power && root.power != 1
+          exponent = (power ? xml_power_value(power) : 1) * Rational(root.power.to_s)
+          power = Number.new(exponent.to_s)
+        end
+        Unit.new(base.symbols.first.id, power,
+                 prefix: prefix && Prefix.new(prefix))
+      end
+
+      def xml_root_power(power)
+        return {} unless power
+
+        exponent = xml_power_value(power)
+        unless (-128..127).cover?(exponent.numerator) &&
+            (1..127).cover?(exponent.denominator)
+          raise RangeError, "Root-unit exponent #{power.raw_value} exceeds " \
+                            "the UnitsML numerator/denominator bounds"
+        end
+
+        attributes = { power_numerator: exponent.numerator.to_s }
+        if exponent.denominator != 1
+          attributes[:power_denominator] = exponent.denominator.to_s
+        end
+        attributes
+      end
+
+      def xml_power_value(power)
+        Rational(power.raw_value.gsub("//", "/"))
+      end
+
+      def unit_id(text, quantity_id: nil)
         text = text&.gsub(/[()]/, "")
         unit = unit_instance(text)
+        id = format_unit_id(unit, text)
+        return unless id
 
-        format_unit_id(unit, text)&.insert(0, "U_")
+        xml_unit_id("U_#{id}", quantity_id)
       end
+
+      def xml_unit_id(id, quantity_id)
+        valid = id.each_char.all? do |character|
+          /[A-Za-z0-9_.-]/.match?(character) ||
+            XML_NAME_CHARACTER_RANGES.any? { |range| range.cover?(character.ord) }
+        end
+        return id if valid
+
+        # Normal completed Unit IDs always start U_; encoding is disjoint.
+        hex = id.bytes.map { |byte| byte.to_s(16).rjust(2, "0") }.join
+        encoded = "#{ENCODED_UNIT_ID_PREFIX}#{hex}"
+        records = Unitsdb.prefixes.prefixes + Unitsdb.dimensions.dimensions +
+          Unitsdb.quantities.quantities
+        collision = records.any? do |record|
+          record.identifiers.any? { |identifier| identifier.id == encoded }
+        end
+        if encoded == quantity_id || collision
+          raise ArgumentError, "Encoded unit ID #{encoded} collides with a peer ID"
+        end
+
+        encoded
+      end
+
+      private :xml_root_values, :xml_root_unit, :xml_root_power,
+              :xml_power_value, :xml_unit_id
 
       def format_unit_id(unit, text)
         return unit_nist_id(unit)&.gsub("'", "_") if unit
