@@ -18,6 +18,7 @@ module Unitsml
   autoload :Model, "unitsml/model"
   autoload :Namespace, "unitsml/namespace"
   autoload :Number, "unitsml/number"
+  autoload :Parg, "unitsml/parg"
   autoload :Parse, "unitsml/parse"
   autoload :Parser, "unitsml/parser"
   autoload :Prefix, "unitsml/prefix"
@@ -31,6 +32,16 @@ module Unitsml
   autoload :Xml, "unitsml/xml"
 
   def parse(string)
-    Unitsml::Parser.new(string).parse
+    parser_class.new(string).parse
+  end
+
+  def parser_class
+    case Configuration.parser
+    when :parg then Parg::Parser
+    when :parslet then Parser
+    else raise ArgumentError,
+               "unknown parser #{Configuration.parser.inspect}; " \
+               "expected :parslet or :parg"
+    end
   end
 end

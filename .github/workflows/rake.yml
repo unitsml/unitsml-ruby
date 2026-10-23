@@ -10,6 +10,7 @@ jobs:
   rake:
     uses: metanorma/ci/.github/workflows/generic-rake.yml@main
     with:
+      submodules: recursive
       before-setup-ruby: |
         mkdir -p .bundle
         touch .bundle/config

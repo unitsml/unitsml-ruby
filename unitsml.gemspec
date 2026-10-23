@@ -27,6 +27,8 @@ Gem::Specification.new do |spec|
     end
   end
   spec.files += Dir.glob("unitsdb/**/*")
+  spec.files += Dir.glob("vendor/asciiunits/artifacts/*.json")
+  spec.files += Dir.glob("vendor/asciiunits/tables/*.yaml")
 
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
@@ -36,6 +38,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "lutaml-model", "~> 0.8.0"
   spec.add_dependency "mml", "~> 2.4.0"
   spec.add_dependency "ox"
+  spec.add_dependency "parsanol", "~> 1.3"
   spec.add_dependency "parslet"
   spec.add_dependency "unitsdb", "~> 2.2.5"
 end

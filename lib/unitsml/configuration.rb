@@ -8,6 +8,19 @@ module Unitsml
 
     module_function
 
+    # Parser engine for Unitsml.parse: :parslet (the original Parslet
+    # grammar) or :parg (the asciiunits PARG artifact). Defaults to the
+    # UNITSML_PARSER environment variable, then :parslet. Assigning nil
+    # resets to the environment default.
+    def parser
+      @parser = ENV.fetch("UNITSML_PARSER", "parslet").to_sym if @parser.nil?
+      @parser
+    end
+
+    def parser=(value)
+      @parser = value&.to_sym
+    end
+
     def context_id
       CONTEXT_ID
     end

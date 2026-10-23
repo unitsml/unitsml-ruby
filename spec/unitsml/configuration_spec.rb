@@ -47,6 +47,51 @@ RSpec.describe Unitsml::Configuration do
     end
   end
 
+  describe ".parser" do
+    it "defaults to :parslet" do
+      with_env(nil) do
+        expect(described_class.parser).to eq(:parslet)
+      end
+    end
+
+    it "honors the UNITSML_PARSER environment variable" do
+      with_env("parg") do
+        expect(described_class.parser).to eq(:parg)
+      end
+    end
+
+    it "is settable and resettable" do
+      described_class.parser = :parg
+      expect(described_class.parser).to eq(:parg)
+      described_class.parser = nil
+      with_env(nil) do
+        expect(described_class.parser).to eq(:parslet)
+      end
+    end
+  end
+
+  describe "Unitsml.parser_class" do
+    it "returns the Parslet parser by default" do
+      with_env(nil) do
+        expect(Unitsml.parser_class).to eq(Unitsml::Parser)
+      end
+    end
+
+    it "returns the PARG parser when configured" do
+      with_env("parg") do
+        expect(Unitsml.parser_class).to eq(Unitsml::Parg::Parser)
+      end
+    end
+
+    it "raises on an unknown parser" do
+      with_env("bogus") do
+        expect do
+          Unitsml.parser_class
+        end.to raise_error(ArgumentError, /unknown parser/)
+      end
+    end
+  end
+
   describe ".unitsdb_model_subclass?" do
     it "returns true for a Unitsdb::* subclass" do
       expect(described_class.unitsdb_model_subclass?(Class.new(Unitsdb::Unit)))
@@ -62,5 +107,13 @@ RSpec.describe Unitsml::Configuration do
       expect(described_class.unitsdb_model_subclass?(Object.new))
         .to be(false)
     end
+  end
+
+  def with_env(value)
+    described_class.parser = nil
+    allow(ENV).to receive(:fetch).and_return(value || "parslet")
+    yield
+  ensure
+    described_class.parser = nil
   end
 end
