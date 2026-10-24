@@ -2,7 +2,6 @@
 
 module Unitsml
   module Parg
-    autoload :Parser, "unitsml/parg/parser"
     autoload :TreeMapper, "unitsml/parg/tree_mapper"
   end
 end

@@ -13,18 +13,15 @@ module Unitsml
   autoload :Fenced, "unitsml/fenced"
   autoload :FencedNumeric, "unitsml/fenced_numeric"
   autoload :Formula, "unitsml/formula"
-  autoload :IntermediateExpRules, "unitsml/intermediate_exp_rules"
   autoload :MathmlHelper, "unitsml/mathml_helper"
   autoload :Model, "unitsml/model"
   autoload :Namespace, "unitsml/namespace"
   autoload :Number, "unitsml/number"
   autoload :Parg, "unitsml/parg"
-  autoload :Parse, "unitsml/parse"
   autoload :Parser, "unitsml/parser"
   autoload :Prefix, "unitsml/prefix"
   autoload :PrefixAdapter, "unitsml/prefix_adapter"
   autoload :Sqrt, "unitsml/sqrt"
-  autoload :Transform, "unitsml/transform"
   autoload :Unit, "unitsml/unit"
   autoload :Unitsdb, "unitsml/unitsdb"
   autoload :Utility, "unitsml/utility"
@@ -32,16 +29,6 @@ module Unitsml
   autoload :Xml, "unitsml/xml"
 
   def parse(string)
-    parser_class.new(string).parse
-  end
-
-  def parser_class
-    case Configuration.parser
-    when :parg then Parg::Parser
-    when :parslet then Parser
-    else raise ArgumentError,
-               "unknown parser #{Configuration.parser.inspect}; " \
-               "expected :parslet or :parg"
-    end
+    Parser.new(string).parse
   end
 end
