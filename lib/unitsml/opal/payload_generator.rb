@@ -76,7 +76,9 @@ module Unitsml
       # hash insertion order the unitsdb/lutaml load path happens to
       # produce on a given Ruby or gem version.
       def serialize_hash(value)
-        "{#{value.sort_by { |k, _| k.to_s }.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(',')}}"
+        "{#{value.sort_by do |k, _|
+          k.to_s
+        end.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(',')}}"
       end
 
       def serialize_array(value)
