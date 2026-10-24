@@ -26,6 +26,7 @@ module Unitsml
   autoload :Unitsdb, "unitsml/unitsdb"
   autoload :Utility, "unitsml/utility"
   autoload :VERSION, "unitsml/version"
+  autoload :Quantity, "unitsml/quantity"
   autoload :Xml, "unitsml/xml"
 
   def parse(string)

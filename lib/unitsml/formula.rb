@@ -7,7 +7,7 @@ module Unitsml
   class Formula
     include MathmlHelper
 
-    attr_accessor :value, :explicit_value, :root
+    attr_accessor :value, :explicit_value, :root, :norm_text
 
     def initialize(value = [],
                    explicit_value: nil,
