@@ -7,6 +7,7 @@ module Unitsml
     autoload :OpalPayloadNotBundledError,
              "unitsml/errors/opal_payload_not_bundled_error"
     autoload :PlurimathLoadError, "unitsml/errors/plurimath_load_error"
+    autoload :PargLoadError, "unitsml/errors/parg_load_error"
     autoload :UnsupportedPayloadTypeError,
              "unitsml/errors/unsupported_payload_type_error"
   end
