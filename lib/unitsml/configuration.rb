@@ -13,7 +13,7 @@ module Unitsml
     # UNITSML_PARSER environment variable, then :parslet. Assigning nil
     # resets to the environment default.
     def parser
-      @parser = ENV.fetch("UNITSML_PARSER", "parslet").to_sym if @parser.nil?
+      @parser = ENV.fetch("UNITSML_PARSER", "parg").to_sym if @parser.nil?
       @parser
     end
 

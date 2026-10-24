@@ -19,5 +19,5 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
-      - name: Run the full suite with the PARG parser as default
-        run: UNITSML_PARSER=parg bundle exec rspec
+      - name: Run the full suite with the Parslet parser as default
+        run: UNITSML_PARSER=parslet bundle exec rspec

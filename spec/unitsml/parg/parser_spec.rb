@@ -15,7 +15,7 @@ RSpec.describe Unitsml::Parg::Parser do
     Unitsml::Configuration.parser = :parg
     example.run
   ensure
-    Unitsml::Configuration.parser = :parslet
+    Unitsml::Configuration.parser = nil
   end
 
   it "is selectable through Unitsml.parse" do
