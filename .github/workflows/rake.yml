@@ -10,7 +10,6 @@ jobs:
   rake:
     uses: metanorma/ci/.github/workflows/generic-rake.yml@main
     with:
-      submodules: recursive
       before-setup-ruby: |
         mkdir -p .bundle
         touch .bundle/config
@@ -18,5 +17,3 @@ jobs:
         echo "---" >> .bundle/config
         echo 'BUNDLE_BUILD__RUBY___LL: "--with-cflags=-std=gnu17"' >> .bundle/config
         cat .bundle/config
-    secrets:
-      pat_token: ${{ secrets.UNITSML_CI_PAT_TOKEN }}
