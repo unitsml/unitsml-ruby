@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "asciiunits"
 
-corpus_path = File.expand_path(
-  "../../../vendor/asciiunits/corpora/unitsml/inputs.txt", __dir__
-)
+corpus_path = File.join(Asciiunits::REPO_ROOT, "corpora/unitsml/inputs.txt")
 CORPUS_INPUTS = File.readlines(corpus_path, chomp: true)
   .reject { |line| line.empty? || line.start_with?("#") }
   .map { |line| line.split("\t", 2)[1] }
