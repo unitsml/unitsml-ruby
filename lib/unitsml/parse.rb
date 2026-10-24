@@ -35,6 +35,10 @@ module Unitsml
                                              "unit")
     end
 
+    rule(:prefixed_units) do
+      arr_to_expression(::Unitsml::Unitsdb.units.prefixed_symbols, "unit") || str("").absent?
+    end
+
     rule(:single_letter_prefixes) do
       @@prefixes1 ||= arr_to_expression(::Unitsml::Unitsdb.prefixes_by_size(1),
                                         "prefix")
@@ -59,7 +63,10 @@ module Unitsml
         (double_letter_prefixes >> unit_and_power >> extended_prefixed_units) |
         (double_letter_prefixes >> unit_and_power) |
         (single_letter_prefixes >> unit_and_power >> extended_prefixed_units) |
-        (single_letter_prefixes >> unit_and_power)
+        (single_letter_prefixes >> unit_and_power) |
+        # Some registered prefixed symbols cannot be composed from parser ids:
+        # dB uses bel_B as its base id. Try these only after normal composition.
+        (prefixed_units >> power.maybe >> (any.absent? | (extender | opening_paren | closing_paren | spaces).present?))
     end
 
     rule(:expression) do
@@ -73,10 +80,7 @@ module Unitsml
 
     def arr_to_expression(arr, file_name)
       array = arr&.flatten&.compact&.sort_by(&:length)&.reverse
-      array&.reduce do |expression, expr_string|
-        expression = str(expression).as(file_name.to_sym) if expression.is_a?(String)
-        expression | str(expr_string).as(file_name.to_sym)
-      end
+      array&.map { |expr_string| str(expr_string).as(file_name.to_sym) }&.reduce(:|)
     end
   end
 end

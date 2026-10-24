@@ -7,6 +7,23 @@ RSpec.describe Unitsml::Parse do
     described_class.new.parse(exp.match(/unitsml\((.*)\)/)[1])
   end
 
+  describe "#arr_to_expression" do
+    it "builds a parser atom from one registered alias" do
+      atom = described_class.new.arr_to_expression(["dB"], "unit")
+      expect(atom.parse("dB")[:unit]).to eq("dB")
+    end
+
+    it "builds parser alternatives from several aliases" do
+      atom = described_class.new.arr_to_expression(["kg", "dB"], "unit")
+      expect(atom.parse("kg")[:unit]).to eq("kg")
+      expect(atom.parse("dB")[:unit]).to eq("dB")
+    end
+
+    it "returns no atom for an empty alias list" do
+      expect(described_class.new.arr_to_expression([], "unit")).to be_nil
+    end
+  end
+
   context "contains Unitsml #1 example" do
     let(:exp) { "unitsml(mm*s^-2)" }
 
