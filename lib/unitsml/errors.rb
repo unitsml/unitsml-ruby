@@ -8,6 +8,10 @@ module Unitsml
              "unitsml/errors/opal_payload_not_bundled_error"
     autoload :PlurimathLoadError, "unitsml/errors/plurimath_load_error"
     autoload :PargLoadError, "unitsml/errors/parg_load_error"
+    autoload :QuantityOperationError, "unitsml/errors/quantity_errors"
+    autoload :DimensionMismatchError, "unitsml/errors/quantity_errors"
+    autoload :ScaleOperationError, "unitsml/errors/quantity_errors"
+    autoload :IndeterminateResultError, "unitsml/errors/quantity_errors"
     autoload :UnsupportedPayloadTypeError,
              "unitsml/errors/unsupported_payload_type_error"
   end
