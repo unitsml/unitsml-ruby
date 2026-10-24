@@ -72,8 +72,11 @@ module Unitsml
         end
       end
 
+      # Keys sorted so the output is byte-identical regardless of the
+      # hash insertion order the unitsdb/lutaml load path happens to
+      # produce on a given Ruby or gem version.
       def serialize_hash(value)
-        "{#{value.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(',')}}"
+        "{#{value.sort_by { |k, _| k.to_s }.map { |k, v| "#{serialize(k)}=>#{serialize(v)}" }.join(',')}}"
       end
 
       def serialize_array(value)
