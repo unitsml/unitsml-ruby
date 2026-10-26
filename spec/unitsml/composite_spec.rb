@@ -362,7 +362,7 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       end
     end
 
-    it "composes a parser-produced fenced exponent without changing the operand" do
+    it "composes a parsed fenced exponent without changing the operand" do
       operand = Unitsml.parse("m^((1/2))")
       before = operand.to_asciimath
       result = Unitsml::Unit.new("W") / operand
@@ -373,11 +373,14 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     it "deep-copies a nested fenced exponent it does not invert" do
       operand = Unitsml.parse("g^((((3))))")
       original = operand.value.first.power_numerator
-      result = operand * Unitsml::Unit.new("s")
-      copied = result.value.first.power_numerator
+      copied = (operand * Unitsml::Unit.new("s")).value.first.power_numerator
       expect(copied).to be_a(Unitsml::Fenced)
       expect(copied).not_to be(original)
       expect(copied.value).not_to be(original.value)
+    end
+
+    it "renders a copied nested fenced exponent like the parser" do
+      result = Unitsml.parse("g^((((3))))") * Unitsml::Unit.new("s")
       expect(result.to_asciimath)
         .to eq(Unitsml.parse("g^((((3))))*s").to_asciimath)
     end
@@ -766,7 +769,7 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     # (including 1//2 and a signed denominator) is read as a Rational here.
     # Production never evaluates or normalizes these lexemes.
     def exponent_value(power)
-      raw = power.is_a?(Unitsml::Fenced) ? fenced_lexeme(power) : power&.raw_value
+      raw = power && fenced_lexeme(power)
       return Rational(1) unless raw
 
       parts = raw.gsub("//", "/").split("/")
@@ -776,7 +779,9 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
 
     def fenced_lexeme(power)
-      power.is_a?(Unitsml::Fenced) ? fenced_lexeme(power.value) : power.raw_value
+      return power.raw_value unless power.is_a?(Unitsml::Fenced)
+
+      fenced_lexeme(power.value)
     end
 
     def leaf_signature(formula)
@@ -819,14 +824,16 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       formula = unit("W") / unit("m") / unit("sr")
       explicit = unit("W").ext("/").unit("m", -1).ext("/").unit("sr", -1)
       expect(formula.norm_text).to eq("W*m^(-1)*sr^(-1)")
-      all_formats.each do |fmt|
-        expect(formula.public_send(fmt)).to eq(explicit.public_send(fmt))
-      end
+      expect(all_formats.map { |fmt| formula.public_send(fmt) })
+        .to eq(all_formats.map { |fmt| explicit.public_send(fmt) })
     end
 
-    it "round-trips rational, signed and lexical powers" do
+    it "round-trips rational and signed powers" do
       expect_round_trip(unit("m", Rational(1, 2)) * unit("s"), "m^(1/2)*s")
       expect_round_trip(unit("s") / unit("m", Rational(1, 2)), "s*m^(-1/2)")
+    end
+
+    it "round-trips lexical powers" do
       {
         "0" => "m^(0)*s", "-0" => "m^(-0)*s", "1" => "m^(1)*s",
         "007" => "m^(007)*s", "1/-2" => "m^(1/-2)*s", "1//2" => "m^(1//2)*s"
@@ -869,9 +876,10 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
 
   describe "Quantity adapter (Builder.quantity_product)" do
     let(:builder) { Unitsml::Compose::Builder }
+    let(:seconds) { Unitsml.parse("s") }
 
     def leaf_powers(formula)
-      formula.value.reject { |term| term.is_a?(Unitsml::Extender) }
+      formula.value.grep_v(Unitsml::Extender)
         .map { |leaf| [leaf.unit_name, leaf.power_numerator&.raw_value] }
     end
 
@@ -881,11 +889,15 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       end
     end
 
-    it "copies the formula when the other side is nil" do
-      formula = Unitsml.parse("m")
+    def nil_side_results(formula)
       [builder.quantity_product(formula, nil, "*"),
        builder.quantity_product(nil, formula, "*"),
-       builder.quantity_product(formula, nil, "/")].each do |result|
+       builder.quantity_product(formula, nil, "/")]
+    end
+
+    it "copies the formula when the other side is nil" do
+      formula = Unitsml.parse("m")
+      nil_side_results(formula).each do |result|
         expect(result).not_to be(formula)
         expect(result.value.map(&:class)).to eq([Unitsml::Unit])
         expect(leaf_powers(result)).to eq([["m", nil]])
@@ -916,18 +928,22 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to eq((unit("W") * unit("m")).to_xml)
     end
 
-    it "does not mutate either operand, including fenced powers and prefixes" do
+    it "does not mutate either operand" do
       left = Unitsml.parse("km^((((3))))")
       right = Unitsml.parse("s^((-2))")
       before = [left.to_xml, right.to_xml]
-      left_power = left.value.first.power_numerator
-      left_prefix = left.value.first.prefix
-      result = builder.quantity_product(left, right, "/")
+      builder.quantity_product(left, right, "/")
       expect([left.to_xml, right.to_xml]).to eq(before)
-      copied = result.value.first
-      expect(copied.power_numerator).not_to be(left_power)
-      expect(copied.power_numerator.value).not_to be(left_power.value)
-      expect(copied.prefix).not_to be(left_prefix)
+    end
+
+    it "copies fenced powers and prefixes instead of sharing them" do
+      left = Unitsml.parse("km^((((3))))")
+      leaf = left.value.first
+      copied = builder.quantity_product(left, seconds, "/").value.first
+      expect(copied.power_numerator).not_to be(leaf.power_numerator)
+      expect(copied.power_numerator.value)
+        .not_to be(leaf.power_numerator.value)
+      expect(copied.prefix).not_to be(leaf.prefix)
     end
 
     it "keeps main's un-inverted dimension division" do
@@ -946,48 +962,58 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
 
     it "still rejects mixed units and dimensions" do
       expect do
-        builder.quantity_product(Unitsml.parse("dim_L"), Unitsml.parse("m"), "*")
+        builder.quantity_product(Unitsml.parse("dim_L"), seconds, "*")
       end.to raise_error(Unitsml::Errors::MixedTermsError)
     end
   end
 
   describe "Builder.copy_formula" do
     let(:builder) { Unitsml::Compose::Builder }
+    let(:area) do
+      Unitsml.compose(units: [{ unit: "m", prefix: "k", power: 2 }],
+                      name: "area")
+    end
 
     it "returns nil for nil" do
       expect(builder.copy_formula(nil)).to be_nil
     end
 
-    it "keeps the parsed text and wrappers" do
+    it "keeps the parsed m/s text and tree" do
       formula = Unitsml.parse("m/s")
       copy = builder.copy_formula(formula)
       expect(copy.norm_text).to eq("m/s")
       expect(copy.to_xml).to eq(formula.to_xml)
+    end
+
+    it "keeps grouped and root wrappers" do
       %w[((m*s))*s sqrt(m)].each do |source|
         parsed = Unitsml.parse(source)
         copy = builder.copy_formula(parsed)
-        expect(copy.to_asciimath).to eq(parsed.to_asciimath)
-        expect(copy.norm_text).to eq(parsed.norm_text)
+        expect([copy.to_asciimath, copy.norm_text])
+          .to eq([parsed.to_asciimath, parsed.norm_text])
       end
     end
 
+    def mutable_parts(formula)
+      leaf = formula.value.first
+      [formula.value, leaf, leaf.power_numerator, leaf.prefix,
+       formula.norm_text, formula.explicit_value]
+    end
+
     it "copies the mutable tree, powers, prefixes, text and metadata" do
-      formula = Unitsml.compose(units: [{ unit: "m", prefix: "k", power: 2 }],
-                                name: "area")
-      copy = builder.copy_formula(formula)
-      expect(copy.value).not_to be(formula.value)
-      expect(copy.value.first).not_to be(formula.value.first)
-      expect(copy.value.first.power_numerator)
-        .not_to be(formula.value.first.power_numerator)
-      expect(copy.value.first.prefix).not_to be(formula.value.first.prefix)
-      expect(copy.norm_text).not_to be(formula.norm_text)
-      expect(copy.explicit_value).not_to be(formula.explicit_value)
+      copy = builder.copy_formula(area)
+      mutable_parts(copy).zip(mutable_parts(area)).each do |copied, original|
+        expect(copied).not_to be(original)
+      end
+    end
+
+    it "keeps the original intact when the copy changes in place" do
+      copy = builder.copy_formula(area)
       copy.value.clear
       copy.norm_text.replace("changed")
       copy.explicit_value[:name] = "other"
-      expect(formula.value).not_to be_empty
-      expect(formula.norm_text).to eq("km^(2)")
-      expect(formula.explicit_value[:name]).to eq("area")
+      expect([area.value.size, area.norm_text, area.explicit_value[:name]])
+        .to eq([1, "km^(2)", "area"])
     end
   end
 

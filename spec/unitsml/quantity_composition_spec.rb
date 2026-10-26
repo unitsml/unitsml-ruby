@@ -111,13 +111,16 @@ RSpec.describe Unitsml::Quantity do
       end
     end
 
+    def parser_error_class(source)
+      q(source)
+      nil
+    rescue StandardError => e
+      e.class
+    end
+
     it "propagates the same parser error for both String keywords" do
       %w[foo xm].each do |source|
-        error = begin
-          q(source)
-        rescue StandardError => e
-          e.class
-        end
+        error = parser_error_class(source)
         expect(error).not_to be_nil
         expect { described_class.new(value: 1, unit: source) }
           .to raise_error(error)
@@ -221,21 +224,33 @@ RSpec.describe Unitsml::Quantity do
     it "gives scalar and additive results independent trees" do
       a = q("km^2", 4)
       b = q("km^2", 2)
-      leaf = a.formula.value.first
-
       [a * 2, a / 2, a + b, a - b].each do |result|
-        copied = result.formula.value.first
         expect(result.formula).not_to be(a.formula)
         expect(result.norm_text).to eq("km^2")
-        copied.power_numerator = Unitsml::Number.new("9")
-        copied.prefix = Unitsml::Prefix.new("m")
-        result.formula.norm_text.replace("changed")
-        result.formula.value.clear
       end
+    end
+
+    def scramble(formula)
+      leaf = formula.value.first
+      leaf.power_numerator = Unitsml::Number.new("9")
+      leaf.prefix = Unitsml::Prefix.new("m")
+      formula.norm_text.replace("changed")
+      formula.value.clear
+    end
+
+    it "keeps the operand intact when a result changes in place" do
+      a = q("km^2", 4)
+      b = q("km^2", 2)
+      leaf = a.formula.value.first
+      [a * 2, a / 2, a + b, a - b].each { |result| scramble(result.formula) }
       expect(a.formula.value.first).to be(leaf)
-      expect(leaf.power_numerator.raw_value).to eq("2")
-      expect(leaf.prefix_name).to eq("k")
-      expect(a.norm_text).to eq("km^2")
+      expect([leaf.power_numerator.raw_value, leaf.prefix_name, a.norm_text])
+        .to eq(["2", "k", "km^2"])
+    end
+
+    def lexeme(power)
+      power = power.value while power.is_a?(Unitsml::Fenced)
+      power&.raw_value
     end
 
     def mutable_strings(formula)
@@ -243,47 +258,48 @@ RSpec.describe Unitsml::Quantity do
       Unitsml::Compose::TermTree.each_leaf(formula.value) do |leaf|
         next unless leaf.is_a?(Unitsml::Unit)
 
-        power = leaf.power_numerator
-        power = power.value while power.is_a?(Unitsml::Fenced)
-        strings << leaf.unit_name << leaf.prefix&.prefix_name
-        strings << power&.raw_value
+        strings.push(leaf.unit_name, leaf.prefix&.prefix_name,
+                     lexeme(leaf.power_numerator))
       end
       strings.compact.reject(&:frozen?)
+    end
+
+    def shared_strings(result, source)
+      mutable_strings(result.formula).select do |string|
+        source.any? { |original| original.equal?(string) }
+      end
     end
 
     it "shares no mutable name or exponent strings with its operands" do
       a = q("km^((2))", 4)
       b = q("ms^-1", 2)
       source = mutable_strings(a.formula) + mutable_strings(b.formula)
-
       [a * b, a / b, b / a, a * 3, a + a].each do |result|
-        shared = mutable_strings(result.formula).select do |string|
-          source.any? { |original| original.equal?(string) }
-        end
-        expect(shared).to be_empty
+        expect(shared_strings(result, source)).to be_empty
       end
     end
   end
 
   describe "parser independence after operand setup (MRI stand-in)" do
-    it "builds and combines object operands without parsing" do
-      formula = Unitsml::Unit.new("m") / Unitsml::Unit.new("s")
-      expect(Unitsml).not_to receive(:parse)
+    let(:formula) { Unitsml::Unit.new("m") / Unitsml::Unit.new("s") }
+
+    before do
+      formula
+      allow(Unitsml).to receive(:parse).and_call_original
       allow(Unitsml::Parser).to receive(:artifact)
         .and_raise(Unitsml::Errors::PargLoadError.new("probe", "missing"))
+    end
 
+    it "builds and combines object operands without parsing" do
       a = described_class.new(value: 4, unit: formula)
       b = described_class.new(value: 2, unit: Unitsml::Unit.new("m"))
-      [a * b, a / b, a * 2, a / 2, a + a, a - a].each do |result|
-        expect(result).to be_a(described_class)
-        expect(result.formula).to be_a(Unitsml::Formula)
-      end
+      results = [a * b, a / b, a * 2, a / 2, a + a, a - a]
+      expect(results).to all(be_a(described_class))
+      expect(results.map(&:formula)).to all(be_a(Unitsml::Formula))
+      expect(Unitsml).not_to have_received(:parse)
     end
 
     it "still sends String entries to the parser" do
-      allow(Unitsml::Parser).to receive(:artifact)
-        .and_raise(Unitsml::Errors::PargLoadError.new("probe", "missing"))
-
       expect { described_class.new(value: 1, unit: "m") }
         .to raise_error(Unitsml::Errors::PargLoadError)
       expect { described_class.new(value: 1, unit_expression: "m") }
@@ -311,7 +327,7 @@ RSpec.describe Unitsml::Quantity do
       Digest::SHA256.hexdigest(xml)[0, 16]
     end
 
-    it "matches the recorded arithmetic rows" do
+    def arithmetic_rows
       {
         ["W/m", "s", :*] =>
           ["W*m^(-1)*s", { "Length" => 1, "Mass" => 1, "Time" => -2 }],
@@ -320,8 +336,33 @@ RSpec.describe Unitsml::Quantity do
         ["m", "W/m", :/] => ["m*W^(-1)*m", { "Mass" => -1, "Time" => 3 }],
         ["W", "m*s", :/] =>
           ["W*m^(-1)*s^(-1)", { "Length" => 1, "Mass" => 1, "Time" => -4 }],
-        ["m", "s", :/] => ["m/s", { "Length" => 1, "Time" => -1 }]
-      }.each do |(left, right, operator), (text, vector)|
+        ["m", "s", :/] => ["m/s", { "Length" => 1, "Time" => -1 }],
+      }
+    end
+
+    def recorded_vectors
+      joule = { "Length" => 2, "Mass" => 1, "Time" => -2 }
+      {
+        "m^(1/2)" => { "Length" => 1 }, "J^(1/2)" => joule, "J" => joule,
+        "dim_L*dim_M" => {}, "sqrt(m)" => {}, "sqrt(m^2)" => {},
+        "sqrt(m*s)" => {}, "sqrt((m*s))" => {}, "s/sqrt(m)" => { "Time" => 1 },
+        "sqrt(sqrt(m))" => {}, "sqrt(dim_L)" => {}
+      }
+    end
+
+    def fenced_product_vectors
+      {
+        "m^((1/2))" => { "Length" => 1, "Time" => 1 },
+        "m^(1/2)" => { "Length" => 1, "Time" => 1 },
+        "m^-1" => { "Length" => -1, "Time" => 1 },
+        "g^((((3))))" => { "Mass" => 3, "Time" => 1 },
+        "m^((-2))" => { "Length" => -2, "Time" => 1 },
+        "K^(((-1)))" => { "Time" => 1, "ThermodynamicTemperature" => -1 },
+      }
+    end
+
+    it "matches the recorded arithmetic rows" do
+      arithmetic_rows.each do |(left, right, operator), (text, vector)|
         result = q(left).public_send(operator, q(right))
         expect([result.value, result.norm_text, result.dimension_vector])
           .to eq([1, text, vector])
@@ -329,13 +370,7 @@ RSpec.describe Unitsml::Quantity do
     end
 
     it "keeps the recorded dimension vectors (deferred #82 roots/fractions)" do
-      joule = { "Length" => 2, "Mass" => 1, "Time" => -2 }
-      {
-        "m^(1/2)" => { "Length" => 1 }, "J^(1/2)" => joule, "J" => joule,
-        "dim_L*dim_M" => {}, "sqrt(m)" => {}, "sqrt(m^2)" => {},
-        "sqrt(m*s)" => {}, "sqrt((m*s))" => {}, "s/sqrt(m)" => { "Time" => 1 },
-        "sqrt(sqrt(m))" => {}, "sqrt(dim_L)" => {}
-      }.each do |source, vector|
+      recorded_vectors.each do |source, vector|
         expect(q(source).dimension_vector).to eq(vector)
       end
       expect { q("1/sqrt(m)").dimension_vector }.to raise_error(NoMethodError)
@@ -363,7 +398,7 @@ RSpec.describe Unitsml::Quantity do
         .to raise_error(ArgumentError)
     end
 
-    it "keeps the recorded scale rows" do
+    it "keeps the recorded interval scale rows" do
       interval = ->(value) { q("K", value, scale: :interval) }
 
       expect((interval[10] + interval[2]).scale).to eq(:ratio)
@@ -371,29 +406,29 @@ RSpec.describe Unitsml::Quantity do
       expect(((interval[10] + interval[2]) * 2).value).to eq(24)
       expect { interval[10] * 2 }
         .to raise_error(Unitsml::Errors::ScaleOperationError)
-      expect((q("K", 10) + interval[2]).scale).to eq(:ratio)
+    end
+
+    it "keeps the recorded ratio scale rows" do
+      interval = q("K", 2, scale: :interval)
+      expect((q("K", 10) + interval).scale).to eq(:ratio)
       expect((q("m", 2) * q("s", 3)).scale).to eq(:ratio)
     end
 
     it "keeps the recorded fenced-power product vectors" do
-      {
-        "m^((1/2))" => { "Length" => 1, "Time" => 1 },
-        "m^(1/2)" => { "Length" => 1, "Time" => 1 },
-        "m^-1" => { "Length" => -1, "Time" => 1 },
-        "g^((((3))))" => { "Mass" => 3, "Time" => 1 },
-        "m^((-2))" => { "Length" => -2, "Time" => 1 },
-        "K^(((-1)))" => { "Time" => 1, "ThermodynamicTemperature" => -1 }
-      }.each do |source, vector|
+      fenced_product_vectors.each do |source, vector|
         expect((q(source) * q("s")).dimension_vector).to eq(vector)
       end
     end
 
-    it "keeps the recorded scalar and pure-number rows" do
-      { "m" => { "Length" => 1 }, "sqrt(m)" => {}, "m^(1/2)" => { "Length" => 1 },
-        nil => {} }.each do |source, vector|
+    it "keeps the recorded scalar rows" do
+      { "m" => { "Length" => 1 }, "sqrt(m)" => {},
+        "m^(1/2)" => { "Length" => 1 }, nil => {} }.each do |source, vector|
         result = q(source, 4) * 2
         expect([result.value, result.dimension_vector]).to eq([8, vector])
       end
+    end
+
+    it "keeps the recorded pure-number rows" do
       expect((q(nil, 5) / q("s", 2)).dimension_vector).to eq("Time" => -1)
       expect((q("s", 4) / q(nil, 2)).dimension_vector).to eq("Time" => 1)
       expect((q(nil, 4) * q(nil, 2)).dimension_vector).to eq({})

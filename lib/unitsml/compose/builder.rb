@@ -41,7 +41,7 @@ module Unitsml
         def copy_formula(formula)
           return nil unless formula
 
-          copy = TermTree.map_leaves(formula) { |leaf| rebuild_leaf(leaf, false) }
+          copy = TermTree.map_leaves(formula) { |leaf| copy_leaf(leaf) }
           copy.norm_text = formula.norm_text&.dup
           copy.explicit_value = formula.explicit_value&.dup
           copy
@@ -110,6 +110,10 @@ module Unitsml
           [Extender.new(operator)]
         end
 
+        def copy_leaf(leaf)
+          rebuild_leaf(leaf, false)
+        end
+
         # Every copied term owns its strings too (names, prefix, exponent
         # lexemes), so mutating a result in place never reaches an operand.
         def rebuild_leaf(leaf, invert)
@@ -173,7 +177,9 @@ module Unitsml
         # Deep copy of a non-inverted Fenced exponent, wrappers preserved.
         def copy_fenced_power(power)
           inner = power.value
-          inner = inner.is_a?(Fenced) ? copy_fenced_power(inner) : copy_term(inner)
+          inner = if inner.is_a?(Fenced) then copy_fenced_power(inner)
+                  else copy_term(inner)
+                  end
           Fenced.new(power.open_paren, inner, power.close_paren)
         end
 
@@ -263,11 +269,17 @@ module Unitsml
         end
 
         def simple_division?(terms)
-          terms.size == 3 && terms[0].is_a?(Unit) &&
-            terms[1].is_a?(Extender) && terms[1].symbol == "/" &&
-            terms[2].is_a?(Unit) && terms[0].power_numerator.nil? &&
-            terms[2].power_numerator.is_a?(Number) &&
-            terms[2].power_numerator.raw_value == "-1"
+          return false unless terms.size == 3
+
+          numerator, glyph, denominator = terms
+          numerator.is_a?(Unit) && numerator.power_numerator.nil? &&
+            glyph.is_a?(Extender) && glyph.symbol == "/" &&
+            simple_denominator?(denominator)
+        end
+
+        def simple_denominator?(term)
+          power = term.power_numerator if term.is_a?(Unit)
+          power.is_a?(Number) && power.raw_value == "-1"
         end
 
         def simple_division_text(terms)
