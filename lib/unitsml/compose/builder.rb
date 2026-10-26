@@ -110,13 +110,40 @@ module Unitsml
           [Extender.new(operator)]
         end
 
+        # Every copied term owns its strings too (names, prefix, exponent
+        # lexemes), so mutating a result in place never reaches an operand.
         def rebuild_leaf(leaf, invert)
-          return leaf.dup unless leaf.is_a?(Unit) || leaf.is_a?(Dimension)
+          case leaf
+          when Unit then rebuild_unit(leaf, invert)
+          when Dimension
+            copy = leaf.dup
+            copy.dimension_name = leaf.dimension_name.dup
+            copy.power_numerator = final_power(leaf.power_numerator, invert)
+            copy
+          else copy_term(leaf)
+          end
+        end
 
+        def rebuild_unit(leaf, invert)
           copy = leaf.dup
+          copy.unit_name = leaf.unit_name.dup
           copy.power_numerator = final_power(leaf.power_numerator, invert)
-          copy.prefix = leaf.prefix.dup if leaf.is_a?(Unit) && leaf.prefix
+          copy.prefix = copy_prefix(leaf.prefix) if leaf.prefix
           copy
+        end
+
+        def copy_prefix(prefix)
+          copy = prefix.dup
+          copy.prefix_name = prefix.prefix_name.dup
+          copy
+        end
+
+        def copy_term(term)
+          case term
+          when Number then Number.new(term.raw_value.dup)
+          when Extender then Extender.new(term.symbol.dup)
+          else term.dup
+          end
         end
 
         # The leaf's final exponent as a fresh Number (or nil). For division the
@@ -131,7 +158,7 @@ module Unitsml
           else
             raw = power_string(power)
           end
-          return raw && Number.new(raw) unless invert
+          return raw && Number.new(raw.dup) unless invert
 
           negated = negate_string(raw)
           negated == "1" ? nil : Number.new(negated)
@@ -146,7 +173,7 @@ module Unitsml
         # Deep copy of a non-inverted Fenced exponent, wrappers preserved.
         def copy_fenced_power(power)
           inner = power.value
-          inner = inner.is_a?(Fenced) ? copy_fenced_power(inner) : inner.dup
+          inner = inner.is_a?(Fenced) ? copy_fenced_power(inner) : copy_term(inner)
           Fenced.new(power.open_paren, inner, power.close_paren)
         end
 

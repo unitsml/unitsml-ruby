@@ -237,6 +237,32 @@ RSpec.describe Unitsml::Quantity do
       expect(leaf.prefix_name).to eq("k")
       expect(a.norm_text).to eq("km^2")
     end
+
+    def mutable_strings(formula)
+      strings = []
+      Unitsml::Compose::TermTree.each_leaf(formula.value) do |leaf|
+        next unless leaf.is_a?(Unitsml::Unit)
+
+        power = leaf.power_numerator
+        power = power.value while power.is_a?(Unitsml::Fenced)
+        strings << leaf.unit_name << leaf.prefix&.prefix_name
+        strings << power&.raw_value
+      end
+      strings.compact.reject(&:frozen?)
+    end
+
+    it "shares no mutable name or exponent strings with its operands" do
+      a = q("km^((2))", 4)
+      b = q("ms^-1", 2)
+      source = mutable_strings(a.formula) + mutable_strings(b.formula)
+
+      [a * b, a / b, b / a, a * 3, a + a].each do |result|
+        shared = mutable_strings(result.formula).select do |string|
+          source.any? { |original| original.equal?(string) }
+        end
+        expect(shared).to be_empty
+      end
+    end
   end
 
   describe "parser independence after operand setup (MRI stand-in)" do
