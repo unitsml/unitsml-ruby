@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "digest"
 
 # Composite-unit builder (issue #2): the operator DSL (Unit#* / Unit#/) and the
 # Unitsml.compose keyword form, both producing a root Formula whose output
@@ -863,6 +864,130 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     it "leaves parsed norm_text untouched" do
       expect(Unitsml.parse("W/m/sr").norm_text).to eq("W/m/sr")
       expect(Unitsml.parse("m^1*s").norm_text).to eq("m^1*s")
+    end
+  end
+
+  describe "Quantity adapter (Builder.quantity_product)" do
+    let(:builder) { Unitsml::Compose::Builder }
+
+    def leaf_powers(formula)
+      formula.value.reject { |term| term.is_a?(Unitsml::Extender) }
+        .map { |leaf| [leaf.unit_name, leaf.power_numerator&.raw_value] }
+    end
+
+    it "returns nil when both sides are pure numbers" do
+      %w[* /].each do |operator|
+        expect(builder.quantity_product(nil, nil, operator)).to be_nil
+      end
+    end
+
+    it "copies the formula when the other side is nil" do
+      formula = Unitsml.parse("m")
+      [builder.quantity_product(formula, nil, "*"),
+       builder.quantity_product(nil, formula, "*"),
+       builder.quantity_product(formula, nil, "/")].each do |result|
+        expect(result).not_to be(formula)
+        expect(result.value.map(&:class)).to eq([Unitsml::Unit])
+        expect(leaf_powers(result)).to eq([["m", nil]])
+      end
+    end
+
+    it "inverts a lone divisor without a leading extender" do
+      result = builder.quantity_product(nil, Unitsml.parse("s"), "/")
+      expect(result.value.first).to be_a(Unitsml::Unit)
+      expect(leaf_powers(result)).to eq([["s", "-1"]])
+      expect(result.norm_text).to eq("s^(-1)")
+    end
+
+    it "round-trips an inverted root through norm_text" do
+      result = builder.quantity_product(nil, Unitsml.parse("sqrt(Hz)"), "/")
+      expect(result.value.first).to be_a(Unitsml::Sqrt)
+      expect(result.norm_text).to eq("Hz^(-5/10)")
+      reparsed = Unitsml.parse(result.norm_text).value.first
+      expect(reparsed.unit_name).to eq("Hz")
+    end
+
+    it "joins two formulas with the operator like the DSL" do
+      left = Unitsml.parse("W")
+      right = Unitsml.parse("m")
+      expect(builder.quantity_product(left, right, "/").to_xml)
+        .to eq((unit("W") / unit("m")).to_xml)
+      expect(builder.quantity_product(left, right, "*").to_xml)
+        .to eq((unit("W") * unit("m")).to_xml)
+    end
+
+    it "does not mutate either operand, including fenced powers and prefixes" do
+      left = Unitsml.parse("km^((((3))))")
+      right = Unitsml.parse("s^((-2))")
+      before = [left.to_xml, right.to_xml]
+      left_power = left.value.first.power_numerator
+      left_prefix = left.value.first.prefix
+      result = builder.quantity_product(left, right, "/")
+      expect([left.to_xml, right.to_xml]).to eq(before)
+      copied = result.value.first
+      expect(copied.power_numerator).not_to be(left_power)
+      expect(copied.power_numerator.value).not_to be(left_power.value)
+      expect(copied.prefix).not_to be(left_prefix)
+    end
+
+    it "keeps main's un-inverted dimension division" do
+      result = builder.quantity_product(Unitsml.parse("dim_M"),
+                                        Unitsml.parse("dim_L"), "/")
+      xml = result.to_xml
+      expect(xml).to eq(Unitsml.parse("dim_M/dim_L").to_xml)
+      expect(Digest::SHA256.hexdigest(xml)[0, 16]).to eq("fadb9a9811d67de4")
+      expect(result.value.last.power_numerator).to be_nil
+    end
+
+    it "keeps the default DSL dimension inversion" do
+      result = Unitsml::Dimension.new("dim_M") / Unitsml::Dimension.new("dim_L")
+      expect(result.value.last.power_numerator.raw_value).to eq("-1")
+    end
+
+    it "still rejects mixed units and dimensions" do
+      expect do
+        builder.quantity_product(Unitsml.parse("dim_L"), Unitsml.parse("m"), "*")
+      end.to raise_error(Unitsml::Errors::MixedTermsError)
+    end
+  end
+
+  describe "Builder.copy_formula" do
+    let(:builder) { Unitsml::Compose::Builder }
+
+    it "returns nil for nil" do
+      expect(builder.copy_formula(nil)).to be_nil
+    end
+
+    it "keeps the parsed text and wrappers" do
+      formula = Unitsml.parse("m/s")
+      copy = builder.copy_formula(formula)
+      expect(copy.norm_text).to eq("m/s")
+      expect(copy.to_xml).to eq(formula.to_xml)
+      %w[((m*s))*s sqrt(m)].each do |source|
+        parsed = Unitsml.parse(source)
+        copy = builder.copy_formula(parsed)
+        expect(copy.to_asciimath).to eq(parsed.to_asciimath)
+        expect(copy.norm_text).to eq(parsed.norm_text)
+      end
+    end
+
+    it "copies the mutable tree, powers, prefixes, text and metadata" do
+      formula = Unitsml.compose(units: [{ unit: "m", prefix: "k", power: 2 }],
+                                name: "area")
+      copy = builder.copy_formula(formula)
+      expect(copy.value).not_to be(formula.value)
+      expect(copy.value.first).not_to be(formula.value.first)
+      expect(copy.value.first.power_numerator)
+        .not_to be(formula.value.first.power_numerator)
+      expect(copy.value.first.prefix).not_to be(formula.value.first.prefix)
+      expect(copy.norm_text).not_to be(formula.norm_text)
+      expect(copy.explicit_value).not_to be(formula.explicit_value)
+      copy.value.clear
+      copy.norm_text.replace("changed")
+      copy.explicit_value[:name] = "other"
+      expect(formula.value).not_to be_empty
+      expect(formula.norm_text).to eq("km^(2)")
+      expect(formula.explicit_value[:name]).to eq("area")
     end
   end
 

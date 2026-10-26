@@ -16,11 +16,35 @@ module Unitsml
         # "/" and inverts b's power; `a * b` keeps "*"). An explicit trailing
         # extender on the left (from #extender) already is the join, so no glyph
         # is inserted after it — but `/` still inverts the right-hand side.
-        def build_product(left_terms, right_terms, operator)
+        # An empty side inserts no glyph. invert_dimensions: false keeps
+        # Dimension leaves un-inverted on division (Quantity compatibility).
+        def build_product(left_terms, right_terms, operator,
+                          invert_dimensions: true)
           left = build_terms(left_terms, invert: false)
-          right = build_terms(right_terms, invert: operator == "/")
-          joiner = left.last.is_a?(Extender) ? [] : [Extender.new(operator)]
+          right = build_terms(right_terms, invert: operator == "/",
+                                           invert_dimensions: invert_dimensions)
+          joiner = join_glyph(left, right, operator)
           build_root_formula(left + joiner + right)
+        end
+
+        # Quantity arithmetic adapter: a nil formula (pure number) is an empty
+        # side of the same build_product engine. nil op nil stays nil.
+        def quantity_product(left, right, operator)
+          return nil unless left || right
+
+          build_product(left ? left.value : [], right ? right.value : [],
+                        operator, invert_dimensions: false)
+        end
+
+        # Independent copy of a Formula (tree, powers, prefixes, text and
+        # metadata) without parsing; its norm_text is kept, not re-synthesized.
+        def copy_formula(formula)
+          return nil unless formula
+
+          copy = TermTree.map_leaves(formula) { |leaf| rebuild_leaf(leaf, false) }
+          copy.norm_text = formula.norm_text&.dup
+          copy.explicit_value = formula.explicit_value&.dup
+          copy
         end
 
         # Append an explicit (pre-validated) separator glyph to the term list,
@@ -73,8 +97,17 @@ module Unitsml
         # Rebuild every operand: map_leaves reconstructs branch wrappers and
         # each Unit/Dimension leaf is copied with a freshly built final power
         # (and a duplicated prefix). Non-leaf terms (Extender/Number) plain-dup.
-        def build_terms(terms, invert:)
-          TermTree.map_leaves(terms) { |leaf| rebuild_leaf(leaf, invert) }
+        def build_terms(terms, invert:, invert_dimensions: true)
+          TermTree.map_leaves(terms) do |leaf|
+            rebuild_leaf(leaf, invert && (invert_dimensions ||
+                                          !leaf.is_a?(Dimension)))
+          end
+        end
+
+        def join_glyph(left, right, operator)
+          return [] if left.empty? || right.empty? || left.last.is_a?(Extender)
+
+          [Extender.new(operator)]
         end
 
         def rebuild_leaf(leaf, invert)
