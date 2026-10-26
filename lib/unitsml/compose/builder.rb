@@ -58,11 +58,14 @@ module Unitsml
           merged.empty? ? nil : merged
         end
 
+        # orig_text keeps the parser-style source text (and every renderer
+        # keeps the original tree); norm_text is a flat, re-parseable leaf
+        # list so a composed expression survives a parse round trip.
         def build_root_formula(terms, metadata = nil)
           reject_mixed_terms!(terms)
-          text = terms_text(terms)
           Formula.new(terms, explicit_value: metadata, root: true,
-                             orig_text: text, norm_text: text)
+                             orig_text: terms_text(terms),
+                             norm_text: norm_leaves_text(terms))
         end
 
         # --- leaf reconstruction (via TermTree.map_leaves) -----------------
@@ -88,11 +91,30 @@ module Unitsml
         # ^-1 term) renders as no exponent, matching the parser, so it is
         # dropped. A non-inverted explicit ^1 is preserved.
         def final_power(power, invert)
-          raw = power_string(power)
+          if power.is_a?(Fenced)
+            return copy_fenced_power(power) unless invert
+
+            raw = fenced_raw(power)
+          else
+            raw = power_string(power)
+          end
           return raw && Number.new(raw) unless invert
 
           negated = negate_string(raw)
           negated == "1" ? nil : Number.new(negated)
+        end
+
+        # A parser-produced Fenced exponent (e.g. m^((1/2))): its innermost
+        # lexeme, read through any number of nested wrappers.
+        def fenced_raw(power)
+          power.is_a?(Fenced) ? fenced_raw(power.value) : power_string(power)
+        end
+
+        # Deep copy of a non-inverted Fenced exponent, wrappers preserved.
+        def copy_fenced_power(power)
+          inner = power.value
+          inner = inner.is_a?(Fenced) ? copy_fenced_power(inner) : inner.dup
+          Fenced.new(power.open_paren, inner, power.close_paren)
         end
 
         # A builder-supplied power as a parser-style exponent string (or nil):
@@ -161,6 +183,57 @@ module Unitsml
           when Extender then term.symbol
           else branch_text(term)
           end
+        end
+
+        # Flat norm_text: the simple Unit / Unit shape keeps its familiar
+        # text (m/s); anything else lists every ordered leaf with its stored
+        # power, joined by "*". Wrappers (Fenced/Sqrt/Formula) contribute only
+        # their stored leaves; powers are copied lexically, never evaluated.
+        def norm_leaves_text(terms)
+          return simple_division_text(terms) if simple_division?(terms)
+
+          leaves = []
+          TermTree.each_leaf(terms) do |leaf|
+            case leaf
+            when Unit, Dimension then leaves << leaf_norm_text(leaf)
+            when Number then leaves << leaf.raw_value
+            end
+          end
+          leaves.join("*")
+        end
+
+        def simple_division?(terms)
+          terms.size == 3 && terms[0].is_a?(Unit) &&
+            terms[1].is_a?(Extender) && terms[1].symbol == "/" &&
+            terms[2].is_a?(Unit) && terms[0].power_numerator.nil? &&
+            terms[2].power_numerator.is_a?(Number) &&
+            terms[2].power_numerator.raw_value == "-1"
+        end
+
+        def simple_division_text(terms)
+          "#{unit_text(terms[0])}/#{unit_text(terms[2])}"
+        end
+
+        def unit_text(unit)
+          "#{unit.prefix_name}#{unit.unit_name}"
+        end
+
+        def leaf_norm_text(leaf)
+          name = leaf.is_a?(Unit) ? unit_text(leaf) : leaf.dimension_name
+          power = leaf.power_numerator
+          raw = power && decimal_as_fraction(fenced_raw(power))
+          raw ? "#{name}^(#{raw})" : name
+        end
+
+        # A finite decimal lexeme (0.5) is not a parser exponent; write it as
+        # the lexical fraction 5/10 by digit placement, with no Float math.
+        def decimal_as_fraction(raw)
+          return raw unless raw.match?(/\A-?\d+\.\d+\z/)
+
+          sign = raw.start_with?("-") ? "-" : ""
+          whole, fraction = raw.delete_prefix("-").split(".")
+          numerator = "#{whole}#{fraction}".sub(/\A0+(?=\d)/, "")
+          "#{sign}#{numerator}/#{10**fraction.size}"
         end
 
         def branch_text(term)

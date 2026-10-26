@@ -361,9 +361,24 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       end
     end
 
-    it "fails loud (not a crash) on an unsupported fenced-exponent operand" do
-      expect { Unitsml::Unit.new("W") / Unitsml.parse("m^((1/2))") }
-        .to raise_error(Unitsml::Errors::BaseError)
+    it "composes a parser-produced fenced exponent without changing the operand" do
+      operand = Unitsml.parse("m^((1/2))")
+      before = operand.to_asciimath
+      result = Unitsml::Unit.new("W") / operand
+      expect(result.value.last.power_numerator.raw_value).to eq("-1/2")
+      expect(operand.to_asciimath).to eq(before)
+    end
+
+    it "deep-copies a nested fenced exponent it does not invert" do
+      operand = Unitsml.parse("g^((((3))))")
+      original = operand.value.first.power_numerator
+      result = operand * Unitsml::Unit.new("s")
+      copied = result.value.first.power_numerator
+      expect(copied).to be_a(Unitsml::Fenced)
+      expect(copied).not_to be(original)
+      expect(copied.value).not_to be(original.value)
+      expect(result.to_asciimath)
+        .to eq(Unitsml.parse("g^((((3))))*s").to_asciimath)
     end
   end
 
@@ -742,6 +757,112 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       hostile = Class.new { def to_s = raise("boom") }.new
       expect { Unitsml.compose(units: ["W"], quantity: hostile).to_xml }
         .not_to raise_error
+    end
+  end
+
+  describe "norm_text round trip" do
+    # Test-only exponent comparison: implicit power is 1, and a slashed lexeme
+    # (including 1//2 and a signed denominator) is read as a Rational here.
+    # Production never evaluates or normalizes these lexemes.
+    def exponent_value(power)
+      raw = power.is_a?(Unitsml::Fenced) ? fenced_lexeme(power) : power&.raw_value
+      return Rational(1) unless raw
+
+      parts = raw.gsub("//", "/").split("/")
+      return Rational(raw) unless parts.size == 2
+
+      Rational(Integer(parts[0], 10), Integer(parts[1], 10))
+    end
+
+    def fenced_lexeme(power)
+      power.is_a?(Unitsml::Fenced) ? fenced_lexeme(power.value) : power.raw_value
+    end
+
+    def leaf_signature(formula)
+      leaves = []
+      Unitsml::Compose::TermTree.each_leaf(formula.value) do |leaf|
+        case leaf
+        when Unitsml::Unit
+          leaves << [:unit, leaf.unit_name, leaf.prefix_name,
+                     exponent_value(leaf.power_numerator)]
+        when Unitsml::Dimension
+          leaves << [:dimension, leaf.dimension_name, nil,
+                     exponent_value(leaf.power_numerator)]
+        end
+      end
+      leaves
+    end
+
+    def expect_round_trip(formula, text)
+      expect(formula.norm_text).to eq(text)
+      expect(leaf_signature(Unitsml.parse(formula.norm_text)))
+        .to eq(leaf_signature(formula))
+    end
+
+    it "keeps the familiar text for a simple division" do
+      expect_round_trip(unit("W") / unit("m"), "W/m")
+      expect_round_trip(unit("m") / unit("s"), "m/s")
+      expect_round_trip(unit("m", prefix: "k") / unit("s"), "km/s")
+    end
+
+    it "flattens chained and grouped divisions into explicit powers" do
+      expect_round_trip(unit("W") / unit("m") / unit("sr"),
+                        "W*m^(-1)*sr^(-1)")
+      expect_round_trip((unit("J") / unit("s")) / (unit("m") / unit("s")),
+                        "J*s^(-1)*m^(-1)*s")
+      expect_round_trip((unit("W") / unit("m")) * unit("s"), "W*m^(-1)*s")
+      expect_round_trip(unit("W").extender("//").unit("m", -1), "W*m^(-1)")
+    end
+
+    it "changes only norm_text, not the rendered output" do
+      formula = unit("W") / unit("m") / unit("sr")
+      explicit = unit("W").ext("/").unit("m", -1).ext("/").unit("sr", -1)
+      expect(formula.norm_text).to eq("W*m^(-1)*sr^(-1)")
+      all_formats.each do |fmt|
+        expect(formula.public_send(fmt)).to eq(explicit.public_send(fmt))
+      end
+    end
+
+    it "round-trips rational, signed and lexical powers" do
+      expect_round_trip(unit("m", Rational(1, 2)) * unit("s"), "m^(1/2)*s")
+      expect_round_trip(unit("s") / unit("m", Rational(1, 2)), "s*m^(-1/2)")
+      {
+        "0" => "m^(0)*s", "-0" => "m^(-0)*s", "1" => "m^(1)*s",
+        "007" => "m^(007)*s", "1/-2" => "m^(1/-2)*s", "1//2" => "m^(1//2)*s"
+      }.each do |raw, text|
+        expect_round_trip(unit("m", Unitsml::Number.new(raw)) * unit("s"), text)
+      end
+    end
+
+    it "round-trips parser-produced fenced exponents" do
+      {
+        "m^((1/2))" => "s*m^(-1/2)", "g^((((3))))" => "s*g^(-3)",
+        "m^((-2))" => "s*m^(2)", "K^(((-1)))" => "s*K"
+      }.each do |source, text|
+        expect_round_trip(unit("s") / Unitsml.parse(source), text)
+      end
+    end
+
+    it "lists the stored leaves of grouped and root operands" do
+      expect_round_trip(Unitsml.parse("((m*s))") * unit("s"), "m*s*s")
+      expect_round_trip(Unitsml.parse("sqrt(Hz)") * unit("s"), "Hz^(5/10)*s")
+      expect_round_trip(unit("s") / Unitsml.parse("sqrt(m*s)"),
+                        "s*m^(-1)*s^(-1)")
+      expect_round_trip(Unitsml.parse("sqrt(sqrt(m))") * unit("s"),
+                        "m^(5/10)*s")
+    end
+
+    it "round-trips dimension products and roots" do
+      dim_m = Unitsml::Dimension.new("dim_M")
+      expect_round_trip(dim_m / Unitsml::Dimension.new("dim_L"),
+                        "dim_M*dim_L^(-1)")
+      expect_round_trip(dim_m / Unitsml.parse("sqrt(dim_L)"),
+                        "dim_M*dim_L^(-5/10)")
+    end
+
+    it "leaves parsed norm_text untouched" do
+      expect(Unitsml.parse("W/m/sr").norm_text).to eq("W/m/sr")
+      expect(Unitsml.parse("m^1*s").norm_text).to eq("m^1*s")
     end
   end
 
