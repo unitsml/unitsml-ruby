@@ -37,6 +37,7 @@ require "unitsml/errors/invalid_model_error"
 require "unitsml/errors/opal_payload_not_bundled_error"
 require "unitsml/errors/plurimath_load_error"
 require "unitsml/errors/parg_load_error"
+require "unitsml/errors/parse_error"
 require "unitsml/errors/quantity_errors"
 require "unitsml/errors/unsupported_payload_type_error"
 
