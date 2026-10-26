@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "digest"
 
 # Quantity arithmetic composes units through Compose::Builder, the same
 # structural engine as Unit#* and Unit#/, instead of concatenating and
@@ -251,6 +252,125 @@ RSpec.describe Unitsml::Quantity do
         expect(result).to be_a(described_class)
         expect(result.formula).to be_a(Unitsml::Formula)
       end
+    end
+
+    it "still sends String entries to the parser" do
+      allow(Unitsml::Parser).to receive(:artifact)
+        .and_raise(Unitsml::Errors::PargLoadError.new("probe", "missing"))
+
+      expect { described_class.new(value: 1, unit: "m") }
+        .to raise_error(Unitsml::Errors::PargLoadError)
+      expect { described_class.new(value: 1, unit_expression: "m") }
+        .to raise_error(Unitsml::Errors::PargLoadError)
+    end
+  end
+
+  # On this base (#87 not merged) unknown text still fails in the parser.
+  describe "unknown text through both String keywords" do
+    it "raises the parser's failure for an unknown unit or prefix" do
+      %w[foo xm].each do |source|
+        expect { described_class.new(value: 1, unit: source) }
+          .to raise_error(Parsanol::ParseFailed)
+        expect { described_class.new(value: 1, unit_expression: source) }
+          .to raise_error(Parsanol::ParseFailed)
+      end
+    end
+  end
+
+  # Before/after snapshot rows for Quantity. Fractional, root, dimension-leaf
+  # and scale outputs are existing behavior deferred to #82: they are pinned
+  # here so this change cannot alter them, not because they are correct.
+  describe "baseline replay" do
+    def xml_digest(xml)
+      Digest::SHA256.hexdigest(xml)[0, 16]
+    end
+
+    it "matches the recorded arithmetic rows" do
+      {
+        ["W/m", "s", :*] =>
+          ["W*m^(-1)*s", { "Length" => 1, "Mass" => 1, "Time" => -2 }],
+        ["J/s", "m/s", :/] =>
+          ["J*s^(-1)*m^(-1)*s", { "Length" => 1, "Mass" => 1, "Time" => -2 }],
+        ["m", "W/m", :/] => ["m*W^(-1)*m", { "Mass" => -1, "Time" => 3 }],
+        ["W", "m*s", :/] =>
+          ["W*m^(-1)*s^(-1)", { "Length" => 1, "Mass" => 1, "Time" => -4 }],
+        ["m", "s", :/] => ["m/s", { "Length" => 1, "Time" => -1 }]
+      }.each do |(left, right, operator), (text, vector)|
+        result = q(left).public_send(operator, q(right))
+        expect([result.value, result.norm_text, result.dimension_vector])
+          .to eq([1, text, vector])
+      end
+    end
+
+    it "keeps the recorded dimension vectors (deferred #82 roots/fractions)" do
+      joule = { "Length" => 2, "Mass" => 1, "Time" => -2 }
+      {
+        "m^(1/2)" => { "Length" => 1 }, "J^(1/2)" => joule, "J" => joule,
+        "dim_L*dim_M" => {}, "sqrt(m)" => {}, "sqrt(m^2)" => {},
+        "sqrt(m*s)" => {}, "sqrt((m*s))" => {}, "s/sqrt(m)" => { "Time" => 1 },
+        "sqrt(sqrt(m))" => {}, "sqrt(dim_L)" => {}
+      }.each do |source, vector|
+        expect(q(source).dimension_vector).to eq(vector)
+      end
+      expect { q("1/sqrt(m)").dimension_vector }.to raise_error(NoMethodError)
+    end
+
+    it "keeps the recorded dimension ids and fractional product" do
+      expect(q("m^(1/2)").dimension_id).to eq("NISTd1")
+      expect(q("sqrt(m)").dimension_id).to be_nil
+      expect((q("m^(1/2)") * q("m^(1/2)")).dimension_vector)
+        .to eq("Length" => 2)
+    end
+
+    it "keeps the recorded dimension-leaf rows" do
+      expect((q("dim_L") + q(nil, 2)).value).to eq(3)
+      expect { q("dim_L") + q("m") }
+        .to raise_error(Unitsml::Errors::DimensionMismatchError)
+      expect { q("dim_L") * q("m") }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+      expect(xml_digest((q("dim_M") / q("dim_L")).formula.to_xml))
+        .to eq("fadb9a9811d67de4")
+    end
+
+    it "keeps the recorded construction rows" do
+      expect { described_class.new(value: 1, unitsml_expression: "m") }
+        .to raise_error(ArgumentError)
+    end
+
+    it "keeps the recorded scale rows" do
+      interval = ->(value) { q("K", value, scale: :interval) }
+
+      expect((interval[10] + interval[2]).scale).to eq(:ratio)
+      expect((interval[10] - interval[2]).scale).to eq(:ratio)
+      expect(((interval[10] + interval[2]) * 2).value).to eq(24)
+      expect { interval[10] * 2 }
+        .to raise_error(Unitsml::Errors::ScaleOperationError)
+      expect((q("K", 10) + interval[2]).scale).to eq(:ratio)
+      expect((q("m", 2) * q("s", 3)).scale).to eq(:ratio)
+    end
+
+    it "keeps the recorded fenced-power product vectors" do
+      {
+        "m^((1/2))" => { "Length" => 1, "Time" => 1 },
+        "m^(1/2)" => { "Length" => 1, "Time" => 1 },
+        "m^-1" => { "Length" => -1, "Time" => 1 },
+        "g^((((3))))" => { "Mass" => 3, "Time" => 1 },
+        "m^((-2))" => { "Length" => -2, "Time" => 1 },
+        "K^(((-1)))" => { "Time" => 1, "ThermodynamicTemperature" => -1 }
+      }.each do |source, vector|
+        expect((q(source) * q("s")).dimension_vector).to eq(vector)
+      end
+    end
+
+    it "keeps the recorded scalar and pure-number rows" do
+      { "m" => { "Length" => 1 }, "sqrt(m)" => {}, "m^(1/2)" => { "Length" => 1 },
+        nil => {} }.each do |source, vector|
+        result = q(source, 4) * 2
+        expect([result.value, result.dimension_vector]).to eq([8, vector])
+      end
+      expect((q(nil, 5) / q("s", 2)).dimension_vector).to eq("Time" => -1)
+      expect((q("s", 4) / q(nil, 2)).dimension_vector).to eq("Time" => 1)
+      expect((q(nil, 4) * q(nil, 2)).dimension_vector).to eq({})
     end
   end
 end

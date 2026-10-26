@@ -278,6 +278,62 @@ parser cannot express (a decimal exponent — use a `Rational`), or a non-string
 prefix and power on construction too, so an unresolvable value raises
 immediately whichever surface you use.
 
+==== Text of composed units
+
+A composed `Formula` keeps its original term tree for rendering, so `to_latex`,
+`to_xml` and the other formats are not affected by the text described here.
+
+Its `norm_text` is a flat list of the unit leaves joined by `*`, with each
+stored power written in parentheses. This text parses back into the same units,
+prefixes and powers. A single division of two plain units keeps the familiar
+form.
+
+[source,ruby]
+----
+(Unitsml::Unit.new("m") / Unitsml::Unit.new("s")).norm_text  # => "m/s"
+(Unitsml::Unit.new("W") / Unitsml::Unit.new("m") / Unitsml::Unit.new("sr")).norm_text
+# => "W*m^(-1)*sr^(-1)"
+----
+
+The `norm_text` of a parsed `Formula` is unchanged.
+
+==== Quantities
+
+`Unitsml::Quantity` pairs a value with a unit. The unit can be given with the
+`unit:` keyword as a string, a `Unitsml::Unit` or a `Unitsml::Formula`. A string
+is parsed. A `Unit` or `Formula` is used without parsing. The older
+`unit_expression:` keyword still accepts a string. Give only one of the two
+keywords. Without a unit, or with `unit: nil`, the quantity is a pure number.
+
+[source,ruby]
+----
+Unitsml::Quantity.new(value: 10, unit: "kV")
+Unitsml::Quantity.new(value: 10, unit: Unitsml::Unit.new("V", prefix: "k"))
+Unitsml::Quantity.new(value: 3, unit: Unitsml::Unit.new("m") / Unitsml::Unit.new("s"))
+Unitsml::Quantity.new(value: 10, unit_expression: "kV")
+----
+
+A `Formula` passed in is kept as the same object, so changing it later also
+changes the quantity. Results of arithmetic always get their own copy.
+
+Multiplying or dividing two quantities composes their units with the same
+builder as `Unit#*` and `Unit#/`, and nothing is reparsed from text. The
+resulting `norm_text` follows the rules above:
+
+[source,ruby]
+----
+w_per_m = Unitsml::Quantity.new(value: 6, unit: "W/m")
+s = Unitsml::Quantity.new(value: 2, unit: "s")
+(w_per_m * s).norm_text  # => "W*m^(-1)*s"
+----
+
+Some behavior is unchanged and is tracked in issue #82. Fractional powers and
+square roots are not handled exactly in `dimension_vector` and `dimension_id`.
+Dimension leaves such as `dim_L` do not contribute to `dimension_vector`, and
+dividing by a dimension does not invert it. Adding or subtracting two interval
+scale quantities still returns a ratio scale result. Quantities with a unit and
+a dimension cannot be combined and raise `Unitsml::Errors::MixedTermsError`.
+
 
 === Format representation
 
