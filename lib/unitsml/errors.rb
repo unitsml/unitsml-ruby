@@ -13,6 +13,11 @@ module Unitsml
     autoload :OpalPayloadNotBundledError,
              "unitsml/errors/opal_payload_not_bundled_error"
     autoload :PlurimathLoadError, "unitsml/errors/plurimath_load_error"
+    autoload :PargLoadError, "unitsml/errors/parg_load_error"
+    autoload :QuantityOperationError, "unitsml/errors/quantity_errors"
+    autoload :DimensionMismatchError, "unitsml/errors/quantity_errors"
+    autoload :ScaleOperationError, "unitsml/errors/quantity_errors"
+    autoload :IndeterminateResultError, "unitsml/errors/quantity_errors"
     autoload :UnknownDimensionError, "unitsml/errors/unknown_dimension_error"
     autoload :UnknownPrefixError, "unitsml/errors/unknown_prefix_error"
     autoload :UnknownUnitError, "unitsml/errors/unknown_unit_error"

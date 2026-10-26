@@ -19,6 +19,12 @@ module Unitsml
         end
       end
 
+      def prefixed_symbols
+        @prefixed_symbols ||= symbols_ids.select do |unit|
+          find_by_symbol_id(unit).prefixed && !%r{\*|\^|/|^1$}.match?(unit)
+        end
+      end
+
       def find_by_symbol_id(sym_id)
         symbols_hash[sym_id]
       end

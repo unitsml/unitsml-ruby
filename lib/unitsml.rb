@@ -14,26 +14,25 @@ module Unitsml
   autoload :Fenced, "unitsml/fenced"
   autoload :FencedNumeric, "unitsml/fenced_numeric"
   autoload :Formula, "unitsml/formula"
-  autoload :IntermediateExpRules, "unitsml/intermediate_exp_rules"
   autoload :MathmlHelper, "unitsml/mathml_helper"
   autoload :Model, "unitsml/model"
   autoload :Namespace, "unitsml/namespace"
   autoload :Number, "unitsml/number"
-  autoload :Parse, "unitsml/parse"
+  autoload :Parg, "unitsml/parg"
   autoload :Parser, "unitsml/parser"
   autoload :PowerNumerator, "unitsml/power_numerator"
   autoload :Prefix, "unitsml/prefix"
   autoload :PrefixAdapter, "unitsml/prefix_adapter"
   autoload :Sqrt, "unitsml/sqrt"
-  autoload :Transform, "unitsml/transform"
   autoload :Unit, "unitsml/unit"
   autoload :Unitsdb, "unitsml/unitsdb"
   autoload :Utility, "unitsml/utility"
   autoload :VERSION, "unitsml/version"
+  autoload :Quantity, "unitsml/quantity"
   autoload :Xml, "unitsml/xml"
 
   def parse(string)
-    Unitsml::Parser.new(string).parse
+    Parser.new(string).parse
   end
 
   def compose(units: nil, dimensions: nil,
