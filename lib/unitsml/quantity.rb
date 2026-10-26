@@ -11,9 +11,21 @@ module Unitsml
   class Quantity
     attr_reader :value, :formula, :scale
 
-    def initialize(value:, unit_expression: nil, scale: :ratio)
+    # Distinguishes an omitted unit keyword from an explicit nil.
+    ABSENT = Object.new.freeze
+    private_constant :ABSENT
+
+    # unit: accepts a String (parsed, like unit_expression:), a Unit, a
+    # Formula (kept as-is, never reparsed) or nil (a pure number).
+    # unit_expression: remains the String-only spelling; give only one.
+    def initialize(value:, unit: ABSENT, unit_expression: ABSENT,
+                   scale: :ratio)
+      unless unit.equal?(ABSENT) || unit_expression.equal?(ABSENT)
+        raise ArgumentError, "give only one of unit: or unit_expression:"
+      end
+
       @value = value
-      @formula = unit_expression && Unitsml.parse(unit_expression)
+      @formula = build_formula(unit.equal?(ABSENT) ? unit_expression : unit)
       @scale = scale.to_sym
     end
 
@@ -42,15 +54,17 @@ module Unitsml
       formula&.norm_text || value.to_s
     end
 
+    # Units compose structurally through Compose::Builder (the same engine
+    # as Unit#* and Unit#/); nothing is reparsed from text.
     def *(other)
       if other.is_a?(Numeric)
         gate_scaling!
-        return Quantity.new(value: value * other, unit_expression: norm_text)
+        return Quantity.new(value: value * other, unit: copied_formula)
       end
 
       scale_ratio_gate!(other, "multiplication")
       Quantity.new(value: value * other.value,
-                   unit_expression: compose(self, other, "*"))
+                   unit: compose(formula, other.formula, "*"))
     end
 
     # rubocop:disable Metrics/AbcSize
@@ -58,7 +72,7 @@ module Unitsml
       if other.is_a?(Numeric)
         gate_zero!(other)
         gate_scaling!
-        return Quantity.new(value: value / other, unit_expression: norm_text)
+        return Quantity.new(value: value / other, unit: copied_formula)
       end
 
       scale_ratio_gate!(other, "division")
@@ -68,7 +82,7 @@ module Unitsml
       end
 
       Quantity.new(value: value / other.value,
-                   unit_expression: compose(self, other, "/"))
+                   unit: compose(formula, other.formula, "/"))
     end
     # rubocop:enable Metrics/AbcSize
 
@@ -77,13 +91,13 @@ module Unitsml
     def +(other)
       quantity_kind!(other)
       gate_dimension!(other)
-      Quantity.new(value: value + other.value, unit_expression: norm_text)
+      Quantity.new(value: value + other.value, unit: copied_formula)
     end
 
     def -(other)
       quantity_kind!(other)
       gate_dimension!(other)
-      Quantity.new(value: value - other.value, unit_expression: norm_text)
+      Quantity.new(value: value - other.value, unit: copied_formula)
     end
 
     def ==(other)
@@ -174,8 +188,22 @@ module Unitsml
             "division by a zero quantity is indeterminate"
     end
 
+    def build_formula(source)
+      case source
+      when ABSENT, nil then nil
+      when String then Unitsml.parse(source)
+      when Unit then Compose::Builder.from_terms([source])
+      when Formula then source
+      else raise Errors::InvalidUnitEntryError.new(value: source)
+      end
+    end
+
+    def copied_formula
+      Compose::Builder.copy_formula(formula)
+    end
+
     def compose(left, right, operator)
-      "#{left.norm_text}#{operator}#{right.norm_text}"
+      Compose::Builder.quantity_product(left, right, operator)
     end
   end
 end

@@ -1,0 +1,256 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+# Quantity arithmetic composes units through Compose::Builder, the same
+# structural engine as Unit#* and Unit#/, instead of concatenating and
+# reparsing norm_text.
+RSpec.describe Unitsml::Quantity do
+  def q(unit, value = 1, **options)
+    described_class.new(value: value, unit_expression: unit, **options)
+  end
+
+  def leaf_powers(quantity)
+    leaves = []
+    Unitsml::Compose::TermTree.each_leaf(quantity.formula.value) do |leaf|
+      next unless leaf.is_a?(Unitsml::Unit)
+
+      leaves << [leaf.unit_name, leaf.power_numerator&.raw_value]
+    end
+    leaves
+  end
+
+  describe "composition through the builder" do
+    it "multiplies a composed quotient by a unit (W/m * s)" do
+      result = q("W/m", 6) * q("s", 2)
+
+      expect(result.value).to eq(12)
+      expect(result.norm_text).to eq("W*m^(-1)*s")
+      expect(leaf_powers(result)).to eq([["W", nil], ["m", "-1"], ["s", nil]])
+      expect(result.dimension_vector)
+        .to eq("Length" => 1, "Mass" => 1, "Time" => -2)
+    end
+
+    it "divides one quotient by another ((J/s) / (m/s))" do
+      result = q("J/s", 6) / q("m/s", 2)
+
+      expect(result.value).to eq(3)
+      expect(result.norm_text).to eq("J*s^(-1)*m^(-1)*s")
+      expect(leaf_powers(result))
+        .to eq([["J", nil], ["s", "-1"], ["m", "-1"], ["s", nil]])
+      expect(result.dimension_vector)
+        .to eq("Length" => 1, "Mass" => 1, "Time" => -2)
+    end
+
+    it "keeps the simple quotient text" do
+      expect((q("m") / q("s")).norm_text).to eq("m/s")
+    end
+
+    it "rejects mixing units and dimensions with the builder's typed error" do
+      expect { q("dim_L") * q("m") }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+    end
+  end
+
+  describe "unit: entry points" do
+    let(:metre) { Unitsml::Unit.new("m") }
+
+    it "treats String, Unit and Formula entries alike" do
+      [described_class.new(value: 2, unit: "m"),
+       described_class.new(value: 2, unit: metre),
+       described_class.new(value: 2, unit: Unitsml.parse("m"))].each do |entry|
+        expect(entry).to eq(q("m", 2))
+        expect(entry.dimension_id).to eq(q("m", 2).dimension_id)
+      end
+    end
+
+    it "keeps a Formula without reparsing it" do
+      formula = metre / Unitsml::Unit.new("s")
+      quantity = described_class.new(value: 1, unit: formula)
+
+      expect(quantity.formula).to be(formula)
+      expect(quantity.dimension_vector).to eq("Length" => 1, "Time" => -1)
+    end
+
+    it "accepts a composed Formula operand" do
+      formula = Unitsml::Unit.new("W") / metre
+      result = described_class.new(value: 6, unit: formula) * q("s", 2)
+
+      expect(result.norm_text).to eq("W*m^(-1)*s")
+      expect(result.dimension_vector)
+        .to eq("Length" => 1, "Mass" => 1, "Time" => -2)
+    end
+
+    it "keeps the unit_expression: keyword" do
+      expect(q("m").dimension_vector).to eq("Length" => 1)
+    end
+
+    it "treats an omitted or nil unit as a pure number" do
+      [described_class.new(value: 3),
+       described_class.new(value: 3, unit: nil),
+       described_class.new(value: 3, unit_expression: nil)].each do |pure|
+        expect(pure.formula).to be_nil
+        expect(pure.norm_text).to eq("3")
+      end
+    end
+
+    it "rejects both keywords, even when one is nil" do
+      expect { described_class.new(value: 1, unit: "m", unit_expression: "m") }
+        .to raise_error(ArgumentError)
+      expect { described_class.new(value: 1, unit: nil, unit_expression: "m") }
+        .to raise_error(ArgumentError)
+      expect { described_class.new(value: 1, unit: "m", unit_expression: nil) }
+        .to raise_error(ArgumentError)
+    end
+
+    it "rejects a direct Dimension or another object" do
+      [Unitsml::Dimension.new("dim_L"), 42, :m].each do |bad|
+        expect { described_class.new(value: 1, unit: bad) }
+          .to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+      end
+    end
+
+    it "propagates the same parser error for both String keywords" do
+      %w[foo xm].each do |source|
+        error = begin
+          q(source)
+        rescue StandardError => e
+          e.class
+        end
+        expect(error).not_to be_nil
+        expect { described_class.new(value: 1, unit: source) }
+          .to raise_error(error)
+      end
+    end
+  end
+
+  describe "gates" do
+    it "keeps the scalar scale gates" do
+      interval = q("K", 10, scale: :interval)
+
+      expect { interval * 2 }.to raise_error(Unitsml::Errors::ScaleOperationError)
+      expect { interval / 2 }.to raise_error(Unitsml::Errors::ScaleOperationError)
+      expect { interval * q("s") }
+        .to raise_error(Unitsml::Errors::ScaleOperationError)
+      expect { q("s") / interval }
+        .to raise_error(Unitsml::Errors::ScaleOperationError)
+    end
+
+    it "rejects zero Numeric and zero Quantity divisors" do
+      expect { q("m") / 0 }
+        .to raise_error(Unitsml::Errors::IndeterminateResultError)
+      expect { q("m") / q("s", 0) }
+        .to raise_error(Unitsml::Errors::IndeterminateResultError)
+      expect { q("m") / q(nil, 0) }
+        .to raise_error(Unitsml::Errors::IndeterminateResultError)
+    end
+
+    it "keeps the dimension gate and operand check on + and -" do
+      expect { q("m") + q("s") }
+        .to raise_error(Unitsml::Errors::DimensionMismatchError)
+      expect { q("m") - 1 }.to raise_error(ArgumentError)
+    end
+
+    it "keeps the existing ratio result scale for interval differences" do
+      a = q("K", 10, scale: :interval)
+      b = q("K", 2, scale: :interval)
+
+      # Deferred (#82): the result scale is not derived from the operands.
+      expect((a + b).scale).to eq(:ratio)
+      expect((a - b).scale).to eq(:ratio)
+      expect(((a + b) * 2).value).to eq(24)
+    end
+  end
+
+  describe "pure numbers" do
+    it "scales a pure number" do
+      result = q(nil, 4) * 2
+
+      expect([result.value, result.dimension_vector]).to eq([8, {}])
+      expect(result.formula).to be_nil
+    end
+
+    it "composes with a pure number on either side" do
+      expect((q(nil, 5) / q("s", 2)).dimension_vector).to eq("Time" => -1)
+      expect((q("s", 4) / q(nil, 2)).dimension_vector).to eq("Time" => 1)
+      expect((q(nil, 4) * q("s")).dimension_vector).to eq("Time" => 1)
+      expect((q("s") * q(nil, 4)).norm_text).to eq("s")
+    end
+
+    it "inverts a lone divisor without a leading extender" do
+      result = q(nil, 1) / q("s")
+
+      expect(result.formula.value.first).to be_a(Unitsml::Unit)
+      expect(result.norm_text).to eq("s^(-1)")
+    end
+
+    it "keeps pure products and quotients unitless" do
+      expect((q(nil, 4) * q(nil, 2)).formula).to be_nil
+      expect((q(nil, 4) / q(nil, 2)).value).to eq(2)
+    end
+
+    it "cancels like units into an empty vector" do
+      expect((q("m", 6) / q("m", 2)).dimension_vector).to eq({})
+    end
+  end
+
+  describe "chained arithmetic" do
+    it "carries formulas through +, -, * and /" do
+      speed = q("m", 10) / q("s", 2)
+      summed = (speed + (q("m", 3) / q("s", 1))) - (q("m", 2) / q("s", 1))
+      result = summed * q("s", 2) / 2
+
+      expect(result.value).to eq(6)
+      expect(result.dimension_vector).to eq("Length" => 1)
+      expect(result.norm_text).to eq("m*s^(-1)*s")
+    end
+  end
+
+  describe "operand isolation" do
+    it "does not mutate either operand" do
+      a = q("km^2", 4)
+      b = q("s^((-2))", 2)
+      before = [a.formula.to_xml, b.formula.to_xml, a.norm_text, b.norm_text]
+
+      [a * b, a / b, b / a].each(&:dimension_vector)
+      expect([a.formula.to_xml, b.formula.to_xml, a.norm_text, b.norm_text])
+        .to eq(before)
+    end
+
+    it "gives scalar and additive results independent trees" do
+      a = q("km^2", 4)
+      b = q("km^2", 2)
+      leaf = a.formula.value.first
+
+      [a * 2, a / 2, a + b, a - b].each do |result|
+        copied = result.formula.value.first
+        expect(result.formula).not_to be(a.formula)
+        expect(result.norm_text).to eq("km^2")
+        copied.power_numerator = Unitsml::Number.new("9")
+        copied.prefix = Unitsml::Prefix.new("m")
+        result.formula.norm_text.replace("changed")
+        result.formula.value.clear
+      end
+      expect(a.formula.value.first).to be(leaf)
+      expect(leaf.power_numerator.raw_value).to eq("2")
+      expect(leaf.prefix_name).to eq("k")
+      expect(a.norm_text).to eq("km^2")
+    end
+  end
+
+  describe "parser independence after operand setup (MRI stand-in)" do
+    it "builds and combines object operands without parsing" do
+      formula = Unitsml::Unit.new("m") / Unitsml::Unit.new("s")
+      expect(Unitsml).not_to receive(:parse)
+      allow(Unitsml::Parser).to receive(:artifact)
+        .and_raise(Unitsml::Errors::PargLoadError.new("probe", "missing"))
+
+      a = described_class.new(value: 4, unit: formula)
+      b = described_class.new(value: 2, unit: Unitsml::Unit.new("m"))
+      [a * b, a / b, a * 2, a / 2, a + a, a - a].each do |result|
+        expect(result).to be_a(described_class)
+        expect(result.formula).to be_a(Unitsml::Formula)
+      end
+    end
+  end
+end
