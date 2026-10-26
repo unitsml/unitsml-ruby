@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "digest"
 
 # Quantity arithmetic composes units through Compose::Builder, the same
 # structural engine as Unit#* and Unit#/, instead of concatenating and
@@ -324,10 +323,6 @@ RSpec.describe Unitsml::Quantity do
   # and scale outputs are existing behavior deferred to #82: they are pinned
   # here so this change cannot alter them, not because they are correct.
   describe "baseline replay" do
-    def xml_digest(xml)
-      Digest::SHA256.hexdigest(xml)[0, 16]
-    end
-
     def arithmetic_rows
       {
         ["W/m", "s", :*] =>
@@ -390,8 +385,9 @@ RSpec.describe Unitsml::Quantity do
         .to raise_error(Unitsml::Errors::DimensionMismatchError)
       expect { q("dim_L") * q("m") }
         .to raise_error(Unitsml::Errors::MixedTermsError)
-      expect(xml_digest((q("dim_M") / q("dim_L")).formula.to_xml))
-        .to eq("fadb9a9811d67de4")
+      # Same XML as main's string path, which parsed the joined text.
+      expect((q("dim_M") / q("dim_L")).formula.to_xml)
+        .to eq(Unitsml.parse("dim_M/dim_L").to_xml)
     end
 
     it "keeps the recorded construction rows" do
