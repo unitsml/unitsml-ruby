@@ -15,29 +15,29 @@ module Unitsml
         super(message_for(field, value))
       end
 
+      # Message per field; %s is the described value.
+      MESSAGES = {
+        operand: "[unitsml] Cannot compose with %s — expected a Unit, " \
+                 "Dimension or Formula.",
+        prefix: "[unitsml] A dimension cannot take a prefix: %s.",
+        multiplier: "[unitsml] Invalid multiplier: %s — expected a String, " \
+                    ":space, or :nospace.",
+        name: "[unitsml] Invalid name: %s — expected a String or Symbol.",
+        unit: "[unitsml] Invalid unit: %s — expected a String, Unit or " \
+              "Formula.",
+        extender: "[unitsml] Invalid extender: %s — expected \"*\", \"/\" " \
+                  "or \"//\"; custom separators are a render option " \
+                  "(multiplier:).",
+      }.freeze
+
       private
 
       def message_for(field, value)
-        case field
-        when :operand
-          "[unitsml] Cannot compose with #{describe(value)} — expected a " \
-          "Unit, Dimension or Formula."
-        when :prefix
-          "[unitsml] A dimension cannot take a prefix: #{describe(value)}."
-        when :multiplier
-          "[unitsml] Invalid multiplier: #{describe(value)} — expected a " \
-          "String, :space, or :nospace."
-        when :name
-          "[unitsml] Invalid name: #{describe(value)} — expected a String " \
-          "or Symbol."
-        when :extender
-          "[unitsml] Invalid extender: #{describe(value)} — expected \"*\", " \
-          "\"/\" or \"//\"; custom separators are a render option " \
-          "(multiplier:)."
-        else
-          "[unitsml] Invalid #{field} entry: #{describe(value)} — expected a " \
-          "reference (String/Symbol), a Hash, or a matching Unit/Dimension."
+        template = MESSAGES.fetch(field) do
+          "[unitsml] Invalid #{field} entry: %s — expected a reference " \
+            "(String/Symbol), a Hash, or a matching Unit/Dimension."
         end
+        format(template, describe(value))
       end
     end
   end

@@ -107,7 +107,8 @@ RSpec.describe Unitsml::Quantity do
     it "rejects a direct Dimension or another object" do
       [Unitsml::Dimension.new("dim_L"), 42, :m].each do |bad|
         expect { described_class.new(value: 1, unit: bad) }
-          .to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+          .to raise_error(Unitsml::Errors::InvalidUnitEntryError,
+                          /Invalid unit: .* expected a String, Unit or Formula/)
       end
     end
 

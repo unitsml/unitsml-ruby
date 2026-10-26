@@ -194,7 +194,7 @@ module Unitsml
       when String then Unitsml.parse(source)
       when Unit then Compose::Builder.from_terms([source])
       when Formula then source
-      else raise Errors::InvalidUnitEntryError.new(value: source)
+      else raise Errors::InvalidUnitEntryError.new(value: source, field: :unit)
       end
     end
 
