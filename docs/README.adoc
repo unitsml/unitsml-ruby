@@ -283,6 +283,19 @@ unit.to_asciimath(explicit_parenthesis: false) # "m/s^-1*m/s^-1"
 ====
 
 
+== JavaScript / TypeScript
+
+The native JavaScript implementation of UnitsML is the `unitsml` package
+on npm (https://github.com/unitsml/unitsml-ts[unitsml/unitsml-ts]) — a
+TypeScript implementation on the shared checksummed
+https://github.com/unitsml/asciiunits[PARG] grammar artifact, with
+`asciiunits` and `unitsdb` as its npm dependencies. Ruby and TypeScript
+share conformance corpora (parse and render oracles) to guarantee
+identical behavior.
+
+The former Opal-compiled `@unitsml/unitsml` package is deprecated; its
+repository (unitsml/unitsml-js) is archived.
+
 == Installation
 
 Add this line to your application's Gemfile:
