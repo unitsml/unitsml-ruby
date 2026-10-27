@@ -58,6 +58,125 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
   end
 
+  describe "Numeric operands (Quantity results)" do
+    let(:metre) { unit("m") }
+    let(:second) { unit("s") }
+    let(:speed) { metre / second }
+    let(:dim_l) { Unitsml::Dimension.new("dim_L") }
+
+    def leaf_shape(node)
+      leaves = []
+      Unitsml::Compose::TermTree.each_leaf(node.value) do |leaf|
+        name = case leaf
+               when Unitsml::Unit then leaf.unit_name
+               when Unitsml::Dimension then leaf.dimension_name
+               end
+        leaves << [name, leaf.power_numerator&.raw_value] if name
+      end
+      leaves
+    end
+
+    def summary(result)
+      [result.class, result.value, leaf_shape(result.formula)]
+    end
+
+    it "multiplies a Unit by a number on either side" do
+      expected = [Unitsml::Quantity, 5, [["m", nil]]]
+      expect(summary(5 * metre)).to eq(expected)
+      expect(summary(metre * 5)).to eq(expected)
+    end
+
+    it "multiplies a Formula by a number on either side" do
+      expected = [Unitsml::Quantity, 5, [["m", nil], ["s", "-1"]]]
+      expect(summary(5 * speed)).to eq(expected)
+      expect(summary(speed * 5)).to eq(expected)
+    end
+
+    it "divides a number by a Unit or Formula, inverting stored powers" do
+      expect(summary(5 / metre)).to eq([Unitsml::Quantity, 5, [["m", "-1"]]])
+      expect(summary(5 / speed))
+        .to eq([Unitsml::Quantity, 5, [["m", "-1"], ["s", nil]]])
+    end
+
+    it "divides a Unit or Formula by a number" do
+      expect(summary(metre / 2.0)).to eq([Unitsml::Quantity, 0.5, [["m", nil]]])
+      expect(summary(speed / 4.0))
+        .to eq([Unitsml::Quantity, 0.25, [["m", nil], ["s", "-1"]]])
+    end
+
+    it "keeps the existing Quantity integer magnitude rule" do
+      # Quantity#/ keeps Integer division for Integer magnitudes.
+      expect((metre / 2).value).to eq(0)
+      expect((speed / 3).value).to eq(0)
+    end
+
+    it "rejects a zero divisor" do
+      [metre, speed].each do |operand|
+        expect { operand / 0 }
+          .to raise_error(Unitsml::Errors::IndeterminateResultError)
+      end
+    end
+
+    it "coerces a number into [pure-number Quantity, magnitude-1 Quantity]" do
+      number, operand = metre.coerce(5)
+      expect([number.value, number.formula]).to eq([5, nil])
+      expect([operand.value, leaf_shape(operand.formula)])
+        .to eq([1, [["m", nil]]])
+    end
+
+    it "rejects a non-Numeric coerce argument with a typed :operand error" do
+      ["5", nil, Object.new].each do |bad|
+        expect { metre.coerce(bad) }.to raise_error(
+          an_instance_of(Unitsml::Errors::InvalidUnitEntryError)
+            .and(having_attributes(field: :operand, value: bad)),
+        )
+      end
+    end
+
+    it "keeps unit-only operands on the Formula DSL" do
+      expect([metre * second, metre / second,
+              metre * Unitsml::Extender.new("/")])
+        .to all(be_a(Unitsml::Formula))
+    end
+
+    it "agrees with explicit Quantity construction when chained" do
+      chained = (5 * metre) / second
+      explicit = Unitsml::Quantity.new(value: 5, unit: metre) / second
+      expect(summary(chained)).to eq(summary(explicit))
+      expect(summary(chained))
+        .to eq([Unitsml::Quantity, 5, [["m", nil], ["s", "-1"]]])
+    end
+
+    it "wraps a Dimension the same way (leaf shape only)" do
+      expect(summary(5 * dim_l)).to eq([Unitsml::Quantity, 5, [["dim_L", nil]]])
+      expect(summary(dim_l * 5)).to eq([Unitsml::Quantity, 5, [["dim_L", nil]]])
+    end
+
+    it "builds without parsing" do
+      [metre, speed, dim_l]
+      allow(Unitsml).to receive(:parse).and_call_original
+      [5 * metre, metre * 5, 5 / speed, speed / 2.0, 5 * dim_l]
+      expect(Unitsml).not_to have_received(:parse)
+    end
+
+    def numeric_results
+      [5 * speed, speed * 5, 5 / speed, speed / 2.0, 5 * metre]
+    end
+
+    it "does not alias its operands" do
+      expect(numeric_results.map(&:formula)).to all(satisfy { |formula|
+        !formula.equal?(speed)
+      })
+    end
+
+    it "does not mutate its operands when a result changes in place" do
+      before = [leaf_shape(speed), speed.to_xml, metre.power_numerator]
+      numeric_results.each { |result| result.formula.value.clear }
+      expect([leaf_shape(speed), speed.to_xml, metre.power_numerator])
+        .to eq(before)
+    end
+  end
+
   describe "Unitsml.compose" do
     let(:parsed) { Unitsml.parse("W*m^-1*sr^-1, quantity: radiance").to_xml }
 

@@ -4,17 +4,36 @@ module Unitsml
   module Compose
     # Multiplicative composition mixin for units, dimensions and formulas. `*`
     # combines two operands; `/` combines with the right-hand side inverted.
+    # A Numeric on either side yields a Quantity instead (see #coerce).
     # The fluent aliases (#unit/#dimension) chain the same way, and
     # #quantity/#name/#multiplier attach render metadata. Everything is
     # non-mutating and returns a fresh root Formula (assembly lives in
     # Compose::Builder). Included by Unit, Dimension and Formula only.
     module Composable
+      # A Numeric operand makes a Quantity (this operand at magnitude 1, scaled
+      # by the number); any other operand keeps the unit DSL and its Formula.
       def *(other)
+        return Compose.quantity_operand(self) * other if numeric?(other)
+
         build_formula(other, "*")
       end
 
       def /(other)
+        return Compose.quantity_operand(self) / other if numeric?(other)
+
         build_formula(other, "/")
+      end
+
+      # Ruby's Numeric#* and Numeric#/ call this for `5 * unit` / `5 / unit`:
+      # the number becomes a pure-number Quantity and this operand a
+      # magnitude-1 Quantity, so the result is a Quantity either way round.
+      def coerce(number)
+        unless numeric?(number)
+          raise Errors::InvalidUnitEntryError.new(value: number,
+                                                  field: :operand)
+        end
+
+        [Quantity.new(value: number), Compose.quantity_operand(self)]
       end
 
       # Fluent sugar over `*`: `unit("m", -1)` == `self * Unit.new("m", -1)`,
@@ -83,6 +102,10 @@ module Unitsml
         return other.composable_terms if composable?(other)
 
         raise Errors::InvalidUnitEntryError.new(value: other, field: :operand)
+      end
+
+      def numeric?(other)
+        Compose.type?(Numeric, other)
       end
 
       def composable?(other)
