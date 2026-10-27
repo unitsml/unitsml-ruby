@@ -64,7 +64,7 @@ module Unitsml
         # Return a Formula carrying the given render metadata (quantity/name/
         # multiplier). A Formula gets a copy with merged metadata; a lone
         # Unit/Dimension is wrapped into a root Formula. Backs the fluent
-        # #quantity/#name/#multiplier chain methods.
+        # #quantity_reference/#name/#multiplier chain methods.
         def attach_metadata(node, **extras)
           return from_terms([node], **extras) unless node.is_a?(Formula)
 

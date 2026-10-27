@@ -6,8 +6,8 @@ module Unitsml
     # combines two operands; `/` combines with the right-hand side inverted.
     # A Numeric on either side yields a Quantity instead (see #coerce).
     # The fluent aliases (#unit/#dimension) chain the same way, and
-    # #quantity/#name/#multiplier attach render metadata. Everything is
-    # non-mutating and returns a fresh root Formula (assembly lives in
+    # #quantity_reference/#name/#multiplier attach render metadata. Everything
+    # is non-mutating and returns a fresh root Formula (assembly lives in
     # Compose::Builder). Included by Unit, Dimension and Formula only.
     module Composable
       # A Numeric operand makes a Quantity (this operand at magnitude 1, scaled
@@ -64,8 +64,10 @@ module Unitsml
       # Attach render metadata. These come AFTER the units/dimensions: each
       # #unit/#dimension (like `*`) builds a fresh root Formula and does not
       # carry earlier metadata forward, so metadata set before another term is
-      # dropped.
-      def quantity(value)
+      # dropped. #quantity_reference names the NIST quantity the expression
+      # measures (the keyword form's quantity:); it is distinct from Quantity,
+      # the value-with-unit class that Numeric arithmetic returns.
+      def quantity_reference(value)
         Builder.attach_metadata(self, quantity: value)
       end
 

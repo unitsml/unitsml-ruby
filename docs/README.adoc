@@ -181,13 +181,19 @@ Unitsml::Unit.new("m", prefix: "k") # km
 
 The same composition can be written as a fluent chain — `#unit`/`#dimension` are
 sugar over `*` (`unit("m", -1)` == `* Unit.new("m", -1)`), and
-`#quantity`/`#name`/`#multiplier` attach metadata. Metadata must come last, since
-each chained term builds a fresh `Formula`:
+`#quantity_reference`/`#name`/`#multiplier` attach metadata. Metadata must come
+last, since each chained term builds a fresh `Formula`:
 
 [source,ruby]
 ----
-Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1).quantity("radiance")
+Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1).quantity_reference("radiance")
 ----
+
+`#quantity_reference` names the NIST quantity the unit measures, emitted as a
+`<Quantity>` element by `to_xml`. It is the fluent spelling of the `quantity:`
+keyword of `Unitsml.compose` and of the format methods (see below), and is
+unrelated to `Unitsml::Quantity`, the value-with-unit class described in the
+Quantities section below.
 
 An explicit separator can be placed between terms with `#extender` (alias
 `#ext`), accepting exactly the parser's grammar set: `"*"`, `"/"` or `"//"`
@@ -315,6 +321,28 @@ Unitsml::Quantity.new(value: 10, unit_expression: "kV")
 
 A `Formula` passed in is kept as the same object, so changing it later also
 changes the quantity. Results of arithmetic always get their own copy.
+
+Multiplying or dividing a `Unit`, `Dimension` or `Formula` by a number, on
+either side, gives a `Unitsml::Quantity` with that number as its value. A
+quantity can also be multiplied or divided by a bare `Unit`, `Dimension` or
+`Formula`, which counts as a value of 1. Nothing is parsed. Units and
+dimensions still cannot be mixed, and anything else raises
+`Unitsml::Errors::InvalidUnitEntryError`.
+
+[source,ruby]
+----
+metre = Unitsml::Unit.new("m")
+second = Unitsml::Unit.new("s")
+
+5 * metre             # => Quantity, value 5, unit m
+metre / 2.0           # => Quantity, value 0.5, unit m
+5 / second            # => Quantity, value 5, unit s^-1
+
+distance = Unitsml::Quantity.new(value: 6, unit: metre)
+distance / second     # => Quantity, value 6, unit m/s
+----
+
+Two units without a number still compose into a `Formula`, as described above.
 
 Multiplying or dividing two quantities composes their units with the same
 builder as `Unit#*` and `Unit#/`, and nothing is reparsed from text. The

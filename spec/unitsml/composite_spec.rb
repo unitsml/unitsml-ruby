@@ -513,7 +513,7 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
 
     it "matches the keyword form with metadata last" do
       base = Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1)
-      chained = base.quantity("radiance")
+      chained = base.quantity_reference("radiance")
       keyword = Unitsml.compose(
         units: ["W", { unit: "m", power: -1 }, { unit: "sr", power: -1 }],
         quantity: "radiance",
@@ -579,7 +579,7 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
 
     it "attaches metadata to a single unit" do
-      chained = Unitsml::Unit.new("W").quantity("radiance")
+      chained = Unitsml::Unit.new("W").quantity_reference("radiance")
       keyword = Unitsml.compose(units: ["W"], quantity: "radiance")
       expect(chained).to be_a(Unitsml::Formula)
       expect(chained.to_xml).to eq(keyword.to_xml)
@@ -592,9 +592,58 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
 
     it "drops metadata set before a later unit (metadata-last rule)" do
-      dropped = Unitsml::Unit.new("W").quantity("radiance").unit("m", -1)
+      dropped = Unitsml::Unit.new("W").quantity_reference("radiance")
+        .unit("m", -1)
       plain = Unitsml::Unit.new("W").unit("m", -1)
       expect(dropped.to_xml).to eq(plain.to_xml)
+    end
+  end
+
+  describe "#quantity_reference" do
+    let(:radiance_xml) do
+      Unitsml.compose(units: ["W", { unit: "m", power: -1 }],
+                      quantity: "radiance").to_xml
+    end
+
+    it "attaches the NIST quantity to a Unit like the keyword form" do
+      xml = Unitsml::Unit.new("W").quantity_reference("radiance").to_xml
+      keyword = Unitsml.compose(units: ["W"], quantity: "radiance").to_xml
+      expect(xml).to eq(keyword)
+      expect(xml).to include("<Quantity")
+    end
+
+    it "attaches the NIST quantity to a Formula like the keyword form" do
+      formula = Unitsml::Unit.new("W").unit("m", -1)
+      expect(formula.quantity_reference("radiance").to_xml).to eq(radiance_xml)
+    end
+
+    it "keeps the dimension metadata behavior" do
+      chained = Unitsml::Dimension.new("dim_L").quantity_reference("length")
+      keyword = Unitsml.compose(dimensions: ["dim_L"], quantity: "length")
+      expect(chained.to_xml).to eq(keyword.to_xml)
+      expect(chained.to_xml).not_to include("<Quantity")
+    end
+
+    it "lets a render-time quantity: override it" do
+      formula = Unitsml::Unit.new("W").unit("m", -1)
+        .quantity_reference("radiance")
+      expect(formula.to_xml(quantity: "NISTq89")).to include('xml:id="NISTq89"')
+    end
+
+    it "does not mutate the receiver" do
+      formula = Unitsml::Unit.new("W").unit("m", -1)
+      before = formula.to_xml
+      formula.quantity_reference("radiance")
+      expect(formula.to_xml).to eq(before)
+    end
+
+    it "replaces the former fluent #quantity without an alias" do
+      [Unitsml::Unit.new("W"), Unitsml::Dimension.new("dim_L"),
+       Unitsml::Unit.new("W").unit("m", -1)].each do |operand|
+        expect(operand).not_to respond_to(:quantity)
+      end
+      expect(Unitsml::Compose::Composable.instance_methods)
+        .not_to include(:quantity)
     end
   end
 
