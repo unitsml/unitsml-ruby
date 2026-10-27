@@ -19,3 +19,5 @@ jobs:
         echo "---" >> .bundle/config
         echo 'BUNDLE_BUILD__RUBY___LL: "--with-cflags=-std=gnu17"' >> .bundle/config
         cat .bundle/config
+    secrets:
+      pat_token: ${{ secrets.UNITSML_CI_PAT_TOKEN }}
