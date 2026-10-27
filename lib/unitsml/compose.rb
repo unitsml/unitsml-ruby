@@ -69,6 +69,21 @@ module Unitsml
       raise Errors::UnknownDimensionError.new(value: reference)
     end
 
+    # The right-hand side of Quantity#* and Quantity#/ as a Quantity: a
+    # Quantity passes through; a bare Unit/Dimension or a Formula becomes a
+    # magnitude-1 Quantity (nothing is parsed — a Formula is kept, a leaf is
+    # wrapped by Builder). Anything else fails as a typed operand error.
+    # Numeric operands are scalars and are handled by Quantity itself.
+    def quantity_operand(value)
+      return value if type?(Quantity, value)
+      return Quantity.new(value: 1, unit: value) if type?(Formula, value)
+      if type_any?([Unit, Dimension], value)
+        return Quantity.new(value: 1, unit: Builder.from_terms([value]))
+      end
+
+      raise Errors::InvalidUnitEntryError.new(value: value, field: :operand)
+    end
+
     # A prefix supplied as a Prefix object is reduced to its name so Unit.new
     # validates it; other values (String/Symbol/nil) pass through.
     def prefix_ref(prefix)

@@ -128,6 +128,139 @@ RSpec.describe Unitsml::Quantity do
     end
   end
 
+  describe "bare Unit, Dimension and Formula operands" do
+    let(:metre) { Unitsml::Unit.new("m") }
+    let(:second) { Unitsml::Unit.new("s") }
+    let(:speed) { metre / second }
+    let(:dim_l) { Unitsml::Dimension.new("dim_L") }
+
+    def leaf_shape(formula)
+      leaves = []
+      Unitsml::Compose::TermTree.each_leaf(formula.value) do |leaf|
+        case leaf
+        when Unitsml::Unit
+          leaves << [leaf.unit_name, leaf.power_numerator&.raw_value]
+        when Unitsml::Dimension
+          leaves << [leaf.dimension_name, leaf.power_numerator&.raw_value]
+        end
+      end
+      leaves
+    end
+
+    def operand_error(operator, operand)
+      q("m", 6).public_send(operator, operand)
+      nil
+    rescue Unitsml::Errors::InvalidUnitEntryError => e
+      e
+    end
+
+    def operand_errors(operand)
+      [operand_error(:*, operand), operand_error(:/, operand)]
+    end
+
+    it "multiplies and divides by a Unit, keeping the magnitude" do
+      product = described_class.new(value: 6, unit: metre) * second
+      quotient = described_class.new(value: 6, unit: metre) / second
+
+      expect([product.value, leaf_powers(product)])
+        .to eq([6, [["m", nil], ["s", nil]]])
+      expect([quotient.value, leaf_powers(quotient)])
+        .to eq([6, [["m", nil], ["s", "-1"]]])
+    end
+
+    it "multiplies and divides by a Formula, keeping the magnitude" do
+      product = q("m", 6) * speed
+      quotient = q("m", 6) / speed
+
+      expect([product.value, leaf_powers(product)])
+        .to eq([6, [["m", nil], ["m", nil], ["s", "-1"]]])
+      expect([quotient.value, leaf_powers(quotient)])
+        .to eq([6, [["m", nil], ["m", "-1"], ["s", nil]]])
+    end
+
+    it "divides a pure number by a Unit" do
+      result = q(nil, 5) / second
+
+      expect([result.value, leaf_powers(result)]).to eq([5, [["s", "-1"]]])
+    end
+
+    it "composes dimension-only operands (checked by leaves)" do
+      formula = Unitsml::Compose::Builder.from_terms([dim_l])
+      result = described_class.new(value: 6, unit: formula) * dim_l
+
+      expect(result.value).to eq(6)
+      expect(leaf_shape(result.formula))
+        .to eq([["dim_L", nil], ["dim_L", nil]])
+    end
+
+    it "still rejects mixing units and dimensions" do
+      dimensional = described_class.new(
+        value: 2, unit: Unitsml::Compose::Builder.from_terms([dim_l]),
+      )
+
+      expect { q("m", 6) / dim_l }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+      expect { dimensional * metre }
+        .to raise_error(Unitsml::Errors::MixedTermsError)
+    end
+
+    { "nil" => nil, "a String" => "s",
+      "an Extender" => Unitsml::Extender.new("*"),
+      "an Object" => Object.new, "a BasicObject" => BasicObject.new }
+      .each do |label, bad|
+        it "rejects #{label} with a typed :operand error" do
+          errors = operand_errors(bad)
+          expect(errors).to all(be_a(Unitsml::Errors::InvalidUnitEntryError))
+          expect(errors.map(&:field)).to eq(%i[operand operand])
+          expect(errors.map(&:value)).to all(be(bad))
+        end
+      end
+
+    it "keeps Quantity operands and their scale gates" do
+      interval = q("K", 10, scale: :interval)
+
+      expect((q("m", 2) * q("s", 3)).value).to eq(6)
+      expect { interval * second }
+        .to raise_error(Unitsml::Errors::ScaleOperationError)
+      expect { interval / speed }
+        .to raise_error(Unitsml::Errors::ScaleOperationError)
+    end
+
+    it "keeps the zero-divisor behavior" do
+      expect((q("m", 0) / second).value).to eq(0)
+      expect { q("m") / q("s", 0) }
+        .to raise_error(Unitsml::Errors::IndeterminateResultError)
+    end
+
+    def operand_snapshot(quantity)
+      [quantity.formula.to_xml, speed.to_xml, leaf_shape(speed),
+       metre.unit_name, metre.power_numerator]
+    end
+
+    it "gives the result its own tree" do
+      quantity = q("m", 6)
+      [quantity * metre, quantity / speed].each do |result|
+        expect(result.formula).not_to be(speed)
+        expect(result.formula).not_to be(quantity.formula)
+      end
+    end
+
+    it "leaves the operands untouched when a result changes in place" do
+      quantity = q("m", 6)
+      before = operand_snapshot(quantity)
+      [quantity * metre, quantity / speed].each do |result|
+        result.formula.value.first.power_numerator = Unitsml::Number.new("9")
+        result.formula.value.clear
+      end
+      expect(operand_snapshot(quantity)).to eq(before)
+    end
+
+    it "still rejects a direct Dimension in the constructor" do
+      expect { described_class.new(value: 1, unit: dim_l) }
+        .to raise_error(Unitsml::Errors::InvalidUnitEntryError)
+    end
+  end
+
   describe "gates" do
     it "keeps the scalar scale gates" do
       interval = q("K", 10, scale: :interval)
@@ -296,6 +429,15 @@ RSpec.describe Unitsml::Quantity do
       results = [a * b, a / b, a * 2, a / 2, a + a, a - a]
       expect(results).to all(be_a(described_class))
       expect(results.map(&:formula)).to all(be_a(Unitsml::Formula))
+      expect(Unitsml).not_to have_received(:parse)
+    end
+
+    it "combines bare Unit, Dimension and Formula operands without parsing" do
+      a = described_class.new(value: 4, unit: formula)
+      dim = Unitsml::Dimension.new("dim_L")
+      d = described_class.new(value: 2, unit: dim * dim)
+      expect([a * Unitsml::Unit.new("m"), a / Unitsml::Unit.new("s"),
+              a * formula, a / formula, d * dim]).to all(be_a(described_class))
       expect(Unitsml).not_to have_received(:parse)
     end
 

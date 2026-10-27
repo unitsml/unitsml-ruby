@@ -55,13 +55,13 @@ module Unitsml
     end
 
     # Units compose structurally through Compose::Builder (the same engine
-    # as Unit#* and Unit#/); nothing is reparsed from text.
+    # as Unit#* and Unit#/); nothing is reparsed from text. A Numeric is a
+    # scalar; a bare Unit, Dimension or Formula operand is a magnitude-1
+    # Quantity (Compose.quantity_operand).
     def *(other)
-      if other.is_a?(Numeric)
-        gate_scaling!
-        return Quantity.new(value: value * other, unit: copied_formula)
-      end
+      return scalar_product(other) if Compose.type?(Numeric, other)
 
+      other = Compose.quantity_operand(other)
       scale_ratio_gate!(other, "multiplication")
       Quantity.new(value: value * other.value,
                    unit: compose(formula, other.formula, "*"))
@@ -69,12 +69,13 @@ module Unitsml
 
     # rubocop:disable Metrics/AbcSize
     def /(other)
-      if other.is_a?(Numeric)
+      if Compose.type?(Numeric, other)
         gate_zero!(other)
         gate_scaling!
         return Quantity.new(value: value / other, unit: copied_formula)
       end
 
+      other = Compose.quantity_operand(other)
       scale_ratio_gate!(other, "division")
       if other.value.zero?
         raise Errors::IndeterminateResultError,
@@ -179,6 +180,11 @@ module Unitsml
       raise Errors::DimensionMismatchError,
             "dimension mismatch: #{dimension_vector.inspect} " \
             "vs #{other.dimension_vector.inspect}"
+    end
+
+    def scalar_product(number)
+      gate_scaling!
+      Quantity.new(value: value * number, unit: copied_formula)
     end
 
     def gate_zero!(other)
