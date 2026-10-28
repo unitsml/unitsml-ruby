@@ -31,10 +31,11 @@ RSpec.describe Unitsml::Parg::TreeMapper do
     expect(mapped.unit_name).to eq("m")
   end
 
-  it "leaves unmatched key combinations as symbol-keyed hashes" do
+  it "maps a sqrt followed by a sequence into a formula" do
     tree = { "sqrt" => { "unit" => "m" }, "sequence" => { "unit" => "s" } }
     mapped = mapper.apply(tree)
-    expect(mapped).to be_a(Hash)
-    expect(mapped.keys).to eq(%i[sqrt sequence])
+    expect(mapped).to be_a(Unitsml::Formula)
+    expect(mapped.value.first).to be_a(Unitsml::Sqrt)
+    expect(mapped.value.last).to be_a(Unitsml::Unit)
   end
 end
