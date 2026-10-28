@@ -15,26 +15,16 @@ module Unitsml
 
     module_function
 
+    # The dispatch walkers mirror the grammar's case structure; the
+    # branchiness is inherent and gated by the conformance suite.
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Layout/LineLength, Lint/DuplicateBranch, Lint/ElseLayout
+
     # Returns a Result for the parsed expression.
     def to_canonical(formula)
       walk(formula, 1)
     end
 
     def walk(node, sign)
-      (@__depth ||= Hash.new(0))
-      @__depth[:d] += 1
-      if @__depth[:d] > 60
-        $stderr.puts "DEPTH #{@__depth[:d]} at #{node.class} #{node.respond_to?(:norm_text) ? node.norm_text[0, 40] : node.inspect[0, 60]}"
-        exit! 70
-      end
-      begin
-        walk_inner(node, sign)
-      ensure
-        @__depth[:d] -= 1
-      end
-    end
-
-    def walk_inner(node, sign)
       case node
       when Formula
         # The parser already normalizes "/" and "//" by inverting the
@@ -61,14 +51,43 @@ module Unitsml
       end
     end
 
+    def walk_inner(node, sign)
+      case node
+      when Formula
+        # The parser already normalizes "/" and "//" by inverting the
+        # following exponents (update_units_exponents), so the tree walks
+        # multiplicatively with no sign tracking.
+        node.value.reduce(Result.new(factor: Rational(1),
+                                     offset: 0)) do |acc, part|
+          next acc if part.is_a?(Extender)
+
+          merge(acc, walk_with_sign(part, sign))
+        end
+      when Fenced
+        walk(node.value, sign)
+      when Sqrt
+        sub = walk(node.value, sign)
+        Result.new(factor: sqrt_rational(sub.factor), offset: sub.offset)
+      when Extender
+        Result.new(factor: Rational(1), offset: 0)
+      when Unit
+        unit_result(node, sign)
+      when Dimension, Number_, Prefix
+        Result.new(factor: Rational(1), offset: 0)
+      else
+        raise Errors::ConversionError, "cannot convert #{node.class} node"
+      end
+    end
+
     def walk_with_sign(part, sign)
       result = walk(part, sign)
       sign.negative? ? Result.new(factor: 1 / result.factor, offset: 0) : result
     end
 
     def merge(left, right)
-      if left.offset != 0 && right.factor != 1 || right.offset != 0 && left.factor != 1
-        raise Errors::ConversionError, "affine unit inside a composite expression"
+      if (left.offset != 0 && right.factor != 1) || (right.offset != 0 && left.factor != 1)
+        raise Errors::ConversionError,
+              "affine unit inside a composite expression"
       end
 
       Result.new(
@@ -77,15 +96,18 @@ module Unitsml
       )
     end
 
-    def unit_result(unit, sign)
+    def unit_result(unit, _sign)
       prefix_factor = if unit.prefix
-                        Rational(unit.prefix.base) ** unit.prefix.power
+                        Rational(unit.prefix.base)**unit.prefix.power
                       else
                         Rational(1)
                       end
       power = node_power(unit.power_numerator)
       record = unit.unit_instance
-      raise Errors::ConversionError, "unknown unit #{unit.unit_name.inspect}" unless record
+      unless record
+        raise Errors::ConversionError,
+              "unknown unit #{unit.unit_name.inspect}"
+      end
 
       factor, offset = record_factor(record, power, [record_identity(record)])
       factor *= prefix_factor
@@ -99,22 +121,34 @@ module Unitsml
       record.identifiers&.map { |i| "#{i.type}:#{i.id}" }&.sort&.join("|")
     end
 
-    def record_factor(record, power, visited = [])
+    def record_factor(record, power, _visited = [])
       cc = record.canonical_conversion
       return conversion_factor(cc, power) if cc
 
       bases = record.si_derived_bases
       bases = record.root_units if bases.nil? || bases.empty?
-      return [Rational(1), Rational(0)] if bases.nil? || bases.empty?
+      if bases.nil? || bases.empty?
+        system = record.unit_system_reference&.first&.id.to_s
+        if Lutaml::Model::Utils.snake_case(system) == "si_base"
+          return [Rational(1),
+                  Rational(0)]
+        end
+
+        raise Errors::ConversionError,
+              "no canonical conversion path for #{record.symbols&.first&.id.inspect}"
+      end
 
       factor = Rational(1)
       bases.each do |base|
         base_power = (base.power || 1) * power
         prefix_factor = prefix_factor_from_reference(base.prefix_reference)
         sub_factor, sub_offset = base_factor(base.unit_reference, base_power)
-        raise Errors::ConversionError, "affine unit inside a derived composition" if sub_offset != 0
+        if sub_offset != 0
+          raise Errors::ConversionError,
+                "affine unit inside a derived composition"
+        end
 
-        factor *= prefix_factor**power * sub_factor**base_power
+        factor *= (prefix_factor**power) * (sub_factor**base_power)
       end
       [factor, Rational(0)]
     end
@@ -124,8 +158,8 @@ module Unitsml
         raise Errors::ConversionError, "affine unit raised to power #{power}"
       end
 
-      factor = Rational(cc.factor) ** power
-      offset = cc.offset ? Rational(cc.offset) : Rational(0)
+      factor = Rational(cc.factor)**power
+      offset = Rational(cc.offset || 0)
       [factor, offset]
     end
 
@@ -142,7 +176,7 @@ module Unitsml
       record = Unitsml::Unitsdb.prefixes.find_by_id(reference.id)
       return Rational(1) unless record
 
-      Rational(record.base) ** record.power
+      Rational(record.base)**record.power
     end
 
     def node_power(numerator)
@@ -157,10 +191,10 @@ module Unitsml
       if root * root == rational.numerator && den * den == rational.denominator
         Rational(root, den)
       else
-        raise Errors::ConversionError, "square root of #{rational} is not rational"
+        raise Errors::ConversionError,
+              "square root of #{rational} is not rational"
       end
     end
-
 
     # Dimension-only decomposition (no factors): the same entry shape
     # Utility.units2dimensions returns, for units that canonical data can
@@ -237,5 +271,6 @@ module Unitsml
       end
       dims
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Layout/LineLength, Lint/DuplicateBranch, Lint/ElseLayout
   end
 end

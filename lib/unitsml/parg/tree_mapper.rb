@@ -122,6 +122,24 @@ module Unitsml
         when %w[power_numerator prefix unit]
           Unit.new(text(node["unit"]), node["power_numerator"],
                    prefix: Prefix.new(text(node["prefix"])))
+        when %w[prefix sequence unit]
+          Formula.new(
+            [Unit.new(text(node["unit"]),
+                      prefix: Prefix.new(text(node["prefix"]))),
+             node["sequence"]],
+          )
+        when %w[sequence sqrt]
+          Formula.new(
+            [Sqrt.new(node["sqrt"]), node["sequence"]],
+          )
+        when %w[sequence unit]
+          Formula.new(
+            [Unit.new(text(node["unit"])), node["sequence"]],
+          )
+        when %w[implicit_extended sequence]
+          Formula.new(
+            [node["implicit_extended"], node["sequence"]],
+          )
         when %w[prefix] then Prefix.new(text(node["prefix"]))
         when %w[prefix unit]
           Unit.new(text(node["unit"]), prefix: Prefix.new(text(node["prefix"])))

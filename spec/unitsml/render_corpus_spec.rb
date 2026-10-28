@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable RSpec/DescribeClass, RSpec/LeakyLocalVariable, RSpec/BeforeAfterAll, Layout/LineLength, RSpec/ExampleLength
+
 require "canon/rspec_matchers"
 
 # Replays the shared unitsml render corpus
@@ -7,12 +9,14 @@ require "canon/rspec_matchers"
 # oracle unitsml-ts replays. Point CORPUS_DIR at a checkout of the
 # testsuite repository; the CI workflow does this automatically.
 RSpec.describe "unitsml-testsuite render corpus" do
-  corpus_dir = ENV["CORPUS_DIR"]
+  corpus_dir = ENV.fetch("CORPUS_DIR", nil)
   corpus_file = corpus_dir && File.join(corpus_dir, "expected-renders.json")
 
   before(:all) do
-    skip "CORPUS_DIR not set — clone unitsml/unitsml-testsuite and point " \
-         "CORPUS_DIR at corpora/renders to enable the shared replay" unless corpus_file
+    unless corpus_file
+      skip "CORPUS_DIR not set — clone unitsml/unitsml-testsuite and point " \
+           "CORPUS_DIR at corpora/renders to enable the shared replay"
+    end
     skip "no corpus at #{corpus_file}" unless corpus_file && File.exist?(corpus_file)
   end
 

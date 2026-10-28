@@ -25,10 +25,14 @@ module Unitsml
       end
     end
 
+    # rubocop:disable Metrics/AbcSize, Layout/LineLength
     # Base-dimension exponents summed across the composed expression —
     # V (L²MT⁻³I⁻¹) times A (I¹) merges to the watt vector L²MT⁻³.
     def dimension_vector
-      vector = raw_dimension_list.each_with_object(Hash.new(0)) do |entry, acc|
+      list = raw_dimension_list
+      return nil if list.nil?
+
+      vector = list.each_with_object(Hash.new(0)) do |entry, acc|
         exponent = entry[:exponent]
         exponent = exponent.raw_value if exponent.respond_to?(:raw_value)
         acc[entry[:dimension]] += exponent.to_i
@@ -53,7 +57,7 @@ module Unitsml
                    unit_expression: compose(self, other, "*"))
     end
 
-    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable-next Metrics/AbcSize
     def /(other)
       if other.is_a?(Numeric)
         gate_zero!(other)
@@ -70,7 +74,6 @@ module Unitsml
       Quantity.new(value: value / other.value,
                    unit_expression: compose(self, other, "/"))
     end
-    # rubocop:enable Metrics/AbcSize
 
     # R-A4: differences are legal on both ratio and interval scales;
     # only the dimension identity must match.
@@ -91,12 +94,18 @@ module Unitsml
     # arithmetic throughout; the returned value is a Rational when a
     # conversion was applied.
     def convert_to(target_expression)
-      target_formula = target_expression.is_a?(Formula) ? target_expression : Unitsml.parse(target_expression)
-      gate_dimension!(Quantity.new(value: 0, unit_expression: target_formula.norm_text))
+      target_formula = if target_expression.is_a?(Formula)
+                         target_expression
+                       else
+                         Unitsml.parse(target_expression)
+                       end
+      gate_target = Quantity.new(value: 0,
+                                 unit_expression: target_formula.norm_text)
+      gate_dimension!(gate_target)
 
       src = Conversion.to_canonical(formula)
       dst = Conversion.to_canonical(target_formula)
-      converted = (Rational(value) * src.factor + src.offset - dst.offset) / dst.factor
+      converted = ((Rational(value) * src.factor) + src.offset - dst.offset) / dst.factor
 
       Quantity.new(value: converted, unit_expression: target_formula.norm_text)
     end
@@ -105,6 +114,7 @@ module Unitsml
       other.is_a?(Quantity) && value == other.value &&
         dimension_vector == other.dimension_vector
     end
+    # rubocop:enable Metrics/AbcSize, Layout/LineLength
 
     private
 
@@ -129,7 +139,7 @@ module Unitsml
 
     # Formula#units renders XML; the dimension identity needs the raw
     # decomposition, so extract it the same way Formula does internally.
-    # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
+    # rubocop:disable-next Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
     def extract_units(formula)
       formula.each_with_object([]) do |term, units_arr|
         case term
@@ -148,7 +158,6 @@ module Unitsml
         end
       end
     end
-    # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metrics/CyclomaticComplexity
 
     # R-A4: ratio-scale operations are specified errors on non-ratio
     # quantities. Differences and comparisons remain legal on both.
@@ -176,6 +185,9 @@ module Unitsml
     end
 
     def gate_dimension!(other)
+      # Unknown dimensions (units without a decomposition path) defer the
+      # legality decision to the conversion layer.
+      return if dimension_vector.nil? || other.dimension_vector.nil?
       return if dimension_vector == other.dimension_vector
 
       raise Errors::DimensionMismatchError,

@@ -52,7 +52,8 @@ RSpec.describe Unitsml::Conversion do
     it "converts composites with inversions (1 mi/h in m/s)" do
       quantity = Unitsml::Quantity.new(value: 1, unit_expression: "mi/h")
 
-      expect(quantity.convert_to("m/s").value).to eq(Rational(1609344, 1000) / 3600)
+      expect(quantity.convert_to("m/s").value).to eq(Rational(1609344,
+                                                              1000) / 3600)
     end
 
     it "rejects dimension-incompatible targets" do
