@@ -8,6 +8,16 @@ module Unitsml
     # (sorted), bottom-up, mirroring rule-for-rule the Transform rules in
     # unitsml/transform.rb.
     class TreeMapper
+      # Edition-2 artifacts (parsanol capture edition 2) name every
+      # uncaptured rule reference; these four are the names this grammar
+      # gains — the fence punctuation, the sign-suffix hyphen and the
+      # zero-width guard — none of which the v1 trees ever surfaced and
+      # none of which are authored capture names. Stripping them in the
+      # normalize pass keeps the dispatch table reading the same shapes
+      # for both editions, so this mapper works against artifacts baked
+      # before and after the asciiunits edition-2 flip.
+      STRUCTURAL_NAMES = %w[lparen rparen hyphen end_guard].freeze
+
       def apply(tree)
         map(normalize(tree))
       end
@@ -18,7 +28,9 @@ module Unitsml
       # Slice leaves; the mapper works on string keys and stringified leaves.
       def normalize(node)
         case node
-        when Hash then node.to_h { |key, value| [key.to_s, normalize(value)] }
+        when Hash
+          node.to_h { |key, value| [key.to_s, normalize(value)] }
+            .except(*STRUCTURAL_NAMES)
         when Array then node.map { |value| normalize(value) }
         else node
         end
