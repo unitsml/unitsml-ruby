@@ -86,6 +86,21 @@ module Unitsml
       Quantity.new(value: value - other.value, unit_expression: norm_text)
     end
 
+    # R-A3: convert this quantity to another (dimension-compatible) unit
+    # using the unitsdb canonical_conversion data. Exact rational
+    # arithmetic throughout; the returned value is a Rational when a
+    # conversion was applied.
+    def convert_to(target_expression)
+      target_formula = target_expression.is_a?(Formula) ? target_expression : Unitsml.parse(target_expression)
+      gate_dimension!(Quantity.new(value: 0, unit_expression: target_formula.norm_text))
+
+      src = Conversion.to_canonical(formula)
+      dst = Conversion.to_canonical(target_formula)
+      converted = (Rational(value) * src.factor + src.offset - dst.offset) / dst.factor
+
+      Quantity.new(value: converted, unit_expression: target_formula.norm_text)
+    end
+
     def ==(other)
       other.is_a?(Quantity) && value == other.value &&
         dimension_vector == other.dimension_vector
@@ -108,7 +123,8 @@ module Unitsml
     def raw_dimension_list
       return [] unless formula
 
-      Utility.units2dimensions(extract_units(formula.value))
+      Utility.units2dimensions(extract_units(formula.value)) ||
+        Conversion.dimension_entries(formula)
     end
 
     # Formula#units renders XML; the dimension identity needs the raw
