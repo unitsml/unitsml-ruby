@@ -449,14 +449,15 @@ RSpec.describe Unitsml::Quantity do
     end
   end
 
-  # On this base (#87 not merged) unknown text still fails in the parser.
+  # #87 landed: the parser's failure surfaces as the library's own
+  # ParseError (the Parsanol error rides as #cause).
   describe "unknown text through both String keywords" do
     it "raises the parser's failure for an unknown unit or prefix" do
       %w[foo xm].each do |source|
         expect { described_class.new(value: 1, unit: source) }
-          .to raise_error(Parsanol::ParseFailed)
+          .to raise_error(Unitsml::Errors::ParseError)
         expect { described_class.new(value: 1, unit_expression: source) }
-          .to raise_error(Parsanol::ParseFailed)
+          .to raise_error(Unitsml::Errors::ParseError)
       end
     end
   end
