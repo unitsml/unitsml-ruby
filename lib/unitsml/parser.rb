@@ -15,7 +15,7 @@ module Unitsml
     end
 
     def parse
-      tree = self.class.artifact.parse("expression", text)
+      tree = parse_tree
       mapped = Parg::TreeMapper.new.apply(tree)
       formula = build_formula(mapped)
       update_units_exponents(formula.value, false)
@@ -48,6 +48,17 @@ module Unitsml
         Asciiunits.load_artifact
       rescue LoadError => e
         raise Errors::PargLoadError.new("the asciiunits gem", e.message)
+      end
+    end
+
+    # The artifact is loaded first, so Parsanol is defined by the time the
+    # rescue clause names it.
+    def parse_tree
+      artifact = self.class.artifact
+      begin
+        artifact.parse("expression", text)
+      rescue ::Parsanol::ParseFailed
+        raise Errors::ParseError.new(text)
       end
     end
 
