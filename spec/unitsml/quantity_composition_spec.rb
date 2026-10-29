@@ -511,7 +511,9 @@ RSpec.describe Unitsml::Quantity do
       recorded_vectors.each do |source, vector|
         expect(q(source).dimension_vector).to eq(vector)
       end
-      expect { q("1/sqrt(m)").dimension_vector }.to raise_error(NoMethodError)
+      # main's R-A3 quantity work made dimension_vector nil-safe on the
+      # deferred roots/fractions forms instead of raising.
+      expect(q("1/sqrt(m)").dimension_vector).to be_nil
     end
 
     it "keeps the recorded dimension ids and fractional product" do
