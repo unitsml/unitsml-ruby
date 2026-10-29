@@ -149,12 +149,218 @@ Prefixed units: mm, kg, μm
 A composite unit is a unit that is derived from two or more basic units
 conjoined by multiplication or division.
 
-Composite units are created using the `Unitsml.parse` method.
+Composite units are created using the `Unitsml.parse` method, or built
+programmatically (see below).
 
 Compound units with operations: kg*s^-2
 Units with powers: C^3
 Square roots: sqrt(Hz)
 Units with prefixes: m/s, m^2/s^2
+
+==== Programmatic composition
+
+When the parts are already available as data rather than a string, composite
+units can be built without parsing.
+
+Multiplication (`*`) and division (`/`) compose units, dimensions and formulas,
+returning a `Unitsml::Formula`. Like the parser, `/` keeps the `"/"` separator
+and inverts the right-hand operand's power, so a single division renders
+identically to the parsed string (`W / m` == `Unitsml.parse("W/m")`):
+
+[source,ruby]
+----
+# watt per metre per steradian, rendered "W/m^-1/sr^-1"
+Unitsml::Unit.new("W") / Unitsml::Unit.new("m") / Unitsml::Unit.new("sr")
+
+# m/s^2; powers come from the constructor's second argument
+Unitsml::Unit.new("m") / Unitsml::Unit.new("s", 2)
+
+# prefixes via the `prefix:` keyword
+Unitsml::Unit.new("m", prefix: "k") # km
+----
+
+The same composition can be written as a fluent chain — `#unit`/`#dimension` are
+sugar over `*` (`unit("m", -1)` == `* Unit.new("m", -1)`), and
+`#quantity_reference`/`#name`/`#multiplier` attach metadata. Metadata must come
+last, since each chained term builds a fresh `Formula`:
+
+[source,ruby]
+----
+Unitsml::Unit.new("W").unit("m", -1).unit("sr", -1).quantity_reference("radiance")
+----
+
+`#quantity_reference` names the NIST quantity the unit measures, emitted as a
+`<Quantity>` element by `to_xml`. It is the fluent spelling of the `quantity:`
+keyword of `Unitsml.compose` and of the format methods (see below), and is
+unrelated to `Unitsml::Quantity`, the value-with-unit class described in the
+Quantities section below.
+
+An explicit separator can be placed between terms with `#extender` (alias
+`#ext`), accepting exactly the parser's grammar set: `"*"`, `"/"` or `"//"`
+(any other glyph is a display concern — use the `multiplier:` render option).
+It is glyph-only: nothing is negated or transformed, so exponents are stated
+explicitly, exactly as a parsed string stores them:
+
+[source,ruby]
+----
+# byte-identical to Unitsml.parse("W/m") in every format
+Unitsml::Unit.new("W").extender("/").unit("m", -1)
+
+# mixed separators, as in Unitsml.parse("W*m/W")
+Unitsml::Unit.new("W").ext("*").unit("m").ext("/").unit("W", -1)
+----
+
+The glyph may be a String, a Symbol, or an `Unitsml::Extender` object; an
+`Extender` also works directly as an operator operand:
+
+[source,ruby]
+----
+Unitsml::Unit.new("W") * Unitsml::Extender.new("/") * Unitsml::Unit.new("m", -1)
+----
+
+A separator must sit between two operands. An expression left ending in a
+separator, or with two separators together, has no valid rendering and raises
+`Unitsml::Errors::MisplacedExtenderError` when a `to_*` method is called (the
+intermediate chain value is still usable — only rendering it is rejected):
+
+[source,ruby]
+----
+Unitsml::Unit.new("W").ext("/").to_latex        # raises MisplacedExtenderError
+Unitsml::Unit.new("W").ext("/").unit("m", -1).to_latex # ok — "W/m^-1"
+----
+
+A unit is referenced by its symbol id, exactly as in a parsed string
+(e.g. `"W"`). Dimensions compose the same way
+(`Unitsml::Dimension.new("dim_L")`), but units and dimensions cannot be mixed in
+one expression.
+
+The `Unitsml.compose` keyword form builds the same `Formula` from a list. Pass
+either `units:` or `dimensions:` (not both). A `units:` entry is a symbol id, a
+`{ unit:, power:, prefix: }` hash, or a pre-built `Unitsml::Unit`; a
+`dimensions:` entry is a dimension id or a `{ dimension:, power: }` hash:
+
+[source,ruby]
+----
+Unitsml.compose(
+  units: ["W", { unit: "m", power: -1 }, { unit: "sr", power: -1 }],
+  quantity: "radiance",
+)
+
+Unitsml.compose(dimensions: ["dim_L", { dimension: "dim_M", power: 2 }])
+----
+
+The `quantity`, `name` and `multiplier` metadata are also accepted directly by
+the format methods. They apply to `to_xml` (`quantity`/`name` are ignored by the
+other formats), and a value passed at render time overrides one carried by a
+parsed comma-metadata expression:
+
+[source,ruby]
+----
+formula = Unitsml.compose(units: ["W", { unit: "m", power: -1 }])
+formula.to_xml(quantity: "radiance") # emits a <Quantity> element
+----
+
+The fluent `#unit`/`#dimension` chain and the keyword form join terms with `*`,
+turning division into a negative exponent, so they render like `W*m^-1`. (The
+`/` operator and explicit `#extender`/`#ext` separators keep their glyph
+instead — see above.) Where terms are `*`-joined, the separator is a display
+choice — pass the `multiplier:` argument to any `to_*` method (`:space`,
+`:nospace`, or a custom string such as `"·"`) to change it:
+
+[source,ruby]
+----
+formula = Unitsml::Unit.new("W").unit("m", -1)
+formula.to_asciimath                     # => "W*m^-1"
+formula.to_asciimath(multiplier: :space) # => "W m^-1"
+formula.to_asciimath(multiplier: "·")    # => "W·m^-1"
+----
+
+`Unitsml.compose` and the fluent chain validate every reference, power, prefix
+and metadata value and raise a `Unitsml::Errors::*` (all subclasses of
+`Unitsml::Errors::BaseError`) for anything they cannot resolve: an unknown unit,
+dimension or prefix, a units/dimensions mix, an empty composition, a power the
+parser cannot express (a decimal exponent — use a `Rational`), or a non-string
+`name`/`multiplier`. `Unit.new`/`Dimension.new` validate their own reference,
+prefix and power on construction too, so an unresolvable value raises
+immediately whichever surface you use.
+
+==== Text of composed units
+
+A composed `Formula` keeps its original term tree for rendering, so `to_latex`,
+`to_xml` and the other formats are not affected by the text described here.
+
+Its `norm_text` is a flat list of the unit leaves joined by `*`, with each
+stored power written in parentheses. This text parses back into the same units,
+prefixes and powers. A single division of two plain units keeps the familiar
+form.
+
+[source,ruby]
+----
+(Unitsml::Unit.new("m") / Unitsml::Unit.new("s")).norm_text  # => "m/s"
+(Unitsml::Unit.new("W") / Unitsml::Unit.new("m") / Unitsml::Unit.new("sr")).norm_text
+# => "W*m^(-1)*sr^(-1)"
+----
+
+The `norm_text` of a parsed `Formula` is unchanged.
+
+==== Quantities
+
+`Unitsml::Quantity` pairs a value with a unit. The unit can be given with the
+`unit:` keyword as a string, a `Unitsml::Unit` or a `Unitsml::Formula`. A string
+is parsed. A `Unit` or `Formula` is used without parsing. The older
+`unit_expression:` keyword still accepts a string. Give only one of the two
+keywords. Without a unit, or with `unit: nil`, the quantity is a pure number.
+
+[source,ruby]
+----
+Unitsml::Quantity.new(value: 10, unit: "kV")
+Unitsml::Quantity.new(value: 10, unit: Unitsml::Unit.new("V", prefix: "k"))
+Unitsml::Quantity.new(value: 3, unit: Unitsml::Unit.new("m") / Unitsml::Unit.new("s"))
+Unitsml::Quantity.new(value: 10, unit_expression: "kV")
+----
+
+A `Formula` passed in is kept as the same object, so changing it later also
+changes the quantity. Results of arithmetic always get their own copy.
+
+Multiplying or dividing a `Unit`, `Dimension` or `Formula` by a number, on
+either side, gives a `Unitsml::Quantity` with that number as its value. A
+quantity can also be multiplied or divided by a bare `Unit`, `Dimension` or
+`Formula`, which counts as a value of 1. Nothing is parsed. Units and
+dimensions still cannot be mixed, and anything else raises
+`Unitsml::Errors::InvalidUnitEntryError`.
+
+[source,ruby]
+----
+metre = Unitsml::Unit.new("m")
+second = Unitsml::Unit.new("s")
+
+5 * metre             # => Quantity, value 5, unit m
+metre / 2.0           # => Quantity, value 0.5, unit m
+5 / second            # => Quantity, value 5, unit s^-1
+
+distance = Unitsml::Quantity.new(value: 6, unit: metre)
+distance / second     # => Quantity, value 6, unit m/s
+----
+
+Two units without a number still compose into a `Formula`, as described above.
+
+Multiplying or dividing two quantities composes their units with the same
+builder as `Unit#*` and `Unit#/`, and nothing is reparsed from text. The
+resulting `norm_text` follows the rules above:
+
+[source,ruby]
+----
+w_per_m = Unitsml::Quantity.new(value: 6, unit: "W/m")
+s = Unitsml::Quantity.new(value: 2, unit: "s")
+(w_per_m * s).norm_text  # => "W*m^(-1)*s"
+----
+
+Some behavior is unchanged and is tracked in issue #82. Fractional powers and
+square roots are not handled exactly in `dimension_vector` and `dimension_id`.
+Dimension leaves such as `dim_L` do not contribute to `dimension_vector`, and
+dividing by a dimension does not invert it. Adding or subtracting two interval
+scale quantities still returns a ratio scale result. Quantities with a unit and
+a dimension cannot be combined and raise `Unitsml::Errors::MixedTermsError`.
 
 
 === Format representation

@@ -55,7 +55,15 @@ module Unitsml
       end
 
       def quantity_instance(id)
-        Unitsdb.quantities.find_by_id(id)
+        # A quantity is resolved and silently dropped when unresolvable, so a
+        # pathological id (BasicObject, or a #to_s that raises/returns nil or a
+        # non-String) normalizes to nil here rather than leaking a raw
+        # exception through the render path.
+        string = Compose.safe_string(id)
+        return if string.nil? || string.strip.empty?
+
+        Unitsdb.quantities.find_by_id(string) ||
+          Unitsdb.quantities.find_by_name(string)
       end
 
       def units2dimensions(units)
@@ -116,9 +124,18 @@ module Unitsml
             unit_name = Unitsdb.units.find_by_id(k.unit_reference.id).symbols.first.id
             exponent = (k.power&.to_i || 1) * (u.power_numerator&.to_f || 1)
             object << { prefix: prefix,
-                        unit: Unit.new(unit_name, exponent, prefix: prefix) }
+                        unit: dimension_base_unit(unit_name, exponent, prefix) }
           end
         end
+      end
+
+      # A throwaway unit used only to compute the dimension vector. Its exponent
+      # is kept as the raw Numeric (bypassing Number coercion) so the vector
+      # still stringifies to a Unitsdb-matchable value; it is never rendered.
+      def dimension_base_unit(unit_name, exponent, prefix)
+        unit = Unit.new(unit_name, prefix: prefix)
+        unit.instance_variable_set(:@power_numerator, exponent)
+        unit
       end
 
       def gather_units(units)
@@ -368,14 +385,46 @@ module Unitsml
         xml.force_encoding("UTF-8")
       end
 
-      def quantity(normtext, instance)
+      def quantity(normtext, instance, dims = nil)
         unit = unit_instance(normtext)
         return unless unit_or_quantity(unit, instance)
 
-        model_quantity_xml(
-          instance || unit.quantity_references&.first&.id,
-          "##{unit_dimension_id(unit)}",
-        )
+        record = instance && quantity_instance(instance)
+        # An explicit but unresolvable quantity emits nothing (silent), rather
+        # than leaking the raw reference as an xml:id.
+        return if instance && record.nil?
+
+        # unit is nil for a composite; fall back to the record's own identifier
+        # so a quantity without a NIST id still emits a usable xml:id.
+        id = canonical_nist_id(record) || quantity_reference_id(unit) ||
+          record_identifier_id(record)
+        model_quantity_xml(id, quantity_dimension_url(unit, dims),
+                           record&.quantity_type)
+      end
+
+      # The Quantity's dimensionURL, or nil when the dimension id cannot be
+      # determined (e.g. a composite whose decomposition hits the UNKNOWN
+      # sentinel) — the attribute is then omitted rather than emitting a
+      # broken "#" pointer, keeping the rest of the Quantity data intact.
+      def quantity_dimension_url(unit, dims)
+        ref = unit ? unit_dimension_id(unit) : dim_id(dims)
+        "##{ref}" if ref
+      end
+
+      def canonical_nist_id(record)
+        record&.identifiers&.find { |identifier| identifier.type == "nist" }&.id
+      end
+
+      def quantity_reference_id(unit)
+        return unless unit
+
+        unit.quantity_references&.first&.id
+      end
+
+      def record_identifier_id(record)
+        return unless record
+
+        record.identifiers&.first&.id
       end
 
       def unit_nist_id(unit)
@@ -409,13 +458,15 @@ module Unitsml
           quantity_instance(quantity)
       end
 
-      def model_quantity_xml(id, url)
-        xml = Model::Quantity.new(
+      def model_quantity_xml(id, url, quantity_type = nil)
+        attrs = {
           id: id,
           name: quantity_name(id),
           dimension_url: url,
           lutaml_register: Configuration.context.id,
-        ).to_xml
+        }
+        attrs[:quantity_type] = quantity_type if quantity_type
+        xml = Model::Quantity.new(**attrs).to_xml
         xml.force_encoding("UTF-8")
       end
 
