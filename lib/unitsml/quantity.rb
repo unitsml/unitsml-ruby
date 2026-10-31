@@ -19,14 +19,17 @@ module Unitsml
     # Formula (kept as-is, never reparsed) or nil (a pure number).
     # unit_expression: remains the String-only spelling; give only one.
     def initialize(value:, unit: ABSENT, unit_expression: ABSENT,
-                   scale: :ratio)
+                   scale: nil)
       unless unit.equal?(ABSENT) || unit_expression.equal?(ABSENT)
         raise ArgumentError, "give only one of unit: or unit_expression:"
       end
 
       @value = value
       @formula = build_formula(unit.equal?(ABSENT) ? unit_expression : unit)
-      @scale = scale.to_sym
+      # The scale derives from the unitsdb scale_reference of the units in
+      # the expression (degC is continuous_interval); an explicit argument
+      # (the :difference typing of subtraction) overrides it.
+      @scale = (scale || derived_scale).to_sym
     end
 
     # Canonical dimension identity; "1" (dimensionless) for pure numbers.
@@ -101,7 +104,11 @@ module Unitsml
     def -(other)
       quantity_kind!(other)
       gate_dimension!(other)
-      Quantity.new(value: value - other.value, unit: copied_formula)
+      # A difference of two quantities is difference-typed: its conversion
+      # skips the affine addends (20 degC - 15 degC converts to 5 K, not
+      # 278.15 K).
+      Quantity.new(value: value - other.value, unit: copied_formula,
+                   scale: :difference)
     end
 
     # R-A3: convert this quantity to another (dimension-compatible) unit
@@ -120,7 +127,12 @@ module Unitsml
 
       src = Conversion.to_canonical(formula)
       dst = Conversion.to_canonical(target_formula)
-      converted = ((Rational(value) * src.factor) + src.offset - dst.offset) / dst.factor
+      converted = if scale == :difference
+                    # differences carry no affine addends
+                    (Rational(value) * src.factor) / dst.factor
+                  else
+                    ((Rational(value) * src.factor) + src.offset - dst.offset) / dst.factor
+                  end
 
       Quantity.new(value: converted, unit_expression: target_formula.norm_text)
     end
@@ -132,6 +144,24 @@ module Unitsml
     # rubocop:enable Metrics/AbcSize, Layout/LineLength
 
     private
+
+    # The scale of a quantity is the scale of the units it composes: any
+    # interval-scaled unit (degC per unitsdb scale_reference) makes the
+    # quantity interval-scaled.
+    def derived_scale
+      interval_units? ? :interval : :ratio
+    end
+
+    def interval_units?
+      return false unless formula
+
+      extract_units(formula.value).any? { |unit| unit_interval?(unit) }
+    end
+
+    def unit_interval?(unit)
+      record = unit.unit_instance
+      record&.scale_reference&.id.to_s.include?("interval")
+    end
 
     # Base dimensions in canonical DIMS_VECTOR order; nil when all
     # exponents cancel (dimensionless).
@@ -179,14 +209,20 @@ module Unitsml
     # Scalar multiplication/division scales the magnitude: legal on
     # ratio scales, a specified error on non-ratio ones.
     def gate_scaling!
-      return if scale == :ratio
+      # A difference of interval-scaled values is ratio-scaled: scaling a
+      # difference is meaningful (2 x 5 K = 10 K of difference); scaling an
+      # absolute interval value is not.
+      return if %i[ratio difference].include?(scale)
 
       raise Errors::ScaleOperationError,
             "scaling is not legal on a #{scale} scale quantity"
     end
 
     def scale_ratio_gate!(other, operation)
-      return if scale == :ratio && other.scale == :ratio
+      # Only absolute interval-scaled values are barred from * and /: a
+      # difference is ratio-scaled (scaling or dividing it is meaningful),
+      # so difference/ratio combinations compose freely.
+      return if scale != :interval && other.scale != :interval
 
       raise Errors::ScaleOperationError,
             "#{operation} is not legal between #{scale} and " \

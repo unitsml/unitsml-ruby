@@ -288,14 +288,13 @@ RSpec.describe Unitsml::Quantity do
       expect { q("m") - 1 }.to raise_error(ArgumentError)
     end
 
-    it "keeps the existing ratio result scale for interval differences" do
+    it "types interval differences as difference-typed (unitsml-ruby#92)" do
       a = q("K", 10, scale: :interval)
       b = q("K", 2, scale: :interval)
 
-      # Deferred (#82): the result scale is not derived from the operands.
-      expect((a + b).scale).to eq(:ratio)
-      expect((a - b).scale).to eq(:ratio)
-      expect(((a + b) * 2).value).to eq(24)
+      expect((a - b).scale).to eq(:difference)
+      # scaling a difference is meaningful (differences are ratio-scaled)
+      expect(((a - b) * 2).value).to eq(16)
     end
   end
 
@@ -543,9 +542,8 @@ RSpec.describe Unitsml::Quantity do
     it "keeps the recorded interval scale rows" do
       interval = ->(value) { q("K", value, scale: :interval) }
 
-      expect((interval[10] + interval[2]).scale).to eq(:ratio)
-      expect((interval[10] - interval[2]).scale).to eq(:ratio)
-      expect(((interval[10] + interval[2]) * 2).value).to eq(24)
+      expect((interval[10] - interval[2]).scale).to eq(:difference)
+      expect(((interval[10] - interval[2]) * 2).value).to eq(16)
       expect { interval[10] * 2 }
         .to raise_error(Unitsml::Errors::ScaleOperationError)
     end
