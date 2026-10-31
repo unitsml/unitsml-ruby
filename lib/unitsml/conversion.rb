@@ -109,8 +109,10 @@ module Unitsml
               "unknown unit #{unit.unit_name.inspect}"
       end
 
+      # The prefix scales with the unit power: 1 km2 = 1 000 000 m2, not
+      # 1 000 m2 — the prefix is as squared as the unit is.
       factor, offset = record_factor(record, power, [record_identity(record)])
-      factor *= prefix_factor
+      factor *= prefix_factor**power
       Result.new(factor: factor, offset: offset)
     end
 
@@ -148,7 +150,10 @@ module Unitsml
                 "affine unit inside a derived composition"
         end
 
-        factor *= (prefix_factor**power) * (sub_factor**base_power)
+        # sub_factor already carries base_power (base_factor exponentiates the
+        # canonical factor by it); prefix scales with the base power too, so a
+        # squared prefixed unit squares its prefix (km2 -> 1 000 000 m2).
+        factor *= (prefix_factor**base_power) * sub_factor
       end
       [factor, Rational(0)]
     end
