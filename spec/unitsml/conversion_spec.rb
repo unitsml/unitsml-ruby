@@ -77,4 +77,62 @@ RSpec.describe Unitsml::Conversion do
         .to raise_error(Unitsml::Errors::ConversionError)
     end
   end
+
+  describe "prefix and power scaling (unitsml-ruby#92)" do
+    it "squares prefixed units: 1 km2 = 1 000 000 m2" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "km^2")
+
+      expect(quantity.convert_to("m^2").value).to eq(Rational(1_000_000))
+    end
+
+    it "does not double-exponentiate the ft2 canonical factor" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "ft^2")
+
+      expect(quantity.convert_to("m^2").value).to eq(Rational(145_161,
+                                                              1_562_500))
+    end
+
+    it "scales prefixes with derived-unit powers: 1 cm3 = 1e-6 m3" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "cm^3")
+
+      expect(quantity.convert_to("m^3").value).to eq(Rational(1, 1_000_000))
+    end
+  end
+
+  describe "difference typing (unitsml-ruby#92)" do
+    it "converts a degC difference to kelvin without the affine addend" do
+      high = Unitsml::Quantity.new(value: 20, unit_expression: "degC")
+      low = Unitsml::Quantity.new(value: 15, unit_expression: "degC")
+
+      difference = (high - low).convert_to("K")
+
+      expect(difference.value).to eq(Rational(5))
+    end
+
+    it "derives the interval scale from the unitsdb scale_reference" do
+      quantity = Unitsml::Quantity.new(value: 20, unit_expression: "degC")
+
+      expect(quantity.scale).to eq(:interval)
+    end
+
+    it "keeps the ratio scale for ratio units" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "m")
+
+      expect(quantity.scale).to eq(:ratio)
+    end
+
+    it "marks differences as difference-typed" do
+      high = Unitsml::Quantity.new(value: 20, unit_expression: "degC")
+      low = Unitsml::Quantity.new(value: 15, unit_expression: "degC")
+
+      expect((high - low).scale).to eq(:difference)
+    end
+
+    it "refuses scaling an interval-scaled quantity" do
+      quantity = Unitsml::Quantity.new(value: 20, unit_expression: "degC")
+
+      expect { quantity * 2 }
+        .to raise_error(Unitsml::Errors::ScaleOperationError)
+    end
+  end
 end
