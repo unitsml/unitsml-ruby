@@ -21,12 +21,16 @@ module Unitsml
     # branchiness is inherent and gated by the conformance suite.
     # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Layout/LineLength, Lint/DuplicateBranch, Lint/ElseLayout
 
-    # Returns a Result for the parsed expression.
-    def to_canonical(formula)
-      walk(formula, 1)
+    # Returns a Result for the parsed expression. definitions: an
+    # optional hash of unit identifiers (register ids or symbols) to
+    # Conversion::Definition (or Float64ConversionFrom model) instances;
+    # a definition replaces the canonical factor/offset for its unit so
+    # the two paths are never applied in sequence.
+    def to_canonical(formula, definitions: nil)
+      walk(formula, 1, definitions: definitions)
     end
 
-    def walk(node, sign)
+    def walk(node, sign, definitions: nil)
       case node
       when Formula
         # The parser already normalizes "/" and "//" by inverting the
@@ -35,17 +39,17 @@ module Unitsml
         node.value.reduce(Result.new(factor: Rational(1), offset: 0)) do |acc, part|
           next acc if part.is_a?(Extender)
 
-          merge(acc, walk_with_sign(part, sign))
+          merge(acc, walk_with_sign(part, sign, definitions: definitions))
         end
       when Fenced
-        walk(node.value, sign)
+        walk(node.value, sign, definitions: definitions)
       when Sqrt
-        sub = walk(node.value, sign)
+        sub = walk(node.value, sign, definitions: definitions)
         Result.new(factor: sqrt_rational(sub.factor), offset: sub.offset)
       when Extender
         Result.new(factor: Rational(1), offset: 0)
       when Unit
-        unit_result(node, sign)
+        unit_result(node, sign, definitions: definitions)
       when Dimension, Number_, Prefix
         Result.new(factor: Rational(1), offset: 0)
       else
@@ -53,36 +57,8 @@ module Unitsml
       end
     end
 
-    def walk_inner(node, sign)
-      case node
-      when Formula
-        # The parser already normalizes "/" and "//" by inverting the
-        # following exponents (update_units_exponents), so the tree walks
-        # multiplicatively with no sign tracking.
-        node.value.reduce(Result.new(factor: Rational(1),
-                                     offset: 0)) do |acc, part|
-          next acc if part.is_a?(Extender)
-
-          merge(acc, walk_with_sign(part, sign))
-        end
-      when Fenced
-        walk(node.value, sign)
-      when Sqrt
-        sub = walk(node.value, sign)
-        Result.new(factor: sqrt_rational(sub.factor), offset: sub.offset)
-      when Extender
-        Result.new(factor: Rational(1), offset: 0)
-      when Unit
-        unit_result(node, sign)
-      when Dimension, Number_, Prefix
-        Result.new(factor: Rational(1), offset: 0)
-      else
-        raise Errors::ConversionError, "cannot convert #{node.class} node"
-      end
-    end
-
-    def walk_with_sign(part, sign)
-      result = walk(part, sign)
+    def walk_with_sign(part, sign, definitions: nil)
+      result = walk(part, sign, definitions: definitions)
       sign.negative? ? Result.new(factor: 1 / result.factor, offset: 0) : result
     end
 
@@ -98,7 +74,7 @@ module Unitsml
       )
     end
 
-    def unit_result(unit, _sign)
+    def unit_result(unit, _sign, definitions: nil)
       prefix_factor = if unit.prefix
                         Rational(unit.prefix.base)**unit.prefix.power
                       else
@@ -111,11 +87,84 @@ module Unitsml
               "unknown unit #{unit.unit_name.inspect}"
       end
 
+      # A supplied definition replaces the canonical factor/offset for its
+      # unit — the two paths are never applied in sequence; when the
+      # register also carries canonical data, the two must agree.
+      if (definition = definition_for(record, definitions))
+        def_factor, def_offset = definition_result(definition, power, record)
+        return Result.new(factor: def_factor * (prefix_factor**power),
+                          offset: def_offset)
+      end
+
       # The prefix scales with the unit power: 1 km2 = 1 000 000 m2, not
       # 1 000 m2 — the prefix is as squared as the unit is.
       factor, offset = record_factor(record, power, [record_identity(record)])
       factor *= prefix_factor**power
       Result.new(factor: factor, offset: offset)
+    end
+
+    # The definition supplied for this record, if any. Lookup keys are the
+    # register ids and symbols of the record.
+    def definition_for(record, definitions)
+      return nil if definitions.nil? || definitions.empty?
+
+      keys = record.identifiers.to_a.map(&:id) +
+        record.symbols.to_a.map(&:id)
+      entry = keys.filter_map { |key| definitions[key.to_s] }.first
+      return nil if entry.nil?
+
+      case entry
+      when Definition then entry
+      when Model::Units::Float64ConversionFrom then Definition.new(entry)
+      else Definition.from_model(entry)
+      end
+    end
+
+    # The definition expressed as a canonical SI-anchored Result for the
+    # unit carrying it: value_SI = f_i((c / b)^p value - d) - f_i a + o_i,
+    # where (f_i, o_i) is the initial unit's canonical Result. Affine
+    # definitions (non-zero addends) are legal only at power 1; purely
+    # multiplicative definitions power legally.
+    def definition_result(definition, power, record)
+      a = Rational(definition.model.lexical_decimal(:initial_addend))
+      b = Rational(definition.model.lexical_decimal(:multiplicand))
+      c = Rational(definition.model.lexical_decimal(:divisor))
+      d = Rational(definition.model.lexical_decimal(:final_addend))
+      if (a != 0 || d != 0) && power != 1
+        raise Errors::ConversionError,
+              "affine unit raised to power #{power}"
+      end
+
+      factor = (c / b)**power
+      offset = a.zero? && d.zero? ? Rational(0) : (-(c / b) * d) - a
+      initial = definition.initial_unit_record
+      initial_factor, initial_offset = record_factor(initial, 1)
+      computed = [initial_factor * factor, (initial_offset * factor) + offset]
+      agree!(record, definition, power, computed)
+      computed
+    end
+
+    # A definition and the register's canonical data describing the same
+    # unit must agree; disagreement is a diagnostic, not a silent choice.
+    # Both are taken at the same power. Canonical offsets are
+    # decimal-truncated register data, so the comparison uses the
+    # importer's 1e-9 relative tolerance.
+    def agree!(record, definition, power, computed)
+      return unless record.canonical_conversion
+
+      factor, offset = record_factor(record, power)
+      agreed = [factor, offset].zip(computed).all? do |ours, theirs|
+        delta = (ours - theirs).abs
+        delta.zero? || delta <= ours.abs / Rational(10**9)
+      end
+      return if agreed
+
+      raise Errors::ConversionError,
+            "conversion definition #{definition.model.id.inspect} " \
+            "disagrees with canonical data for " \
+            "#{record.symbols&.first&.id.inspect}: canonical " \
+            "(#{factor}, #{offset}) vs definition (#{computed[0]}, " \
+            "#{computed[1]})"
     end
 
     # [multiplicative factor, additive offset] for one unit record at the

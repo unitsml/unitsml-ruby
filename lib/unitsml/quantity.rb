@@ -112,10 +112,12 @@ module Unitsml
     end
 
     # R-A3: convert this quantity to another (dimension-compatible) unit
-    # using the unitsdb canonical_conversion data. Exact rational
-    # arithmetic throughout; the returned value is a Rational when a
-    # conversion was applied.
-    def convert_to(target_expression)
+    # using unitsdb canonical_conversion data, or conversion definitions
+    # supplied by the caller (definitions: a hash of unit ids/symbols to
+    # Conversion::Definition or Float64ConversionFrom instances) where
+    # given. Exact rational arithmetic throughout; the returned value is
+    # a Rational when a conversion was applied.
+    def convert_to(target_expression, definitions: nil)
       target_formula = if target_expression.is_a?(Formula)
                          target_expression
                        else
@@ -125,8 +127,8 @@ module Unitsml
                                  unit_expression: target_formula.norm_text)
       gate_dimension!(gate_target)
 
-      src = Conversion.to_canonical(formula)
-      dst = Conversion.to_canonical(target_formula)
+      src = Conversion.to_canonical(formula, definitions: definitions)
+      dst = Conversion.to_canonical(target_formula, definitions: definitions)
       converted = if scale == :difference
                     # differences carry no affine addends
                     (Rational(value) * src.factor) / dst.factor
