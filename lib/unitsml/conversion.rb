@@ -11,6 +11,8 @@ module Unitsml
   # the whole expression is that single unit with power 1 — an affine unit
   # inside a composite raises.
   module Conversion
+    autoload :Definition, "unitsml/conversion/definition"
+
     Result = Struct.new(:factor, :offset, keyword_init: true)
 
     module_function
