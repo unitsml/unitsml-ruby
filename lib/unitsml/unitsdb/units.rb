@@ -9,6 +9,12 @@ module Unitsml
         find_first_through(units, via: :identifiers, field: :id, value: u_id)
       end
 
+      def find_by_reference_uri(uri)
+        units.find do |unit|
+          unit.references&.any? { |ref| ref.uri == uri }
+        end
+      end
+
       def find_by_name(u_name)
         find_first_through(units, via: :symbols, field: :id, value: u_name)
       end

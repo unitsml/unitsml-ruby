@@ -63,6 +63,26 @@ module Unitsml
         model.initial_unit.to_s.delete_prefix("#")
       end
 
+      # The initial unit's register record, for the canonical anchoring of
+      # a definition hop. IRDI and URI-reference forms resolve through
+      # their fragment; plain URIs through the register's reference index.
+      def initial_unit_record
+        uri = model.initial_unit.to_s
+        reference = Unitsml::Unitsdb.units
+        record = if uri.include?("#")
+                   reference.find_by_id(uri.split("#", 2).last)
+                 elsif uri.start_with?("http", "https")
+                   reference.find_by_reference_uri(uri)
+                 else
+                   reference.find_by_id(uri)
+                 end
+        return record if record
+
+        raise Errors::ConversionError,
+              "unresolvable initialUnit #{uri.inspect}: not found " \
+              "in the register"
+      end
+
       # Resolve the initialUnit against document-local units first, the
       # register second; unresolvable is a typed error naming the URI.
       def resolve_initial_unit
@@ -70,18 +90,9 @@ module Unitsml
         if uri.start_with?("#")
           frag = initial_unit_id
           return @document_units[frag] if @document_units.key?(frag)
-
-          raise Errors::ConversionError,
-                "unresolvable initialUnit #{uri.inspect}: not defined in " \
-                "the enclosing document"
         end
 
-        record = Unitsml::Unitsdb.units.find_by_id(initial_unit_id)
-        return record if record
-
-        raise Errors::ConversionError,
-              "unresolvable initialUnit #{uri.inspect}: not found " \
-              "in the register"
+        initial_unit_record
       end
 
       private
