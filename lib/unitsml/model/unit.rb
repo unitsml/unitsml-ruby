@@ -9,6 +9,7 @@ module Unitsml
       attribute :symbol, Units::Symbol, collection: true
       attribute :system, Units::System, collection: true
       attribute :root_units, Units::RootUnits
+      attribute :conversions, Units::Conversions
 
       xml do
         namespace ::Unitsml::Namespace
@@ -20,6 +21,7 @@ module Unitsml
         map_element :UnitName, to: :name
         map_element :UnitSymbol, to: :symbol
         map_element :RootUnits, to: :root_units
+        map_element :Conversions, to: :conversions
       end
     end
   end

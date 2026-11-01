@@ -3,6 +3,7 @@
 module Unitsml
   module Errors
     autoload :BaseError, "unitsml/errors/base_error"
+    autoload :ConversionError, "unitsml/errors/quantity_errors"
     autoload :EmptyCompositionError, "unitsml/errors/empty_composition_error"
     autoload :InvalidModelError, "unitsml/errors/invalid_model_error"
     autoload :InvalidPowerError, "unitsml/errors/invalid_power_error"
