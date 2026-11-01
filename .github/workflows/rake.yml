@@ -16,6 +16,7 @@ jobs:
         cat .bundle/config
         git clone --depth 1 https://github.com/unitsml/unitsml-testsuite.git unitsml-testsuite
         echo "CORPUS_DIR=$PWD/unitsml-testsuite/corpora/renders" >> "$GITHUB_ENV"
+        echo "CONVERSION_CORPUS_DIR=$PWD/unitsml-testsuite/corpora/conversions" >> "$GITHUB_ENV"
         echo "---" >> .bundle/config
         echo 'BUNDLE_BUILD__RUBY___LL: "--with-cflags=-std=gnu17"' >> .bundle/config
         cat .bundle/config
