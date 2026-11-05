@@ -182,7 +182,10 @@ Unitsml::Unit.new("m", prefix: "k") # km
 The same composition can be written as a fluent chain — `#unit`/`#dimension` are
 sugar over `*` (`unit("m", -1)` == `* Unit.new("m", -1)`), and
 `#quantity_reference`/`#name`/`#multiplier` attach metadata. Metadata must come
-last, since each chained term builds a fresh `Formula`:
+last. Each chained term, and each `*` or `/`, builds a fresh `Formula` that does
+not carry earlier metadata. The same holds for the comma metadata of a parsed
+formula: `Unitsml.parse("W*m^-1, quantity: radiance") * Unitsml::Unit.new("sr")`
+has no quantity.
 
 [source,ruby]
 ----
@@ -275,14 +278,20 @@ formula.to_asciimath(multiplier: :space) # => "W m^-1"
 formula.to_asciimath(multiplier: "·")    # => "W·m^-1"
 ----
 
-`Unitsml.compose` and the fluent chain validate every reference, power, prefix
-and metadata value and raise a `Unitsml::Errors::*` (all subclasses of
-`Unitsml::Errors::BaseError`) for anything they cannot resolve: an unknown unit,
-dimension or prefix, a units/dimensions mix, an empty composition, a power the
-parser cannot express (a decimal exponent — use a `Rational`), or a non-string
-`name`/`multiplier`. `Unit.new`/`Dimension.new` validate their own reference,
-prefix and power on construction too, so an unresolvable value raises
-immediately whichever surface you use.
+`Unitsml.compose` and the fluent chain validate every reference, power and
+prefix, and the `name` and `multiplier` metadata. They raise a
+`Unitsml::Errors::*` (all subclasses of `Unitsml::Errors::BaseError`) for
+anything they cannot resolve: an unknown unit, dimension or prefix, a
+units/dimensions mix, an empty composition, a power the parser cannot express
+(a decimal exponent — use a `Rational`), or a non-string `name`/`multiplier`.
+`Unit.new`/`Dimension.new` validate their own reference, prefix and power on
+construction too, so an unresolvable value raises immediately whichever surface
+you use. A `Unitsml::Number` power must hold a number (`Number.new("abc")`
+raises).
+
+The `quantity` metadata is looked up when `to_xml` runs, by NIST id (such as
+`"NISTq1"`) or by English name (such as `"radiance"`). A value that matches no
+quantity is not an error: `to_xml` leaves out the `<Quantity>` element.
 
 ==== Text of composed units
 
@@ -291,8 +300,10 @@ A composed `Formula` keeps its original term tree for rendering, so `to_latex`,
 
 Its `norm_text` is a flat list of the unit leaves joined by `*`, with each
 stored power written in parentheses. This text parses back into the same units,
-prefixes and powers. A single division of two plain units keeps the familiar
-form.
+prefixes and power values. A single division of two plain units keeps the
+familiar form. A square root is written as its exponent, so a composed
+`sqrt(Hz)` becomes `Hz^(5/10)`: the parsed text has the same power, but renders
+without the root sign.
 
 [source,ruby]
 ----
@@ -310,6 +321,9 @@ The `norm_text` of a parsed `Formula` is unchanged.
 is parsed. A `Unit` or `Formula` is used without parsing. The older
 `unit_expression:` keyword still accepts a string. Give only one of the two
 keywords. Without a unit, or with `unit: nil`, the quantity is a pure number.
+`unit:` does not take a bare `Unitsml::Dimension`; build a dimension quantity
+from a `Formula`, for example
+`unit: Unitsml.compose(dimensions: ["dim_L"])`.
 
 [source,ruby]
 ----
