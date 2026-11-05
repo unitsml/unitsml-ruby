@@ -114,14 +114,6 @@ module Unitsml
       Lutaml::Model::Utils.snake_case(system_type)
     end
 
-    def inverse_power_numerator
-      if power_numerator
-        power_numerator.update_negative_sign
-      else
-        @power_numerator = Number.new("-1")
-      end
-    end
-
     private
 
     # Resolve a unit reference to a canonical symbol id, exactly like the parser

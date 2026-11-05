@@ -17,6 +17,17 @@ module Unitsml
       @power_numerator = coerce_power_type(power)
     end
 
+    # Flip the exponent's sign in place for a term after "/" in a parsed
+    # string; no exponent becomes -1. Used by the parser for both units and
+    # dimensions.
+    def inverse_power_numerator
+      if power_numerator
+        power_numerator.update_negative_sign
+      else
+        @power_numerator = Number.new("-1")
+      end
+    end
+
     private
 
     # The exponent lexemes the library itself stores: an integer, an n/m or

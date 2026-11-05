@@ -16,13 +16,10 @@ module Unitsml
         # "/" and inverts b's power; `a * b` keeps "*"). An explicit trailing
         # extender on the left (from #extender) already is the join, so no glyph
         # is inserted after it — but `/` still inverts the right-hand side.
-        # An empty side inserts no glyph. invert_dimensions: false keeps
-        # Dimension leaves un-inverted on division (Quantity compatibility).
-        def build_product(left_terms, right_terms, operator,
-                          invert_dimensions: true)
+        # An empty side inserts no glyph.
+        def build_product(left_terms, right_terms, operator)
           left = build_terms(left_terms, invert: false)
-          right = build_terms(right_terms, invert: operator == "/",
-                                           invert_dimensions: invert_dimensions)
+          right = build_terms(right_terms, invert: operator == "/")
           joiner = join_glyph(left, right, operator)
           build_root_formula(left + joiner + right)
         end
@@ -33,7 +30,7 @@ module Unitsml
           return nil unless left || right
 
           build_product(left ? left.value : [], right ? right.value : [],
-                        operator, invert_dimensions: false)
+                        operator)
         end
 
         # Independent copy of a Formula (tree, powers, prefixes, text and
@@ -99,11 +96,8 @@ module Unitsml
         # Rebuild every operand: map_leaves reconstructs branch wrappers and
         # each Unit/Dimension leaf is copied with a freshly built final power
         # (and a duplicated prefix). Non-leaf terms (Extender/Number) plain-dup.
-        def build_terms(terms, invert:, invert_dimensions: true)
-          TermTree.map_leaves(terms) do |leaf|
-            rebuild_leaf(leaf, invert && (invert_dimensions ||
-                                          !leaf.is_a?(Dimension)))
-          end
+        def build_terms(terms, invert:)
+          TermTree.map_leaves(terms) { |leaf| rebuild_leaf(leaf, invert) }
         end
 
         def join_glyph(left, right, operator)

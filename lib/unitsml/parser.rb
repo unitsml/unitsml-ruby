@@ -73,18 +73,28 @@ module Unitsml
           end
         end
 
-        case object
-        when Unit
-          next object.power_numerator = Number.new("0.5") if sqrt
-          next unless inverse
-
-          inverse ? object.inverse_power_numerator : object.power_numerator
-        when Dimension then object.power_numerator = Number.new("0.5") if sqrt
-        when Extender then inverse = !inverse if ["/", "//"].any?(object.symbol)
-        when Formula then update_units_exponents(object.value, inverse)
-        when Fenced then update_units_exponents([object.value], inverse, sqrt)
-        end
+        inverse = update_term_exponent(object, inverse, sqrt)
       end
+    end
+
+    # Apply the sqrt/inverse state to one term; returns the inverse state for
+    # the next term (a "/" or "//" separator flips it).
+    def update_term_exponent(object, inverse, sqrt)
+      case object
+      when Unit, Dimension then update_leaf_exponent(object, inverse, sqrt)
+      when Extender then return !inverse if ["/", "//"].any?(object.symbol)
+      when Formula then update_units_exponents(object.value, inverse)
+      when Fenced then update_units_exponents([object.value], inverse, sqrt)
+      end
+      inverse
+    end
+
+    # Units and dimensions follow the same rule: a sqrt sets the 0.5 exponent,
+    # otherwise a term after "/" has its exponent inverted.
+    def update_leaf_exponent(object, inverse, sqrt)
+      return object.power_numerator = Number.new("0.5") if sqrt
+
+      object.inverse_power_numerator if inverse
     end
 
     def post_extras
