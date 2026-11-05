@@ -70,7 +70,9 @@ module Unitsml
 
           added = build_metadata(extras[:quantity], extras[:name],
                                  extras[:multiplier])
-          copy = node.dup
+          # A deep copy, so the result never shares terms with the caller's
+          # Formula (a shallow dup would share the term array and leaves).
+          copy = copy_formula(node)
           copy.explicit_value = merge_metadata(node.explicit_value, added)
           copy
         end
@@ -211,9 +213,11 @@ module Unitsml
           power.denominator == 1 ? power.numerator.to_s : power.to_s
         end
 
-        # Negate an exponent string: nil (no exponent) -> "-1", else flip sign.
+        # Negate an exponent string: nil (no exponent) -> "-1", zero stays
+        # "0" (never "-0"), else flip sign.
         def negate_string(raw)
           return "-1" if raw.nil?
+          return raw if raw.match?(/\A-?0+\z/)
 
           raw.start_with?("-") ? raw.delete_prefix("-") : "-#{raw}"
         end

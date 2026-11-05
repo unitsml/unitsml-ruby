@@ -19,8 +19,17 @@ module Unitsml
 
     private
 
+    # The exponent lexemes the library itself stores: an integer, an n/m or
+    # n//m fraction (parser), or a decimal ("0.5" for sqrt, "2.0" from unit
+    # decomposition). Anything else ("abc") has no numeric meaning and would
+    # render and serialize as garbage.
+    NUMBER_LEXEME = %r{\A-?\d+(\.\d+)?(//?-?\d+)?\z}
+    private_constant :NUMBER_LEXEME
+
     def coerce_power_type(power)
-      return power if Compose.type_any?([NilClass, Number, Fenced], power)
+      return power if Compose.type?(NilClass, power)
+      return validate_number_power(power) if Compose.type?(Number, power)
+      return validate_fenced_power(power) if Compose.type?(Fenced, power)
       # Only the numeric types the parser can express (Integer, Rational, whole
       # Float) coerce; other Numerics (BigDecimal, Complex, ...) are rejected
       # rather than stringified into a non-parser exponent.
@@ -30,6 +39,23 @@ module Unitsml
 
       raise Errors::InvalidPowerError.new(value: power,
                                           reason: :unsupported_storage)
+    end
+
+    def validate_number_power(power)
+      lexeme = Compose.safe_string(power.raw_value)
+      return power if lexeme&.match?(NUMBER_LEXEME)
+
+      raise Errors::InvalidPowerError.new(value: power,
+                                          reason: :invalid_number)
+    end
+
+    # A Fenced exponent is checked at its innermost Number; other parser
+    # payloads inside the fence are kept as-is.
+    def validate_fenced_power(power)
+      inner = power.value
+      inner = inner.value while Compose.type?(Fenced, inner)
+      validate_number_power(inner) if Compose.type?(Number, inner)
+      power
     end
   end
 end

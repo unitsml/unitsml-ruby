@@ -468,8 +468,10 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
     end
 
     it "validates the power of a pre-built Unit entry" do
-      bad = Unitsml::Unit.new("m", Unitsml::Number.new("abc"))
-      expect { Unitsml.compose(units: [bad]) }
+      # A non-numeric Number is now rejected by Unit.new itself; a decimal
+      # Number is storable but still has no parser form, so compose rejects it.
+      decimal = Unitsml::Unit.new("m", Unitsml::Number.new("0.5"))
+      expect { Unitsml.compose(units: [decimal]) }
         .to raise_error(Unitsml::Errors::InvalidPowerError)
     end
 
@@ -1264,6 +1266,59 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect { Unitsml.compose(units: [{ unit: "m", power: bad }]) }
         .to raise_error(Unitsml::Errors::InvalidPowerError,
                         /Invalid Number power/)
+    end
+  end
+
+  describe "builder gap fixes" do
+    let(:original) { Unitsml::Unit.new("W") * Unitsml::Unit.new("m") }
+    let(:bad_number) { Unitsml::Number.new("abc") }
+
+    {
+      name: "x", quantity_reference: "radiance", multiplier: "x"
+    }.each do |setter, value|
+      it "gives ##{setter} its own copy of the terms" do
+        before = original.to_xml
+        copy = original.public_send(setter, value)
+        copy.value.last.unit_name = "s"
+        expect(original.to_asciimath).to eq("W*m")
+        expect(original.to_xml).to eq(before)
+      end
+    end
+
+    it "rejects a non-numeric Number power on construction" do
+      expect { Unitsml::Unit.new("m", bad_number) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError,
+                        /Invalid Number power/)
+      expect { Unitsml::Dimension.new("dim_L", bad_number) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    it "rejects a non-numeric power via the setter and inside a fence" do
+      expect { Unitsml::Unit.new("m").power_numerator = bad_number }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+      fenced = Unitsml::Fenced.new("(", bad_number, ")")
+      expect { Unitsml::Unit.new("m", fenced) }
+        .to raise_error(Unitsml::Errors::InvalidPowerError)
+    end
+
+    %w[2 -1 0 1/2 -1/2 1//2 1/-2 0.5 2.0 -1.5].each do |raw|
+      it "still stores the library's exponent form #{raw.inspect}" do
+        expect { Unitsml::Unit.new("m", Unitsml::Number.new(raw)) }
+          .not_to raise_error
+      end
+    end
+
+    %w[m^1/2 m^1//2 m^((1/2)) m^((-1)) sqrt(m) sqrt(Hz) m^0 m*m*s
+       kg*m^2*s^-2].each do |text|
+      it "still renders the parsed #{text.inspect}" do
+        expect { Unitsml.parse(text).to_xml }.not_to raise_error
+      end
+    end
+
+    it "keeps a zero power at zero when dividing" do
+      formula = Unitsml::Unit.new("s") / Unitsml::Unit.new("m", 0)
+      expect(formula.to_asciimath).to eq("s/m^0")
+      expect(formula.norm_text).to eq("s*m^(0)")
     end
   end
 end
