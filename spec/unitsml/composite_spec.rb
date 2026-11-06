@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "digest"
 
 # Composite-unit builder (issue #2): the operator DSL (Unit#* / Unit#/) and the
 # Unitsml.compose keyword form, both producing a root Formula whose output
@@ -678,8 +677,8 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect_parity(built, "W/m/s")
     end
 
-    it "keeps dimensions glyph-only, like the parser" do
-      built = Unitsml::Dimension.new("dim_M").ext("/").dimension("dim_L")
+    it "states dimension exponents explicitly after an extender, like units" do
+      built = Unitsml::Dimension.new("dim_M").ext("/").dimension("dim_L", -1)
       expect_parity(built, "dim_M/dim_L")
     end
 
@@ -1116,13 +1115,13 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       expect(copied.prefix).not_to be(leaf.prefix)
     end
 
-    it "keeps main's un-inverted dimension division" do
+    it "inverts dimension division like the parser" do
       result = builder.quantity_product(Unitsml.parse("dim_M"),
                                         Unitsml.parse("dim_L"), "/")
       xml = result.to_xml
       expect(xml).to eq(Unitsml.parse("dim_M/dim_L").to_xml)
-      expect(Digest::SHA256.hexdigest(xml)[0, 16]).to eq("fadb9a9811d67de4")
-      expect(result.value.last.power_numerator).to be_nil
+      expect(xml).to include('xml:id="D_L-1M"')
+      expect(result.value.last.power_numerator.raw_value).to eq("-1")
     end
 
     it "keeps the default DSL dimension inversion" do
@@ -1319,6 +1318,29 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
       formula = Unitsml::Unit.new("s") / Unitsml::Unit.new("m", 0)
       expect(formula.to_asciimath).to eq("s/m^0")
       expect(formula.norm_text).to eq("s*m^(0)")
+    end
+  end
+
+  describe "parsed dimension division" do
+    {
+      "dim_L/dim_T" => "D_LT-1",
+      "dim_L/dim_T^2" => "D_LT-2",
+      "dim_M/dim_L^-3" => "D_L3M",
+    }.each do |text, id|
+      it "inverts the dimension after / in #{text.inspect}" do
+        expect(Unitsml.parse(text).to_xml).to include(%(xml:id="#{id}"))
+      end
+    end
+
+    it "matches the explicit negative exponent form" do
+      expect(Unitsml.parse("dim_L/dim_T").to_xml)
+        .to eq(Unitsml.parse("dim_L*dim_T^-1").to_xml)
+    end
+
+    it "gives dimension quantities the inverted text" do
+      length = Unitsml::Quantity.new(value: 2, unit: "dim_L")
+      time = Unitsml::Quantity.new(value: 1, unit: "dim_T")
+      expect((length / time).norm_text).to eq("dim_L*dim_T^(-1)")
     end
   end
 end
