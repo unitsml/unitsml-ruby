@@ -79,7 +79,10 @@ module Unitsml
       if Compose.type?(Numeric, other)
         gate_zero!(other)
         gate_scaling!
-        return Quantity.new(value: value / other, unit: copied_formula)
+        # scaling keeps the scale typing: a scaled difference stays a
+        # difference (gate_scaling! admits only ratio and difference)
+        return Quantity.new(value: value / other, unit: copied_formula,
+                            scale: scale)
       end
 
       other = Compose.quantity_operand(other)
@@ -136,7 +139,9 @@ module Unitsml
                     ((Rational(value) * src.factor) + src.offset - dst.offset) / dst.factor
                   end
 
-      Quantity.new(value: converted, unit_expression: target_formula.norm_text)
+      # a converted difference is still a difference
+      Quantity.new(value: converted, unit_expression: target_formula.norm_text,
+                   scale: scale == :difference ? :difference : nil)
     end
 
     def ==(other)
@@ -250,7 +255,9 @@ module Unitsml
 
     def scalar_product(number)
       gate_scaling!
-      Quantity.new(value: value * number, unit: copied_formula)
+      # a scaled difference stays a difference: its conversion must keep
+      # skipping the affine addends
+      Quantity.new(value: value * number, unit: copied_formula, scale: scale)
     end
 
     def gate_zero!(other)

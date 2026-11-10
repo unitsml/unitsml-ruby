@@ -296,6 +296,23 @@ RSpec.describe Unitsml::Quantity do
       # scaling a difference is meaningful (differences are ratio-scaled)
       expect(((a - b) * 2).value).to eq(16)
     end
+
+    it "keeps difference typing through scalar scaling and conversion" do
+      high = Unitsml::Quantity.new(value: 20, unit_expression: "degC")
+      low = Unitsml::Quantity.new(value: 15, unit_expression: "degC")
+      difference = high - low
+
+      doubled = difference * 2
+      halved = difference / Rational(2)
+      expect([doubled.scale, halved.scale]).to eq(%i[difference difference])
+      # no affine addend: a doubled 5 degC difference is 10 K, not 283.15 K
+      expect(doubled.convert_to("K").value).to eq(Rational(10))
+      expect(halved.convert_to("K").value).to eq(Rational(5, 2))
+      expect(difference.convert_to("K").scale).to eq(:difference)
+      expect((difference.convert_to("K") * 3).convert_to("degC").value)
+        .to eq(Rational(15))
+      expect((q("m", 3) * 2).scale).to eq(:ratio)
+    end
   end
 
   describe "pure numbers" do
