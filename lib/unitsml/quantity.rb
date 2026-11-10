@@ -36,7 +36,11 @@ module Unitsml
     def dimension_id
       @dimension_id ||= begin
         list = dimension_list
-        list && (Utility.dim_id(list) || "1")
+        # A fractional vector (m^(1/2)) has no unitsdb dimension identity;
+        # none is asserted for it.
+        if list && !fractional_vector?
+          Utility.dim_id(list) || "1"
+        end
       end
     end
 
@@ -44,6 +48,13 @@ module Unitsml
     # Base-dimension exponents summed across the composed expression —
     # V (L²MT⁻³I⁻¹) times A (I¹) merges to the watt vector L²MT⁻³.
     def dimension_vector
+      # sqrt subtrees are not admitted: the parser overwrites the leaf
+      # exponents under a sqrt with 0.5 (sqrt(m) and sqrt(m^2) yield the
+      # same tree) and leaves composite radicands unhalved, so the tree
+      # does not determine the vector (#82 roots, deferred).
+      return nil if formula && sqrt_tree?(formula.value)
+      return fractional_dimension_vector if fractional_leaves?
+
       list = raw_dimension_list
       return nil if list.nil?
 
@@ -81,8 +92,8 @@ module Unitsml
         gate_scaling!
         # scaling keeps the scale typing: a scaled difference stays a
         # difference (gate_scaling! admits only ratio and difference)
-        return Quantity.new(value: value / other, unit: copied_formula,
-                            scale: scale)
+        return Quantity.new(value: exact_quotient(value, other),
+                            unit: copied_formula, scale: scale)
       end
 
       other = Compose.quantity_operand(other)
@@ -92,16 +103,24 @@ module Unitsml
               "division by a zero quantity is indeterminate"
       end
 
-      Quantity.new(value: value / other.value,
+      Quantity.new(value: exact_quotient(value, other.value),
                    unit: compose(formula, other.formula, "/"))
     end
 
     # R-A4: differences are legal on both ratio and interval scales;
-    # only the dimension identity must match.
+    # only the dimension identity must match. An operand in another unit
+    # is first converted into this quantity's unit with convert_to (exact;
+    # a difference operand skips the affine addends): 1 km + 1 m is
+    # 1001/1000 km, not 2 km.
     def +(other)
       quantity_kind!(other)
       gate_dimension!(other)
-      Quantity.new(value: value + other.value, unit: copied_formula)
+      # differences sum to a difference (5 K + 5 K of difference converts
+      # to 10 K, never 283.15 K)
+      both_differences = [scale, other.scale].all?(:difference)
+      sum_scale = both_differences ? :difference : nil
+      Quantity.new(value: value + aligned_value(other), unit: copied_formula,
+                   scale: sum_scale)
     end
 
     def -(other)
@@ -109,9 +128,16 @@ module Unitsml
       gate_dimension!(other)
       # A difference of two quantities is difference-typed: its conversion
       # skips the affine addends (20 degC - 15 degC converts to 5 K, not
-      # 278.15 K).
-      Quantity.new(value: value - other.value, unit: copied_formula,
-                   scale: :difference)
+      # 278.15 K). Subtracting a difference from an absolute value shifts
+      # that value and keeps its scale (20 degC - 5 K of difference is
+      # 15 degC, which converts to 288.15 K).
+      result_scale = if other.scale == :difference && scale != :difference
+                       scale
+                     else
+                       :difference
+                     end
+      Quantity.new(value: value - aligned_value(other), unit: copied_formula,
+                   scale: result_scale)
     end
 
     # R-A3: convert this quantity to another (dimension-compatible) unit
@@ -152,6 +178,98 @@ module Unitsml
 
     private
 
+    # The other operand's magnitude in this quantity's unit. Same-unit and
+    # pure-number operands are taken as-is (no conversion, value types
+    # kept); otherwise convert_to applies the exact canonical conversion.
+    def aligned_value(other)
+      return other.value if formula.nil? || other.formula.nil?
+      return other.value if formula.norm_text == other.formula.norm_text
+
+      other.convert_to(formula).value
+    end
+
+    # Integer / Integer is exact (1 m / 2 is 1/2 m, not 0 m); an exact
+    # integral quotient stays an Integer. Other numerics divide natively.
+    def exact_quotient(dividend, divisor)
+      unless dividend.is_a?(Integer) && divisor.is_a?(Integer)
+        return dividend / divisor
+      end
+
+      quotient = Rational(dividend, divisor)
+      quotient.denominator == 1 ? quotient.numerator : quotient
+    end
+
+    def sqrt_tree?(nodes)
+      Array(nodes).any? do |node|
+        case node
+        when Sqrt then true
+        when Formula then sqrt_tree?(node.value)
+        when Fenced then sqrt_tree?([node.value])
+        else false
+        end
+      end
+    end
+
+    def leaf_units(nodes)
+      Array(nodes).flat_map do |node|
+        case node
+        when Unit then [node]
+        when Formula then leaf_units(node.value)
+        when Fenced then leaf_units([node.value])
+        else []
+        end
+      end
+    end
+
+    # Exact exponent of a parsed power ("1/2", "(1/2)", "-1"): an Integer
+    # when integral, otherwise a Rational.
+    def exact_exponent(power)
+      return 1 if power.nil?
+
+      power = power.value while power.is_a?(Fenced)
+      power = power.raw_value if power.respond_to?(:raw_value)
+      exact = case power
+              when Integer, Rational then Rational(power)
+              when Float then Rational(power.to_s)
+              else Rational(power.to_s.delete("() "))
+              end
+      exact.denominator == 1 ? exact.numerator : exact
+    rescue ArgumentError, ZeroDivisionError
+      raise Errors::InvalidPowerError.new(value: power, reason: :invalid_number)
+    end
+
+    def fractional_leaves?
+      return false unless formula
+
+      leaf_units(formula.value).any? do |unit|
+        exact_exponent(unit.power_numerator).is_a?(Rational)
+      end
+    end
+
+    def fractional_vector?
+      dimension_vector&.values&.any?(Rational) || false
+    end
+
+    # Fractional leaf powers (m^(1/2), J^(1/2)) scale each leaf's exact
+    # unitsdb decomposition; nil when any leaf has no decomposition path.
+    def fractional_dimension_vector
+      vector = Hash.new(0)
+      leaf_units(formula.value).each do |unit|
+        dims = Conversion.unit_dimensions(
+          unit.unit_instance, exact_exponent(unit.power_numerator), []
+        )
+        return nil if dims.nil?
+
+        dims.each { |entry| vector[entry[:dimension]] += entry[:exponent] }
+      end
+      vector.transform_values! do |exponent|
+        exponent = Rational(exponent)
+        exponent.denominator == 1 ? exponent.numerator : exponent
+      end
+      vector.delete_if { |_, exponent| exponent.zero? }
+      vector
+    end
+
     # The scale of a quantity is the scale of the units it composes: any
     # interval-scaled unit (degC per unitsdb scale_reference) makes the
     # quantity interval-scaled.
@@ -173,6 +291,8 @@ module Unitsml
     # Base dimensions in canonical DIMS_VECTOR order; nil when all
     # exponents cancel (dimensionless).
     def dimension_list
+      return nil if dimension_vector.nil?
+
       merged = Utility::DIMS_VECTOR.filter_map do |dimension|
         exponent = dimension_vector[dimension]
         next if exponent.zero?
