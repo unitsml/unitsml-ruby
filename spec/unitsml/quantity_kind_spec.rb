@@ -119,6 +119,40 @@ RSpec.describe Unitsml::QuantityKind do
         .to raise_error(Unitsml::Errors::PrimaryQuantityError, /marks 2/)
     end
 
+    it "never promotes a sole reference marked primary: false" do
+      ref = Unitsdb::QuantityReference.new(id: "NISTq1", type: "nist",
+                                           primary: false)
+      fake = Struct.new(:quantity_references, :identifiers)
+      expect { described_class.primary_for(fake.new([ref], [])) }
+        .to raise_error(Unitsml::Errors::PrimaryQuantityError, /primary: false/)
+    end
+
+    it "takes a sole reference whose flag is absent" do
+      ref = Unitsdb::QuantityReference.new(id: "NISTq1", type: "nist")
+      expect(ref.primary).to be_nil
+      fake = Struct.new(:quantity_references, :identifiers)
+      expect(described_class.primary_for(fake.new([ref], [])).id)
+        .to eq("NISTq1")
+    end
+
+    it "selects the true flag among explicit false siblings" do
+      refs = [["NISTq1", false], ["NISTq48", true], ["NISTq95", false]]
+        .map do |id, flag|
+        Unitsdb::QuantityReference.new(id: id, type: "nist", primary: flag)
+      end
+      fake = Struct.new(:quantity_references, :identifiers)
+      expect(described_class.primary_for(fake.new(refs, [])).id)
+        .to eq("NISTq48")
+    end
+
+    it "leaves render selection on the first reference" do
+      record = Unitsml::Unitsdb.units.find_by_name("J")
+      first = record.quantity_references.first.id
+      expect(Unitsml::Utility.send(:quantity_reference_id, record))
+        .to eq(first)
+      expect(first).not_to eq(described_class.primary_for(record).id)
+    end
+
     it "derives a quantity's primary kind from its single unit" do
       expect(quantity(1, "kJ").primary_kind.id).to eq("NISTq17")
       expect(quantity(1, "J", :primary).kind.id).to eq("NISTq17")

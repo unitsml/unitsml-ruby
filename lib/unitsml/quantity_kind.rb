@@ -40,9 +40,16 @@ module Unitsml
     # Consumers select this reference instead of positional order."
     # (unitsdb schemas/units-schema.yaml:147-149). Selection reads the flag
     # only, so the result does not depend on the order of
-    # quantity_references in the data. A unit with a single reference has
-    # that reference as its only quantity. Several references with no flag,
-    # or more than one flag, is a register defect and fails explicitly.
+    # quantity_references in the data.
+    #
+    # A sole reference with the flag ABSENT is the unit's quantity: the
+    # schema leaves the field optional, and the release that introduced it
+    # flags only multi-reference units ("96 multi-reference units flagged,
+    # exactly one primary each", unitsdb 6f3d156, schema 2.2.0). That
+    # inference is not stated in the schema text itself. A reference marked
+    # primary: false is never promoted, even when it is the only one.
+    # Several references with no true flag, or more than one, is a register
+    # defect and fails explicitly.
     def self.primary_for(unit_record) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
       refs = unit_record&.quantity_references.to_a
       return nil if refs.empty?
@@ -50,13 +57,7 @@ module Unitsml
       flagged = refs.select { |ref| ref.primary == true }
       chosen = case flagged.size
                when 1 then flagged.first
-               when 0
-                 if refs.size > 1
-                   raise Errors::PrimaryQuantityError,
-                         "unit #{unit_label(unit_record)} has #{refs.size} " \
-                         "quantity references and none is marked primary"
-                 end
-                 refs.first
+               when 0 then sole_unflagged(unit_record, refs)
                else
                  raise Errors::PrimaryQuantityError,
                        "unit #{unit_label(unit_record)} marks " \
@@ -64,6 +65,20 @@ module Unitsml
                end
       resolve(chosen.id)
     end
+
+    def self.sole_unflagged(unit_record, refs)
+      if refs.size > 1
+        raise Errors::PrimaryQuantityError,
+              "unit #{unit_label(unit_record)} has #{refs.size} " \
+              "quantity references and none is marked primary"
+      end
+      return refs.first if refs.first.primary.nil?
+
+      raise Errors::PrimaryQuantityError,
+            "unit #{unit_label(unit_record)} marks its only quantity " \
+            "reference primary: false"
+    end
+    private_class_method :sole_unflagged
 
     def self.unit_label(record)
       record.identifiers.to_a.map(&:id).first.inspect
