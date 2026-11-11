@@ -97,7 +97,7 @@ module Unitsml
         gate_scaling!
         # scaling keeps the scale typing: a scaled difference stays a
         # difference (gate_scaling! admits only ratio and difference)
-        return Quantity.new(value: exact_quotient(value, other),
+        return Quantity.new(value: divide_values(value, other),
                             unit: copied_formula, scale: scale, kind: kind)
       end
 
@@ -108,7 +108,7 @@ module Unitsml
               "division by a zero quantity is indeterminate"
       end
 
-      Quantity.new(value: exact_quotient(value, other.value),
+      Quantity.new(value: divide_values(value, other.value),
                    unit: compose(formula, other.formula, "/"))
     end
 
@@ -200,17 +200,6 @@ module Unitsml
       return other.value if formula.norm_text == other.formula.norm_text
 
       other.convert_to(formula).value
-    end
-
-    # Integer / Integer is exact (1 m / 2 is 1/2 m, not 0 m); an exact
-    # integral quotient stays an Integer. Other numerics divide natively.
-    def exact_quotient(dividend, divisor)
-      unless dividend.is_a?(Integer) && divisor.is_a?(Integer)
-        return dividend / divisor
-      end
-
-      quotient = Rational(dividend, divisor)
-      quotient.denominator == 1 ? quotient.numerator : quotient
     end
 
     def sqrt_tree?(nodes)
@@ -466,6 +455,18 @@ module Unitsml
       # skipping the affine addends
       Quantity.new(value: value * number, unit: copied_formula, scale: scale,
                    kind: kind)
+    end
+
+    # Integer / Integer is exact: Ruby's Integer#/ would drop the remainder
+    # (7 / 2 => 3), so integers divide by Rational and a whole result comes
+    # back as an Integer (6 / 2 => 3, 7 / 2 => (7/2)). Any other Numeric
+    # (Float, Rational, BigDecimal) keeps its own division.
+    def divide_values(dividend, divisor)
+      integers = dividend.is_a?(Integer) && divisor.is_a?(Integer)
+      return dividend / divisor unless integers
+
+      quotient = Rational(dividend, divisor)
+      quotient.denominator == 1 ? quotient.numerator : quotient
     end
 
     def gate_zero!(other)
