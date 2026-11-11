@@ -37,13 +37,20 @@ module Unitsml
     # Array of entries it validates) to every conversion inside the block,
     # including the operand alignment of Quantity#+ and #-. The register is
     # scoped to the block and the current thread; it never persists.
+    #
+    # Validation (Register.new) completes before the thread state is
+    # touched, and the ensure restores only what this call replaced: a
+    # register rejected inside an outer with_register leaves the outer one
+    # active.
     def with_register(register)
       register = Register.new(register) unless register.is_a?(Register)
       previous = Thread.current[REGISTER_KEY]
       Thread.current[REGISTER_KEY] = register
-      yield register
-    ensure
-      Thread.current[REGISTER_KEY] = previous
+      begin
+        yield register
+      ensure
+        Thread.current[REGISTER_KEY] = previous
+      end
     end
 
     def current_register

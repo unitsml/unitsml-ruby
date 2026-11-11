@@ -73,6 +73,78 @@ RSpec.describe Unitsml::Conversion::Register do
     expect { with_register([w]) { nil } }.not_to raise_error
   end
 
+  describe "scoping" do
+    def key
+      Unitsml::Conversion::REGISTER_KEY
+    end
+
+    let(:power) { { "Length" => "2", "Mass" => "1", "Time" => "-3" } }
+    let(:invalid_entries) do
+      [
+        [entry.merge("factor" => "0")],
+        {},
+        [entry.merge("extra" => 1)],
+        [entry.merge("unit" => "unregistered-unit")],
+        [entry.merge("dimensions" => { "Length" => "1" })],
+        [{ "unit" => "W", "factor" => "2", "dimensions" => power }],
+      ]
+    end
+
+    def rejected?(entries)
+      with_register(entries) { nil }
+      false
+    rescue Unitsml::Errors::BaseError
+      true
+    end
+
+    it "keeps the outer register when a nested registration is rejected" do
+      with_register([entry]) do |outer|
+        invalid_entries.each do |entries|
+          expect(rejected?(entries)).to be(true)
+          expect(Unitsml::Conversion.current_register).to equal(outer)
+          expect(quantity(2, "cwt (US)").convert_to("kg").value).to eq(100)
+        end
+      end
+    end
+
+    it "restores an absent ambient register after the outer block" do
+      expect(Thread.current[key]).to be_nil
+      with_register([entry]) do
+        expect(rejected?([entry.merge("factor" => "0")])).to be(true)
+      end
+      expect(Thread.current[key]).to be_nil
+    end
+
+    it "restores a pre-existing ambient register after the outer block" do
+      ambient = described_class.new([entry.merge("factor" => "25")])
+      Thread.current[key] = ambient
+      with_register([entry]) { expect(rejected?({})).to be(true) }
+      expect(Thread.current[key]).to equal(ambient)
+    ensure
+      Thread.current[key] = nil
+    end
+
+    it "leaves the ambient state alone when the outermost one is rejected" do
+      expect(rejected?([entry.merge("factor" => "-1")])).to be(true)
+      expect(Thread.current[key]).to be_nil
+    end
+
+    def other_thread_view
+      Thread.new do
+        seen = Unitsml::Conversion.current_register
+        with_register([entry.merge("factor" => "25")]) { nil }
+        [seen, Unitsml::Conversion.current_register]
+      end.value
+    end
+
+    it "keeps registers thread-local" do
+      with_register([entry]) do |outer|
+        expect(other_thread_view).to eq([nil, nil])
+        expect(Unitsml::Conversion.current_register).to equal(outer)
+      end
+    end
+  end
+
   describe "validation" do
     let(:invalid) { Unitsml::Errors::InvalidUnitRegisterError }
     let(:power) { { "Length" => "2", "Mass" => "1", "Time" => "-3" } }
