@@ -79,7 +79,8 @@ module Unitsml
       if Compose.type?(Numeric, other)
         gate_zero!(other)
         gate_scaling!
-        return Quantity.new(value: value / other, unit: copied_formula)
+        return Quantity.new(value: divide_values(value, other),
+                            unit: copied_formula)
       end
 
       other = Compose.quantity_operand(other)
@@ -89,7 +90,7 @@ module Unitsml
               "division by a zero quantity is indeterminate"
       end
 
-      Quantity.new(value: value / other.value,
+      Quantity.new(value: divide_values(value, other.value),
                    unit: compose(formula, other.formula, "/"))
     end
 
@@ -251,6 +252,18 @@ module Unitsml
     def scalar_product(number)
       gate_scaling!
       Quantity.new(value: value * number, unit: copied_formula)
+    end
+
+    # Integer / Integer is exact: Ruby's Integer#/ would drop the remainder
+    # (7 / 2 => 3), so integers divide by Rational and a whole result comes
+    # back as an Integer (6 / 2 => 3, 7 / 2 => (7/2)). Any other Numeric
+    # (Float, Rational, BigDecimal) keeps its own division.
+    def divide_values(dividend, divisor)
+      integers = dividend.is_a?(Integer) && divisor.is_a?(Integer)
+      return dividend / divisor unless integers
+
+      quotient = Rational(dividend, divisor)
+      quotient.denominator == 1 ? quotient.numerator : quotient
     end
 
     def gate_zero!(other)

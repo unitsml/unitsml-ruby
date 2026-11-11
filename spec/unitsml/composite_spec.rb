@@ -103,10 +103,9 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
         .to eq([Unitsml::Quantity, 0.25, [["m", nil], ["s", "-1"]]])
     end
 
-    it "keeps the existing Quantity integer magnitude rule" do
-      # Quantity#/ keeps Integer division for Integer magnitudes.
-      expect((metre / 2).value).to eq(0)
-      expect((speed / 3).value).to eq(0)
+    it "divides an integer magnitude exactly" do
+      expect((metre / 2).value).to eql(Rational(1, 2))
+      expect((speed / 3).value).to eql(Rational(1, 3))
     end
 
     it "rejects a zero divisor" do
