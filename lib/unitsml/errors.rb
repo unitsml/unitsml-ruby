@@ -6,6 +6,7 @@ module Unitsml
     autoload :ConversionError, "unitsml/errors/quantity_errors"
     autoload :EmptyCompositionError, "unitsml/errors/empty_composition_error"
     autoload :InvalidModelError, "unitsml/errors/invalid_model_error"
+    autoload :InexactPowerError, "unitsml/errors/quantity_errors"
     autoload :InvalidPowerError, "unitsml/errors/invalid_power_error"
     autoload :InvalidUnitEntryError, "unitsml/errors/invalid_unit_entry_error"
     autoload :MisplacedExtenderError,
