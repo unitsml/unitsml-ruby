@@ -54,7 +54,16 @@ module Unitsml
       end
 
       def database_hash
-        ::Unitsdb::Database.from_db(unitsdb_data_dir).to_hash
+        database = ::Unitsdb::Database.from_db(unitsdb_data_dir).to_hash
+        return database if database.key?("scales")
+
+        scales_path = File.join(unitsdb_data_dir, "scales.yaml")
+        return database unless File.file?(scales_path)
+
+        # UnitsDB 2.2.13 ships typed scale models/data before exposing them
+        # through Database. Keep generated data stable across that API change.
+        scales = ::Unitsdb::Scales.from_yaml(File.read(scales_path)).to_hash
+        database.merge("scales" => scales.fetch("scales"))
       end
 
       # Custom serializer rather than Hash#inspect so the output is

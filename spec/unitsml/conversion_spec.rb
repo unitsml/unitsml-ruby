@@ -37,6 +37,34 @@ RSpec.describe Unitsml::Conversion do
       expect(quantity.convert_to("m").value).to eq(1000)
     end
 
+    it "keeps a rational square root of a prefix exact through conversion" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "cm^(1/2)")
+
+      converted = quantity.convert_to("m^(1/2)")
+      expect(converted.value).to be_a(Rational)
+      expect(converted.value).to eq(Rational(1, 10))
+      expect(converted.convert_to("cm^(1/2)").value).to eq(1)
+    end
+
+    it "combines the prefix and record factor before taking a root" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "mg^(1/2)")
+
+      expect(quantity.convert_to("kg^(1/2)").value).to eq(Rational(1, 1000))
+    end
+
+    it "keeps a rational cube root exact" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "mm^(1/3)")
+
+      expect(quantity.convert_to("m^(1/3)").value).to eq(Rational(1, 10))
+    end
+
+    it "refuses an irrational conversion factor explicitly" do
+      quantity = Unitsml::Quantity.new(value: 1, unit_expression: "mm^(1/2)")
+
+      expect { quantity.convert_to("m^(1/2)") }
+        .to raise_error(Unitsml::Errors::InexactPowerError, /is not rational/)
+    end
+
     it "applies pressure factors (2 bar = 200000 Pa)" do
       quantity = Unitsml::Quantity.new(value: 2, unit_expression: "bar")
 

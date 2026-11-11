@@ -90,7 +90,12 @@ module Unitsml
       # A supplied definition replaces the canonical factor/offset for its
       # unit — the two paths are never applied in sequence; when the
       # register also carries canonical data, the two must agree.
-      if (definition = definition_for(record, definitions))
+      definition = definition_for(record, definitions)
+      if power.denominator != 1
+        return fractional_unit_result(record, definition, prefix_factor, power)
+      end
+
+      if definition
         def_factor, def_offset = definition_result(definition, power, record)
         return Result.new(factor: def_factor * (prefix_factor**power),
                           offset: def_offset)
@@ -101,6 +106,46 @@ module Unitsml
       factor, offset = record_factor(record, power, [record_identity(record)])
       factor *= prefix_factor**power
       Result.new(factor: factor, offset: offset)
+    end
+
+    # Resolve the complete ratio before taking a root. The record and prefix
+    # factors can have irrational roots individually and a rational root
+    # after multiplication (for example, the square root of a milligram).
+    def fractional_unit_result(record, definition, prefix_factor, power)
+      factor, offset = if definition
+                         definition_result(definition, 1, record)
+                       else
+                         record_factor(record, 1, [record_identity(record)])
+                       end
+      unless offset.zero?
+        raise Errors::ConversionError, "affine unit raised to power #{power}"
+      end
+
+      base = factor * prefix_factor
+      degree = power.denominator
+      numerator = exact_integer_root(base.numerator, degree)
+      denominator = exact_integer_root(base.denominator, degree)
+      unless numerator && denominator
+        raise Errors::InexactPowerError, "#{base} raised to #{power} is not rational"
+      end
+
+      Result.new(factor: Rational(numerator, denominator)**power.numerator,
+                 offset: offset)
+    end
+
+    def exact_integer_root(value, degree)
+      return if value.negative? && degree.even?
+
+      magnitude = value.abs
+      return value if magnitude <= 1
+      return if degree > magnitude.bit_length
+
+      lower = 1
+      upper = 1 << ((magnitude.bit_length + degree - 1) / degree)
+      root = (lower..upper).bsearch { |candidate| candidate**degree >= magnitude }
+      return unless root**degree == magnitude
+
+      value.negative? ? -root : root
     end
 
     # The definition supplied for this record, if any. Lookup keys are the

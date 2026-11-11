@@ -7,5 +7,6 @@ module Unitsml
     class ScaleOperationError < QuantityOperationError; end
     class IndeterminateResultError < QuantityOperationError; end
     class ConversionError < QuantityOperationError; end
+    class InexactPowerError < ConversionError; end
   end
 end

@@ -296,6 +296,23 @@ RSpec.describe Unitsml::Quantity do
       # scaling a difference is meaningful (differences are ratio-scaled)
       expect(((a - b) * 2).value).to eq(16)
     end
+
+    it "keeps difference typing through scalar scaling and conversion" do
+      high = Unitsml::Quantity.new(value: 20, unit_expression: "degC")
+      low = Unitsml::Quantity.new(value: 15, unit_expression: "degC")
+      difference = high - low
+
+      doubled = difference * 2
+      halved = difference / Rational(2)
+      expect([doubled.scale, halved.scale]).to eq(%i[difference difference])
+      # no affine addend: a doubled 5 degC difference is 10 K, not 283.15 K
+      expect(doubled.convert_to("K").value).to eq(Rational(10))
+      expect(halved.convert_to("K").value).to eq(Rational(5, 2))
+      expect(difference.convert_to("K").scale).to eq(:difference)
+      expect((difference.convert_to("K") * 3).convert_to("degC").value)
+        .to eq(Rational(15))
+      expect((q("m", 3) * 2).scale).to eq(:ratio)
+    end
   end
 
   describe "pure numbers" do
@@ -481,17 +498,21 @@ RSpec.describe Unitsml::Quantity do
     def recorded_vectors
       joule = { "Length" => 2, "Mass" => 1, "Time" => -2 }
       {
-        "m^(1/2)" => { "Length" => 1 }, "J^(1/2)" => joule, "J" => joule,
-        "dim_L*dim_M" => {}, "sqrt(m)" => {}, "sqrt(m^2)" => {},
-        "sqrt(m*s)" => {}, "sqrt((m*s))" => {}, "s/sqrt(m)" => { "Time" => 1 },
-        "sqrt(sqrt(m))" => {}, "sqrt(dim_L)" => {}
+        "m^(1/2)" => { "Length" => Rational(1, 2) },
+        "J^(1/2)" => { "Length" => 1, "Mass" => Rational(1, 2), "Time" => -1 },
+        "J" => joule, "dim_L*dim_M" => {},
+        # sqrt trees do not determine a vector: the parser writes 0.5 over
+        # the radicand's own exponent (sqrt(m) and sqrt(m^2) parse alike)
+        "sqrt(m)" => nil, "sqrt(m^2)" => nil, "sqrt(m*s)" => nil,
+        "sqrt((m*s))" => nil, "s/sqrt(m)" => nil, "sqrt(sqrt(m))" => nil,
+        "sqrt(dim_L)" => nil
       }
     end
 
     def fenced_product_vectors
       {
-        "m^((1/2))" => { "Length" => 1, "Time" => 1 },
-        "m^(1/2)" => { "Length" => 1, "Time" => 1 },
+        "m^((1/2))" => { "Length" => Rational(1, 2), "Time" => 1 },
+        "m^(1/2)" => { "Length" => Rational(1, 2), "Time" => 1 },
         "m^-1" => { "Length" => -1, "Time" => 1 },
         "g^((((3))))" => { "Mass" => 3, "Time" => 1 },
         "m^((-2))" => { "Length" => -2, "Time" => 1 },
@@ -507,7 +528,7 @@ RSpec.describe Unitsml::Quantity do
       end
     end
 
-    it "keeps the recorded dimension vectors (deferred #82 roots/fractions)" do
+    it "keeps exact fractional vectors and defers sqrt trees (#82)" do
       recorded_vectors.each do |source, vector|
         expect(q(source).dimension_vector).to eq(vector)
       end
@@ -517,10 +538,12 @@ RSpec.describe Unitsml::Quantity do
     end
 
     it "keeps the recorded dimension ids and fractional product" do
-      expect(q("m^(1/2)").dimension_id).to eq("NISTd1")
+      # no unitsdb dimension identity is asserted for a fractional vector
+      expect(q("m^(1/2)").dimension_id).to be_nil
       expect(q("sqrt(m)").dimension_id).to be_nil
       expect((q("m^(1/2)") * q("m^(1/2)")).dimension_vector)
-        .to eq("Length" => 2)
+        .to eq("Length" => 1)
+      expect((q("m^(1/2)") * q("m^(1/2)")).dimension_id).to eq("NISTd1")
     end
 
     it "keeps the recorded dimension-leaf rows" do
@@ -561,8 +584,9 @@ RSpec.describe Unitsml::Quantity do
     end
 
     it "keeps the recorded scalar rows" do
-      { "m" => { "Length" => 1 }, "sqrt(m)" => {},
-        "m^(1/2)" => { "Length" => 1 }, nil => {} }.each do |source, vector|
+      { "m" => { "Length" => 1 }, "sqrt(m)" => nil,
+        "m^(1/2)" => { "Length" => Rational(1, 2) },
+        nil => {} }.each do |source, vector|
         result = q(source, 4) * 2
         expect([result.value, result.dimension_vector]).to eq([8, vector])
       end
