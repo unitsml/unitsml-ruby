@@ -29,6 +29,7 @@ module Unitsml
   autoload :Utility, "unitsml/utility"
   autoload :VERSION, "unitsml/version"
   autoload :Quantity, "unitsml/quantity"
+  autoload :QuantityKind, "unitsml/quantity_kind"
   autoload :Conversion, "unitsml/conversion"
   autoload :Xml, "unitsml/xml"
 

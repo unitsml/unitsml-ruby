@@ -12,6 +12,7 @@ module Unitsml
   # inside a composite raises.
   module Conversion
     autoload :Definition, "unitsml/conversion/definition"
+    autoload :Register, "unitsml/conversion/register"
 
     Result = Struct.new(:factor, :offset, keyword_init: true)
 
@@ -28,6 +29,32 @@ module Unitsml
     # the two paths are never applied in sequence.
     def to_canonical(formula, definitions: nil)
       walk(formula, 1, definitions: definitions)
+    end
+
+    REGISTER_KEY = :unitsml_conversion_register
+
+    # Applies a validated caller register (Conversion::Register, or the
+    # Array of entries it validates) to every conversion inside the block,
+    # including the operand alignment of Quantity#+ and #-. The register is
+    # scoped to the block and the current thread; it never persists.
+    #
+    # Validation (Register.new) completes before the thread state is
+    # touched, and the ensure restores only what this call replaced: a
+    # register rejected inside an outer with_register leaves the outer one
+    # active.
+    def with_register(register)
+      register = Register.new(register) unless register.is_a?(Register)
+      previous = Thread.current[REGISTER_KEY]
+      Thread.current[REGISTER_KEY] = register
+      begin
+        yield register
+      ensure
+        Thread.current[REGISTER_KEY] = previous
+      end
+    end
+
+    def current_register
+      Thread.current[REGISTER_KEY]
     end
 
     def walk(node, sign, definitions: nil)
@@ -91,6 +118,11 @@ module Unitsml
       # unit — the two paths are never applied in sequence; when the
       # register also carries canonical data, the two must agree.
       definition = definition_for(record, definitions)
+      entry = definition ? nil : current_register&.entry_for(record)
+      if entry
+        return register_result(entry, power, prefix_factor)
+      end
+
       if power.denominator != 1
         return fractional_unit_result(record, definition, prefix_factor, power)
       end
@@ -103,7 +135,7 @@ module Unitsml
 
       # The prefix scales with the unit power: 1 km2 = 1 000 000 m2, not
       # 1 000 m2 — the prefix is as squared as the unit is.
-      factor, offset = record_factor(record, power, [record_identity(record)])
+      factor, offset = record_factor(record, power)
       factor *= prefix_factor**power
       Result.new(factor: factor, offset: offset)
     end
@@ -115,7 +147,7 @@ module Unitsml
       factor, offset = if definition
                          definition_result(definition, 1, record)
                        else
-                         record_factor(record, 1, [record_identity(record)])
+                         record_factor(record, 1)
                        end
       unless offset.zero?
         raise Errors::ConversionError, "affine unit raised to power #{power}"
@@ -146,6 +178,23 @@ module Unitsml
       return unless root**degree == magnitude
 
       value.negative? ? -root : root
+    end
+
+    # A caller register entry replaces the canonical factor/offset for its
+    # unit, as a definition does. Affine entries (non-zero offset) are legal
+    # only at power 1; a fractional power of a register entry is refused
+    # rather than approximated.
+    def register_result(entry, power, prefix_factor)
+      if entry.offset != 0 && power != 1
+        raise Errors::ConversionError, "affine unit raised to power #{power}"
+      end
+      if power.denominator != 1
+        raise Errors::InexactPowerError,
+              "a register entry at fractional power #{power} is not exact"
+      end
+
+      Result.new(factor: (entry.factor**power) * (prefix_factor**power),
+                 offset: entry.offset)
     end
 
     # The definition supplied for this record, if any. Lookup keys are the
@@ -219,7 +268,52 @@ module Unitsml
       record.identifiers&.map { |i| "#{i.type}:#{i.id}" }&.sort&.join("|")
     end
 
-    def record_factor(record, power, _visited = [])
+    # Cycle guard: the derivation chain of one unit (si_derived_bases /
+    # root_units) is followed with the path of unit identities already on
+    # it. Reaching a unit already on the path is a cyclic definition in the
+    # register data (gram-force NISTu196 lists kilo x itself as its root):
+    # it has no linear canonical conversion, so it raises ConversionError
+    # naming the cycle instead of recursing without bound.
+    def guard_cycle!(record, path)
+      identity = record_identity(record)
+      return path + [identity] unless path.include?(identity)
+
+      cycle = path[path.index(identity)..] + [identity]
+      raise Errors::ConversionError,
+            "cyclic unit definition in the register data: " \
+            "#{cycle.map { |id| unit_label(id) }.join(' -> ')}"
+    end
+
+    def unit_label(identity)
+      nist = identity.to_s.split("|").find { |part| part.start_with?("nist:") }
+      id = nist&.delete_prefix("nist:")
+      record = id && Unitsml::Unitsdb.units.find_by_id(id)
+      symbol = record && record.symbols.to_a.first&.id
+      symbol ? "#{symbol} (#{id})" : identity.to_s
+    end
+
+    # Cycle-free results are reused. The key includes the loaded database
+    # object, so a reloaded or substituted database never sees stale values;
+    # errors (cycles, missing paths) are never cached.
+    MEMO_LIMIT = 4096
+
+    def memoized(kind, record, power)
+      memo = (@memo ||= {})
+      key = [kind, Unitsml::Unitsdb.database.object_id,
+             record_identity(record), power]
+      return memo[key] if memo.key?(key)
+
+      value = yield
+      memo.clear if memo.size >= MEMO_LIMIT
+      memo[key] = value.freeze
+    end
+
+    def record_factor(record, power, path = [])
+      path = guard_cycle!(record, path)
+      memoized(:factor, record, power) { record_factor_uncached(record, power, path) }
+    end
+
+    def record_factor_uncached(record, power, path)
       cc = record.canonical_conversion
       return conversion_factor(cc, power) if cc
 
@@ -240,7 +334,8 @@ module Unitsml
       bases.each do |base|
         base_power = (base.power || 1) * power
         prefix_factor = prefix_factor_from_reference(base.prefix_reference)
-        sub_factor, sub_offset = base_factor(base.unit_reference, base_power)
+        sub_factor, sub_offset = base_factor(base.unit_reference, base_power,
+                                             path)
         if sub_offset != 0
           raise Errors::ConversionError,
                 "affine unit inside a derived composition"
@@ -264,11 +359,11 @@ module Unitsml
       [factor, offset]
     end
 
-    def base_factor(unit_reference, power)
+    def base_factor(unit_reference, power, path = [])
       record = Unitsml::Unitsdb.units.find_by_id(unit_reference.id)
       raise Errors::ConversionError, "unknown conversion target" unless record
 
-      record_factor(record, power)
+      record_factor(record, power, path)
     end
 
     def prefix_factor_from_reference(reference)
@@ -336,10 +431,19 @@ module Unitsml
       end
     end
 
+    # visited: the path of unit identities above this record (an Array; the
+    # legacy callers pass []). A revisit is a cyclic definition and raises
+    # ConversionError, as record_factor does.
     def unit_dimensions(record, power, visited)
-      return nil if record.nil? || visited.include?(record.object_id)
+      return nil if record.nil?
 
-      visited = visited + [record.object_id]
+      path = guard_cycle!(record, visited)
+      memoized(:dimensions, record, power) do
+        unit_dimensions_uncached(record, power, path)
+      end
+    end
+
+    def unit_dimensions_uncached(record, power, visited)
       sym = record.symbols&.first&.id
       if (u2d = Unitsml::Utility::U2D[sym])
         return [{ dimension: u2d[:dimension], symbol: u2d[:symbol],
