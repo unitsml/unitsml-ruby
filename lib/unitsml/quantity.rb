@@ -9,7 +9,7 @@ module Unitsml
   # and division on non-ratio scales; the classification is pluggable
   # per quantity until the unitsdb scale-legality data lands (#130).
   class Quantity
-    attr_reader :value, :formula, :scale
+    attr_reader :value, :formula, :scale, :kind
 
     # Distinguishes an omitted unit keyword from an explicit nil.
     ABSENT = Object.new.freeze
@@ -18,8 +18,12 @@ module Unitsml
     # unit: accepts a String (parsed, like unit_expression:), a Unit, a
     # Formula (kept as-is, never reparsed) or nil (a pure number).
     # unit_expression: remains the String-only spelling; give only one.
+    # kind: an optional data-declared quantity kind (a UnitsDB quantity
+    # identifier or name, a QuantityKind, or :primary for the primary
+    # quantity of a single unit). Untyped quantities (kind nil) keep the
+    # dimension-only gating.
     def initialize(value:, unit: ABSENT, unit_expression: ABSENT,
-                   scale: nil)
+                   scale: nil, kind: nil)
       unless unit.equal?(ABSENT) || unit_expression.equal?(ABSENT)
         raise ArgumentError, "give only one of unit: or unit_expression:"
       end
@@ -30,6 +34,7 @@ module Unitsml
       # the expression (degC is continuous_interval); an explicit argument
       # (the :difference typing of subtraction) overrides it.
       @scale = (scale || derived_scale).to_sym
+      @kind = resolve_kind(kind)
     end
 
     # Canonical dimension identity; "1" (dimensionless) for pure numbers.
@@ -93,7 +98,7 @@ module Unitsml
         # scaling keeps the scale typing: a scaled difference stays a
         # difference (gate_scaling! admits only ratio and difference)
         return Quantity.new(value: exact_quotient(value, other),
-                            unit: copied_formula, scale: scale)
+                            unit: copied_formula, scale: scale, kind: kind)
       end
 
       other = Compose.quantity_operand(other)
@@ -120,7 +125,7 @@ module Unitsml
       both_differences = [scale, other.scale].all?(:difference)
       sum_scale = both_differences ? :difference : nil
       Quantity.new(value: value + aligned_value(other), unit: copied_formula,
-                   scale: sum_scale)
+                   scale: sum_scale, kind: kind || other.kind)
     end
 
     def -(other)
@@ -137,7 +142,7 @@ module Unitsml
                        :difference
                      end
       Quantity.new(value: value - aligned_value(other), unit: copied_formula,
-                   scale: result_scale)
+                   scale: result_scale, kind: kind || other.kind)
     end
 
     # R-A3: convert this quantity to another (dimension-compatible) unit
@@ -167,12 +172,21 @@ module Unitsml
 
       # a converted difference is still a difference
       Quantity.new(value: converted, unit_expression: target_formula.norm_text,
-                   scale: scale == :difference ? :difference : nil)
+                   scale: scale == :difference ? :difference : nil,
+                   kind: kind)
     end
 
     def ==(other)
       other.is_a?(Quantity) && value == other.value &&
-        dimension_vector == other.dimension_vector
+        dimension_vector == other.dimension_vector && kinds_compatible?(other)
+    end
+
+    # The primary quantity of this quantity's unit, selected by the UnitsDB
+    # primary flag (never positional order); nil for pure numbers and
+    # composite expressions, which name no single unit record.
+    def primary_kind
+      record = single_unit_record
+      record && QuantityKind.primary_for(record)
     end
     # rubocop:enable Metrics/AbcSize, Layout/LineLength
 
@@ -360,6 +374,60 @@ module Unitsml
       unless other.is_a?(Quantity)
         raise ArgumentError, "expected a Unitsml::Quantity, got #{other.class}"
       end
+      return if kinds_compatible?(other)
+
+      raise Errors::QuantityKindMismatchError,
+            "#{kind.id} (#{kind.name}) and #{other.kind.id} " \
+            "(#{other.kind.name}) are not interchangeable: no shared " \
+            "equivalence class"
+    end
+
+    # Both typed: same quantity or same declared equivalence class. An
+    # untyped operand keeps the dimension-only gating.
+    def kinds_compatible?(other)
+      kind.nil? || other.kind.nil? || kind.compatible?(other.kind)
+    end
+
+    def resolve_kind(source)
+      return nil if source.nil?
+
+      resolved = if source == :primary
+                   primary_kind || raise(
+                     Errors::UnknownQuantityKindError,
+                     "#{norm_text.inspect} names no single unit with a " \
+                     "primary quantity",
+                   )
+                 else
+                   QuantityKind.resolve(source)
+                 end
+      check_kind_dimension!(resolved)
+      resolved
+    end
+
+    def check_kind_dimension!(resolved)
+      ours = dimension_id
+      theirs = resolved.dimension_id
+      return if ours.nil? || theirs.nil? || ours == theirs
+
+      raise Errors::DimensionMismatchError,
+            "quantity kind #{resolved.id} has dimension #{theirs}, the unit " \
+            "#{norm_text.inspect} has #{ours}"
+    end
+
+    # The UnitsDB record of a formula that is one unit at power 1 (a prefix
+    # is allowed: km is still a length unit).
+    def single_unit_record # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
+      return nil unless formula
+
+      terms = formula.value.grep_v(Extender)
+      return nil unless terms.size == 1 && terms.first.is_a?(Unit)
+
+      unit = terms.first
+      power = unit.power_numerator
+      power = power.raw_value if power.respond_to?(:raw_value)
+      return nil unless power.nil? || power.to_s == "1"
+
+      unit.unit_instance
     end
 
     def gate_dimension!(other)
@@ -377,7 +445,8 @@ module Unitsml
       gate_scaling!
       # a scaled difference stays a difference: its conversion must keep
       # skipping the affine addends
-      Quantity.new(value: value * number, unit: copied_formula, scale: scale)
+      Quantity.new(value: value * number, unit: copied_formula, scale: scale,
+                   kind: kind)
     end
 
     def gate_zero!(other)

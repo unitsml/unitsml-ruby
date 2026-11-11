@@ -12,6 +12,7 @@ module Unitsml
   # inside a composite raises.
   module Conversion
     autoload :Definition, "unitsml/conversion/definition"
+    autoload :Register, "unitsml/conversion/register"
 
     Result = Struct.new(:factor, :offset, keyword_init: true)
 
@@ -28,6 +29,25 @@ module Unitsml
     # the two paths are never applied in sequence.
     def to_canonical(formula, definitions: nil)
       walk(formula, 1, definitions: definitions)
+    end
+
+    REGISTER_KEY = :unitsml_conversion_register
+
+    # Applies a validated caller register (Conversion::Register, or the
+    # Array of entries it validates) to every conversion inside the block,
+    # including the operand alignment of Quantity#+ and #-. The register is
+    # scoped to the block and the current thread; it never persists.
+    def with_register(register)
+      register = Register.new(register) unless register.is_a?(Register)
+      previous = Thread.current[REGISTER_KEY]
+      Thread.current[REGISTER_KEY] = register
+      yield register
+    ensure
+      Thread.current[REGISTER_KEY] = previous
+    end
+
+    def current_register
+      Thread.current[REGISTER_KEY]
     end
 
     def walk(node, sign, definitions: nil)
@@ -91,6 +111,11 @@ module Unitsml
       # unit — the two paths are never applied in sequence; when the
       # register also carries canonical data, the two must agree.
       definition = definition_for(record, definitions)
+      entry = definition ? nil : current_register&.entry_for(record)
+      if entry
+        return register_result(entry, power, prefix_factor)
+      end
+
       if power.denominator != 1
         return fractional_unit_result(record, definition, prefix_factor, power)
       end
@@ -146,6 +171,23 @@ module Unitsml
       return unless root**degree == magnitude
 
       value.negative? ? -root : root
+    end
+
+    # A caller register entry replaces the canonical factor/offset for its
+    # unit, as a definition does. Affine entries (non-zero offset) are legal
+    # only at power 1; a fractional power of a register entry is refused
+    # rather than approximated.
+    def register_result(entry, power, prefix_factor)
+      if entry.offset != 0 && power != 1
+        raise Errors::ConversionError, "affine unit raised to power #{power}"
+      end
+      if power.denominator != 1
+        raise Errors::InexactPowerError,
+              "a register entry at fractional power #{power} is not exact"
+      end
+
+      Result.new(factor: (entry.factor**power) * (prefix_factor**power),
+                 offset: entry.offset)
     end
 
     # The definition supplied for this record, if any. Lookup keys are the
