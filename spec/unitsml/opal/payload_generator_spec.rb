@@ -8,7 +8,10 @@ RSpec.describe Unitsml::Opal::PayloadGenerator do
   let(:unitsdb_data_dir) { Unitsdb.data_dir }
 
   let(:real_database_hash) do
-    Unitsdb::Database.from_db(unitsdb_data_dir).to_hash
+    database = Unitsdb::Database.from_db(unitsdb_data_dir).to_hash
+    scales_path = File.join(unitsdb_data_dir, "scales.yaml")
+    scales = Unitsdb::Scales.from_yaml(File.read(scales_path)).to_hash
+    database.merge("scales" => scales.fetch("scales"))
   end
 
   describe "#call" do
