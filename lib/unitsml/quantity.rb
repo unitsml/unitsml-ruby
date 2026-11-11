@@ -431,15 +431,34 @@ module Unitsml
     end
 
     def gate_dimension!(other)
+      ours = gating_vector
+      theirs = other.gating_vector
       # Unknown dimensions (units without a decomposition path) defer the
       # legality decision to the conversion layer.
-      return if dimension_vector.nil? || other.dimension_vector.nil?
-      return if dimension_vector == other.dimension_vector
+      return if ours.nil? || theirs.nil?
+      return if ours == theirs
 
       raise Errors::DimensionMismatchError,
-            "dimension mismatch: #{dimension_vector.inspect} " \
-            "vs #{other.dimension_vector.inspect}"
+            "dimension mismatch: #{ours.inspect} vs #{theirs.inspect}"
     end
+
+    protected
+
+    # The UnitsDB dimension vector, or, for a unit without a decomposition
+    # path, the dimensions an active caller register declares for it. A
+    # register makes such a unit convertible, so it must also make it
+    # dimension-checked: otherwise 2 cwt (US) + 3 m would succeed.
+    def gating_vector
+      vector = dimension_vector
+      return vector unless vector.nil?
+
+      record = single_unit_record
+      register = Conversion.current_register
+      entry = record && register&.entry_for(record)
+      entry&.vector
+    end
+
+    private
 
     def scalar_product(number)
       gate_scaling!

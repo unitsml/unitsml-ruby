@@ -40,6 +40,13 @@ RSpec.describe Unitsml::Conversion::Register do
     end
   end
 
+  it "gates a unit without a decomposition by its declared dimensions" do
+    with_register([entry]) do
+      expect { quantity(2, "cwt (US)") + quantity(3, "m") }
+        .to raise_error(Unitsml::Errors::DimensionMismatchError)
+    end
+  end
+
   it "lets a later entry for the same unit replace an earlier one" do
     with_register([entry.merge("factor" => "25"), entry]) do
       expect(quantity(2, "cwt (US)").convert_to("kg").value).to eq(100)

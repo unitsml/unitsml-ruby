@@ -26,7 +26,9 @@ module Unitsml
     class Register
       FIELDS = %w[unit factor offset dimensions].freeze
       EXACT = %r{\A[+-]?(?:\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|\d+/\d+)\z}
-      Entry = Struct.new(:record, :factor, :offset, keyword_init: true)
+      # vector: the declared base-dimension exponents, used by Quantity to gate
+      # units that have no UnitsDB decomposition of their own.
+      Entry = Struct.new(:record, :factor, :offset, :vector, keyword_init: true)
 
       attr_reader :entries
 
@@ -57,7 +59,7 @@ module Unitsml
         record.identifiers.to_a.map { |i| "#{i.type}:#{i.id}" }.sort.join("|")
       end
 
-      def build_entry(raw) # rubocop:disable Metrics/AbcSize
+      def build_entry(raw) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
         unless raw.is_a?(Hash)
           raise Errors::InvalidUnitRegisterError,
                 "a register entry is a Hash, got #{raw.class}"
@@ -78,9 +80,10 @@ module Unitsml
         end
 
         offset = raw.key?("offset") ? exact(raw["offset"], "offset") : 0r
-        check_dimensions!(record, raw["dimensions"])
+        vector = check_dimensions!(record, raw["dimensions"])
         check_canonical!(record, factor, offset)
-        Entry.new(record: record, factor: factor, offset: offset)
+        Entry.new(record: record, factor: factor, offset: offset,
+                  vector: vector)
       end
 
       def resolve_unit(name)
@@ -109,7 +112,7 @@ module Unitsml
       # The declared dimensions must name the unit's own UnitsDB dimension:
       # both are resolved to a dimension identity through Utility.dim_id and
       # the unit's primary quantity, so no expression is reparsed.
-      def check_dimensions!(record, declared) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      def check_dimensions!(record, declared) # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength
         unless declared.is_a?(Hash) && !declared.empty?
           raise Errors::InvalidUnitRegisterError,
                 "register dimensions must be a non-empty Hash"
@@ -128,7 +131,9 @@ module Unitsml
         end
         wanted = registered_dimension_id(list)
         actual = unit_dimension_id(record)
-        return if actual && wanted == actual
+        if actual && wanted == actual
+          return list.to_h { |d| [d[:dimension], d[:exponent]] }
+        end
 
         raise Errors::InvalidUnitRegisterError,
               "register dimensions #{declared.inspect} (#{wanted.inspect}) " \
