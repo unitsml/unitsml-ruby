@@ -574,4 +574,35 @@ RSpec.describe Unitsml::Quantity do
       expect((q(nil, 4) * q(nil, 2)).dimension_vector).to eq({})
     end
   end
+
+  describe "exact division" do
+    it "keeps the remainder when dividing by an integer" do
+      expect((q("m", 7) / 2).value).to eql(Rational(7, 2))
+    end
+
+    it "keeps the remainder when dividing by an integer quantity" do
+      expect((q("m", 7) / q("s", 2)).value).to eql(Rational(7, 2))
+    end
+
+    it "does not round a negative quotient down" do
+      expect((q("m", -7) / 2).value).to eql(Rational(-7, 2))
+    end
+
+    it "returns an Integer when the division is whole" do
+      expect((q("m", 6) / 2).value).to be(3)
+      expect((q(nil, 4) / q(nil, 2)).value).to be(2)
+    end
+
+    it "gets back the original quantity after dividing and multiplying" do
+      expect((q("m", 1) / 3) * 3).to eq(q("m", 1))
+    end
+
+    it "converts an exact quotient without loss" do
+      expect((q("m", 7) / 2).convert_to("cm").value).to eq(350)
+    end
+
+    it "keeps Float division for a Float value" do
+      expect((q("m", 7.0) / 2).value).to be(3.5)
+    end
+  end
 end
