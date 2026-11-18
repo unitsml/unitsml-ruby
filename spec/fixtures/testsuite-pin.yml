@@ -1,0 +1,7 @@
+# The unitsml-testsuite commit whose corpora/renders and corpora/conversions
+# this gem replays in CI (.github/workflows/rake.yml,
+# spec/unitsml/render_corpus_spec.rb, spec/unitsml/conversion_corpus_spec.rb).
+# Move it forward in one deliberate commit when the testsuite changes.
+---
+repository: https://github.com/unitsml/unitsml-testsuite
+commit: 087e4ee60eb402d6436ae919f50a187faec2abb7
