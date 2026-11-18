@@ -14,7 +14,17 @@ jobs:
         mkdir -p .bundle
         touch .bundle/config
         cat .bundle/config
-        git clone --depth 1 https://github.com/unitsml/unitsml-testsuite.git unitsml-testsuite
+        # Replay the testsuite commit pinned in spec/fixtures/testsuite-pin.yml,
+        # not whatever its default branch holds today.
+        pin=spec/fixtures/testsuite-pin.yml
+        repo=$(sed -n 's/^repository: *//p' "$pin" | tr -d '\r')
+        commit=$(sed -n 's/^commit: *//p' "$pin" | tr -d '\r')
+        [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "no 40-hex commit in $pin"; exit 1; }
+        git init -q unitsml-testsuite
+        git -C unitsml-testsuite fetch -q --depth 1 "$repo" "$commit"
+        git -C unitsml-testsuite checkout -q --detach FETCH_HEAD
+        test "$(git -C unitsml-testsuite rev-parse HEAD)" = "$commit"
+        echo "unitsml-testsuite at $commit"
         echo "CORPUS_DIR=$PWD/unitsml-testsuite/corpora/renders" >> "$GITHUB_ENV"
         echo "CONVERSION_CORPUS_DIR=$PWD/unitsml-testsuite/corpora/conversions" >> "$GITHUB_ENV"
         echo "---" >> .bundle/config
