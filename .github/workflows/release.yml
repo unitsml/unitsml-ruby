@@ -32,3 +32,4 @@ jobs:
       submodules: true
     secrets:
       rubygems-api-key: ${{ secrets.UNITSML_CI_RUBYGEMS_API_KEY }}
+      pat_token: ${{ secrets.UNITSML_CI_PAT_TOKEN }}
