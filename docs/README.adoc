@@ -75,6 +75,11 @@ with a unique identifier.
 
 Basic units are represented in the library as `Unitsml::Unit` objects.
 
+The parser also accepts UnitsDB short names, such as `arc_degree`, and resolves
+these to the unit's first declared symbol (`deg`). Symbol identifiers take
+precedence when a short name matches an existing symbol. Short names can be used
+in expressions, for example `arc_degree/s`.
+
 [source,ruby]
 ----
 require 'unitsml'
