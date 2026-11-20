@@ -80,6 +80,10 @@ these to the unit's first declared symbol (`deg`). Symbol identifiers take
 precedence when a short name matches an existing symbol. Short names can be used
 in expressions, for example `arc_degree/s`.
 
+The `arc_degree` alias comes from UnitsDB's
+https://github.com/unitsml/unitsdb/blob/a6898e39be6fe6b7d724cc5853ec759e35379014/units.yaml#L4166[`NISTu149` entry],
+whose declared symbol identifier is `deg`.
+
 [source,ruby]
 ----
 require 'unitsml'

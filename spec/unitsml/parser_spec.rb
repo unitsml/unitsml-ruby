@@ -32,6 +32,14 @@ RSpec.describe Unitsml::Parser do
   end
 
   describe "UnitsDB short names" do
+    it "resolves arc_degree to the symbol declared by NISTu149" do
+      unit = Unitsml::Unitsdb.units.find_by_id("NISTu149")
+      formula = described_class.new(unit.short).parse
+
+      expect(unit.short).to eq("arc_degree")
+      expect(formula.value.first.unit_name).to eq(unit.symbols.first.id)
+    end
+
     {
       "arc_degree" => "deg",
       "arc_degree^2" => "deg^2",
