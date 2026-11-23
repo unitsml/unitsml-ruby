@@ -55,29 +55,7 @@ module Unitsml
     # rescue clause names it.
     def parse_tree
       artifact = self.class.artifact
-      begin
-        artifact.parse("expression", text)
-      rescue ::Parsanol::ParseFailed
-        parse_short_names(artifact)
-      end
-    end
-
-    # Keep the artifact's symbol grammar authoritative. On a rejected input,
-    # resolve complete UnitsDB short names to their first declared symbol;
-    # existing symbol ids always take precedence over a short-name collision.
-    def parse_short_names(artifact)
-      normalized = text.gsub(/\b[A-Za-z_][A-Za-z_0-9]*\b/) do |name|
-        next name if Unitsdb.units.find_by_symbol_id(name)
-
-        unit = Unitsdb.units.units.find { |candidate| candidate.short == name }
-        symbol = unit&.symbols&.first
-        symbol&.id || name
-      end
-      raise Errors::ParseError.new(text) if normalized == text
-
-      tree = artifact.parse("expression", normalized)
-      @text = normalized
-      tree
+      artifact.parse("expression", text)
     rescue ::Parsanol::ParseFailed
       raise Errors::ParseError.new(text)
     end

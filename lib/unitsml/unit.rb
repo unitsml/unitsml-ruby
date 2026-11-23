@@ -39,7 +39,7 @@ module Unitsml
     end
 
     def to_mathml(options)
-      value = unit_symbols&.mathml
+      value = unit_mathml
       tag_name = value.match(/^<(?<tag>\w+)/)[:tag]
       value = mml_v4_from_xml(tag_name, value)
       if prefix
@@ -117,9 +117,9 @@ module Unitsml
     private
 
     # Resolve a unit reference to a canonical symbol id, exactly like the parser
-    # (symbol ids only — no short-name resolution). The empty string and the
-    # UNKNOWN sentinel are passed through untouched (internal callers rely on
-    # them); nil is not a sentinel and fails fast rather than silently building
+    # (symbol ids win; complete UnitsDB short names use their first symbol).
+    # The empty string and UNKNOWN sentinel pass through untouched (internal
+    # callers rely on them); nil fails fast rather than silently building
     # a broken unit. Raises for anything unresolvable.
     def resolve_ref(ref)
       raise Errors::UnknownUnitError.new(value: ref) if Compose.type?(NilClass, ref)
@@ -127,9 +127,27 @@ module Unitsml
       string = Compose.safe_string(ref)
       raise Errors::UnknownUnitError.new(value: ref) if string.nil?
       return string if string.empty? || string == Utility::UNKNOWN
-      return string if Unitsdb.units.find_by_symbol_id(string)
+
+      symbol_id = resolve_symbol_id(string)
+      return symbol_id if symbol_id
 
       raise Errors::UnknownUnitError.new(value: ref)
+    end
+
+    # Some UnitsDB symbols contain sibling MathML elements (for example m/s).
+    # Give those fragments one root without adding a row to single-root symbols.
+    def unit_mathml
+      source = unit_symbols&.mathml
+      wrapped = "<mrow>#{source}</mrow>"
+      Moxml.parse(wrapped).root.elements.size > 1 ? wrapped : source
+    end
+
+    def resolve_symbol_id(string)
+      return string if Unitsdb.units.find_by_symbol_id(string)
+
+      unit = Unitsdb.units.units.find { |candidate| candidate.short == string }
+      symbols = unit&.symbols
+      symbols&.first&.id
     end
 
     # A pre-built Prefix (the parse path) is passed through untouched, so the
