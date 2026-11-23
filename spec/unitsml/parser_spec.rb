@@ -31,6 +31,49 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
+  describe "UnitsDB short names" do
+    it "resolves arc_degree to the symbol declared by NISTu149" do
+      unit = Unitsml::Unitsdb.units.find_by_id("NISTu149")
+      formula = described_class.new(unit.short).parse
+
+      expect(unit.short).to eq("arc_degree")
+      expect(formula.value.first.unit_name).to eq(unit.symbols.first.id)
+    end
+
+    {
+      "arc_degree" => "deg",
+      "arc_degree^2" => "deg^2",
+      "arc_degree/s" => "deg/s",
+      "sqrt(arc_degree)" => "sqrt(deg)",
+      "(arc_degree)" => "(deg)",
+      "rad*arc_degree" => "rad*deg",
+    }.each do |input, canonical|
+      it "renders #{input} like #{canonical}" do
+        formula = described_class.new(input).parse
+        expected = described_class.new(canonical).parse
+
+        expect(formula.to_mathml).to eq(expected.to_mathml)
+        expect(formula.to_xml).to eq(expected.to_xml)
+      end
+    end
+
+    it "preserves explicit names when normalizing the expression" do
+      formula = described_class.new(
+        "unitsml(arc_degree, name: arc_degree)",
+      ).parse
+
+      expect(formula.value.first.unit_name).to eq("deg")
+      expect(formula.explicit_value).to eq(name: "arc_degree")
+    end
+
+    %w[xarc_degree arc_degree_extra arc_degree/ arc_degree^].each do |input|
+      it "rejects #{input} without accepting a partial unit name" do
+        expect { described_class.new(input).parse }
+          .to raise_error(Unitsml::Errors::ParseError)
+      end
+    end
+  end
+
   describe "formula details" do
     it "marks prefix-only expressions as only_instance" do
       formula = described_class.new("p-").parse

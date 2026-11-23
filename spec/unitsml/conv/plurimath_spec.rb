@@ -22,6 +22,22 @@ RSpec.describe Unitsml::Parser do
     end
   end
 
+  context "Plurimath issue 336 arc_degree expression" do
+    [{}, { unitsml: { xml: false } }].each do |render_options|
+      it "renders the degree unit with #{render_options.inspect}" do
+        require "plurimath"
+
+        actual = Plurimath::Math.parse('5 "unitsml(arc_degree)"', :asciimath)
+          .to_mathml(**render_options)
+        expected = Plurimath::Math.parse('5 "unitsml(deg)"', :asciimath)
+          .to_mathml(**render_options)
+
+        expect(actual).to eq(expected)
+        expect(actual).to match(/°|&#xb0;|&#176;/)
+      end
+    end
+  end
+
   context "Unitsml example contains prefix and units" do
     let(:exp) { "unitsml(mm*s^((-2)))" }
     let(:expected_value) do
