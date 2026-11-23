@@ -21,4 +21,4 @@ gem "simplecov"
 
 # Complete short-name tokens; keep pinned until this artifact is released.
 gem "asciiunits", github: "unitsml/asciiunits",
-                  ref: "877c5eaad280af8c25c346ac742331d4361c9411"
+                  ref: "877382b92a52e0ac59869af371e1f41cd55a0437"
