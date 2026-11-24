@@ -18,7 +18,3 @@ gem "rubocop-performance"
 gem "rubocop-rake"
 gem "rubocop-rspec"
 gem "simplecov"
-
-# Complete short-name tokens; keep pinned until this artifact is released.
-gem "asciiunits", github: "unitsml/asciiunits",
-                  ref: "877382b92a52e0ac59869af371e1f41cd55a0437"
