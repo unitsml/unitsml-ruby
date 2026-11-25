@@ -145,12 +145,12 @@ RSpec.describe Unitsml::QuantityKind do
         .to eq("NISTq48")
     end
 
-    it "leaves render selection on the first reference" do
+    it "renders the primary reference rather than the first one" do
       record = Unitsml::Unitsdb.units.find_by_name("J")
-      first = record.quantity_references.first.id
+      primary = described_class.primary_for(record).id
       expect(Unitsml::Utility.send(:quantity_reference_id, record))
-        .to eq(first)
-      expect(first).not_to eq(described_class.primary_for(record).id)
+        .to eq(primary)
+      expect(record.quantity_references.first.id).not_to eq(primary)
     end
 
     it "derives a quantity's primary kind from its single unit" do
