@@ -418,7 +418,7 @@ module Unitsml
       def quantity_reference_id(unit)
         return unless unit
 
-        unit.quantity_references&.first&.id
+        QuantityKind.primary_for(unit)&.id
       end
 
       def record_identifier_id(record)
@@ -446,7 +446,7 @@ module Unitsml
         return unit.dimension_url if unit.is_a?(Unitsml::Unitsdb::Unit)
 
         unit.dimension_reference&.id ||
-          quantity_dimension_id(quantity_instance(unit.quantity_references&.first&.id))
+          quantity_dimension_id(QuantityKind.primary_for(unit)&.record)
       end
 
       def quantity_dimension_id(quantity)
