@@ -53,31 +53,38 @@ module Unitsml
 
     # The artifact is loaded first, so Parsanol is defined by the time the
     # rescue clause names it.
+    #
+    # Complete UnitsDB short names are resolved to their first declared symbol
+    # before the artifact sees the text. Newer artifacts tokenize short names
+    # themselves and accept them, but the unit reference they produce is not a
+    # symbol id, so the tree could not be mapped to a Unit.
     def parse_tree
       artifact = self.class.artifact
+      normalized = normalize_short_names
       begin
-        artifact.parse("expression", text)
+        tree = artifact.parse("expression", normalized)
+        @text = normalized
+        tree
       rescue ::Parsanol::ParseFailed
-        parse_short_names(artifact)
+        raise Errors::ParseError.new(text) if normalized == text
+
+        parse_original(artifact)
       end
     end
 
-    # Keep the artifact's symbol grammar authoritative. On a rejected input,
-    # resolve complete UnitsDB short names to their first declared symbol;
-    # existing symbol ids always take precedence over a short-name collision.
-    def parse_short_names(artifact)
-      normalized = text.gsub(/\b[A-Za-z_][A-Za-z_0-9]*\b/) do |name|
+    # Existing symbol ids always take precedence over a short-name collision.
+    def normalize_short_names
+      text.gsub(/\b[A-Za-z_][A-Za-z_0-9]*\b/) do |name|
         next name if Unitsdb.units.find_by_symbol_id(name)
 
         unit = Unitsdb.units.units.find { |candidate| candidate.short == name }
         symbol = unit&.symbols&.first
         symbol&.id || name
       end
-      raise Errors::ParseError.new(text) if normalized == text
+    end
 
-      tree = artifact.parse("expression", normalized)
-      @text = normalized
-      tree
+    def parse_original(artifact)
+      artifact.parse("expression", text)
     rescue ::Parsanol::ParseFailed
       raise Errors::ParseError.new(text)
     end
