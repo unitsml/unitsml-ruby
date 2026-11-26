@@ -57,6 +57,14 @@ RSpec.describe Unitsml::Parser do
       end
     end
 
+    it "maps a short name the artifact tokenizes itself to its symbol unit" do
+      unit = Unitsml::Unitsdb.units.units.find { |u| u.short == "pascal" }
+      formula = described_class.new("pascal").parse
+
+      expect(formula.value.first.unit_name).to eq(unit.symbols.first.id)
+      expect(formula.to_mathml).to eq(described_class.new("Pa").parse.to_mathml)
+    end
+
     it "preserves explicit names when normalizing the expression" do
       formula = described_class.new(
         "unitsml(arc_degree, name: arc_degree)",
