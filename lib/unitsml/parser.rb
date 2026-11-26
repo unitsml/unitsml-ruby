@@ -19,6 +19,7 @@ module Unitsml
       mapped = Parg::TreeMapper.new.apply(tree)
       formula = build_formula(mapped)
       update_units_exponents(formula.value, false)
+      formula.value = expand_compound_powers(formula.value)
       formula.value.first.only_instance = true if text.end_with?("-")
       formula
     end
@@ -45,48 +46,32 @@ module Unitsml
         # above raises first).
         data_gem = "asciiunits"
         require data_gem
+        check_artifact_version
         Asciiunits.load_artifact
       rescue LoadError => e
         raise Errors::PargLoadError.new("the asciiunits gem", e.message)
+      end
+
+      def check_artifact_version
+        return if Gem::Version.new(Asciiunits::VERSION) >= Gem::Version.new("0.1.8")
+
+        raise Errors::PargLoadError.new(
+          "the asciiunits gem",
+          "complete short-name tokens require asciiunits >= 0.1.8; " \
+          "loaded #{Asciiunits::VERSION}",
+        )
       end
     end
 
     # The artifact is loaded first, so Parsanol is defined by the time the
     # rescue clause names it.
-    #
-    # Complete UnitsDB short names are resolved to their first declared symbol
-    # before the artifact sees the text. Newer artifacts tokenize short names
-    # themselves and accept them, but the unit reference they produce is not a
-    # symbol id, so the tree could not be mapped to a Unit.
     def parse_tree
       artifact = self.class.artifact
-      normalized = normalize_short_names
       begin
-        tree = artifact.parse("expression", normalized)
-        @text = normalized
-        tree
+        artifact.parse("expression", text)
       rescue ::Parsanol::ParseFailed
-        raise Errors::ParseError.new(text) if normalized == text
-
-        parse_original(artifact)
+        raise Errors::ParseError.new(text)
       end
-    end
-
-    # Existing symbol ids always take precedence over a short-name collision.
-    def normalize_short_names
-      text.gsub(/\b[A-Za-z_][A-Za-z_0-9]*\b/) do |name|
-        next name if Unitsdb.units.find_by_symbol_id(name)
-
-        unit = Unitsdb.units.units.find { |candidate| candidate.short == name }
-        symbol = unit&.symbols&.first
-        symbol&.id || name
-      end
-    end
-
-    def parse_original(artifact)
-      artifact.parse("expression", text)
-    rescue ::Parsanol::ParseFailed
-      raise Errors::ParseError.new(text)
     end
 
     def update_units_exponents(array, inverse, sqrt = false)
@@ -141,6 +126,50 @@ module Unitsml
     end
 
     private
+
+    # A named compound is one token, so its exponent belongs to every
+    # factor. Expand its symbol expression before rendering or dimensions
+    # are calculated, retaining the caller's original expression text.
+    def expand_compound_powers(node)
+      case node
+      when Array then node.map { |child| expand_compound_powers(child) }
+      when Unit then expand_unit_power(node)
+      when Formula
+        node.value = expand_compound_powers(node.value)
+        node
+      when Sqrt
+        original = node.value
+        node.value = expand_compound_powers(original)
+        original.is_a?(Unit) && node.value.is_a?(Formula) ? node.value : node
+      when Fenced
+        Fenced.new(node.open_paren, expand_compound_powers(node.value), node.close_paren)
+      else node
+      end
+    end
+
+    def expand_unit_power(node)
+      return node unless node.power_numerator && node.unit_name.match?(%r{[*/^]})
+
+      formula = self.class.new(node.unit_name).parse
+      formula.root = false
+      factor = Rational(node.power_numerator.raw_value.gsub("//", "/"))
+      scale_compound_powers(formula.value, factor)
+      formula
+    rescue Errors::ParseError
+      raise Errors::ParseError.new(text)
+    end
+
+    def scale_compound_powers(node, factor)
+      case node
+      when Array then node.each { |child| scale_compound_powers(child, factor) }
+      when Unit, Dimension
+        exponent = node.power_numerator ? Rational(node.power_numerator.raw_value.gsub("//", "/")) : 1
+        node.power_numerator = Number.new(Compose.numeric_exponent_string(exponent * factor))
+      when Extender
+        node.symbol = "*" if ["/", "//"].include?(node.symbol)
+      when Formula, Fenced, Sqrt then scale_compound_powers(node.value, factor)
+      end
+    end
 
     def build_formula(mapped)
       formula_value = mapped.is_a?(Formula) ? mapped.value : [mapped].flatten

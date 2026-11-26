@@ -291,9 +291,9 @@ RSpec.describe "Unitsml composite builder" do # rubocop:disable RSpec/DescribeCl
   end
 
   describe "unit references" do
-    it "rejects a short name (symbol ids only, like the parser)" do
-      expect { Unitsml::Unit.new("watt") }
-        .to raise_error(Unitsml::Errors::UnknownUnitError)
+    it "resolves a complete short name like the parser" do
+      expect(Unitsml::Unit.new("watt")).to eq(Unitsml::Unit.new("W"))
+      expect(Unitsml.parse("watt").value.first).to eq(Unitsml::Unit.new("watt"))
     end
 
     it "fails fast on a nil reference (nil is not the internal sentinel)" do
